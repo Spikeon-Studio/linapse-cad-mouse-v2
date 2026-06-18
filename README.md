@@ -11,7 +11,7 @@
 
 ## What it does
 
-- **6DoF motion in OnShape on Linux.** The firmware presents the device to the OS as a SpaceMouse, so `spacenavd` drives it with no custom configuration. A WebSocket bridge plus a Tampermonkey userscript carry that motion into OnShape in the browser.
+- **6DoF motion in OnShape, SketchUp Web, and Native Linux apps.** The firmware presents the device to the OS as a SpaceMouse, so `spacenavd` drives it. A WebSocket bridge plus a Tampermonkey userscript carry motion into browser apps (OnShape, SketchUp Web), while native apps (Blender, FreeCAD, Bambu Studio, etc.) connect directly via UNIX socket.
 - **Physical buttons, taps, and gestures.** The host service maps the two buttons (and tap-on-the-cap gestures detected in firmware) to keystrokes, clicks, scrolling, and macros via `ydotool` (Wayland-native input injection).
 - **Addressable RGB lighting.** SK6812 LEDs with multiple effects (solid, breathing, motion-reactive, swirls) configured live.
 - **Linapse web configurator.** A browser UI to remap buttons/taps, design lighting, and tune the motion filter — with a live 3D Benchy viewport you can push around with the puck to feel sensitivity changes in real time.
@@ -44,7 +44,7 @@ A single static web app with three tabs, talking to `linapse-service` over WebSo
         spacenav-ws  (ws :8181)           • broadcasts TAP / MOTION events
                 │                          • reads/writes device config
                 ▼                                ▲
-        OnShape browser tab                      │ WebSocket
+        Web Apps (OnShape, SketchUp)             │ WebSocket
         (Tampermonkey userscript)                │
                                           Linapse configurator  (configurator/)
                                            • buttons / taps / lighting / sensitivity
@@ -52,7 +52,7 @@ A single static web app with three tabs, talking to `linapse-service` over WebSo
 ```
 
 Two independent paths share the device:
-- **Motion** flows over USB HID → `spacenavd` → `spacenav-ws` → OnShape.
+- **Motion** flows over USB HID → `spacenavd` → `spacenav-ws` → Web Apps (OnShape, SketchUp), or directly to native Linux apps (Blender, FreeCAD, Maya, etc.) via the UNIX socket.
 - **Buttons, taps, lighting, and config** flow over USB serial ↔ `linapse-service` ↔ the configurator.
 
 ## Repository layout
@@ -62,6 +62,7 @@ Two independent paths share the device:
 | [`setup.sh`](setup.sh) | Top-level installer — packages, firmware (`--flash`), host integration, and configurator service. |
 | [`firmware/`](firmware/) | RP2040 firmware (PlatformIO). Motion decode, filtering, tap detection, LED engine, USB HID + serial protocol. See [firmware/README.md](firmware/README.md) and [firmware/LED_COLOR_CONFIG.md](firmware/LED_COLOR_CONFIG.md). |
 | [`linux/`](linux/) | Host-side integration: `install.sh`, `linapse-service` (serial ↔ WebSocket bridge), `spacenav-ws` patch, udev rules, systemd user units, OnShape userscript, tap calibration tools. See [linux/README.md](linux/README.md). |
+| [`docs/INTEGRATIONS.md`](docs/INTEGRATIONS.md) | Application integrations guide — how to setup, configure and verify all 14 supported and unsupported applications. |
 | [`configurator/`](configurator/) | Linapse web configurator — a static web app (Three.js 3D viewport) that talks to `linapse-service` over WebSocket. |
 | [`platformio.ini`](platformio.ini) | Firmware build configuration. |
 
@@ -107,7 +108,7 @@ chmod +x install.sh
 
 This installs `linapse-service`, enables the systemd user services (`ydotoold`, `spacenav-ws`, `linapse-service`), writes udev rules, and patches `spacenav-ws`. Full details, prerequisites, and troubleshooting are in **[linux/README.md](linux/README.md)**.
 
-Then install the Tampermonkey userscript ([`linux/onshape-spacenav.user.js`](linux/onshape-spacenav.user.js)) and open OnShape — motion should work immediately.
+Then install the Tampermonkey userscript ([`linux/linapse-browser-connector.user.js`](linux/linapse-browser-connector.user.js)) and open OnShape or SketchUp Web. For setup instructions for native applications (Blender, FreeCAD, Maya, etc.) and game engines (Unreal, Unity), see **[docs/INTEGRATIONS.md](docs/INTEGRATIONS.md)**.
 
 ### 3. Open the configurator
 

@@ -235,7 +235,7 @@ exec {sys.executable} "$@"
         self.assertTrue(env_conf_path.exists(), "environment.d config file should exist")
         with open(env_conf_path) as f:
             env_conf_content = f.read()
-        self.assertEqual(env_conf_content, 'SPNAV_SOCKET="/run/user/${UID}/spnav.sock"\n')
+        self.assertEqual(env_conf_content, 'SPNAV_SOCKET="${XDG_RUNTIME_DIR}/spnav.sock"\n')
 
         # Verify spacenav-ws files were patched correctly
         with open(self.dummy_pkg_dir / "controller.py") as f:

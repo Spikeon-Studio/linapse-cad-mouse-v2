@@ -67,8 +67,10 @@ The installer:
 After the installer finishes, install the Tampermonkey userscript:
 
 1. Install [Tampermonkey](https://www.tampermonkey.net/) in your browser
-2. Drag `linux/onshape-spacenav.user.js` onto the Tampermonkey dashboard
-3. Open [OnShape](https://cad.onshape.com) and open any document — motion should work immediately
+2. Drag `linux/linapse-browser-connector.user.js` onto the Tampermonkey dashboard
+3. Open [OnShape](https://cad.onshape.com) or SketchUp Web and open any document — motion should work immediately
+
+For detailed setup, configuration, and verification guides for all 14 supported/experimental applications (including Blender, FreeCAD, Unreal Engine, Unity, etc.), see **[docs/INTEGRATIONS.md](../docs/INTEGRATIONS.md)**.
 
 > **Note:** If you were just added to the `input` group, log out and back in (or reboot) before the buttons will work.
 

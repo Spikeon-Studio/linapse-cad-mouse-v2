@@ -2,7 +2,7 @@
 
 The Linapse configurator is a browser-based control panel for the CAD Mouse MK2. It talks to `linapse-service` over a WebSocket (`ws://localhost:13000`) and lets you remap buttons and taps, design RGB lighting, and tune the motion filter — all applied to the device live over the serial link.
 
-This guide walks through each tab. For install/setup, see the [main README](../README.md) and [linux/README.md](../linux/README.md).
+This guide walks through each tab. For install/setup, see the [main README](../README.md) and [linux/README.md](../linux/README.md). For configuring specific 3D/CAD applications, see the **[Application Integrations Guide](INTEGRATIONS.md)**.
 
 ## Before you start
 

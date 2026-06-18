@@ -110,7 +110,7 @@ section "Configuring user systemd environment for native applications"
 
 mkdir -p "$HOME/.config/environment.d"
 cat <<'EOF' > "$HOME/.config/environment.d/99-spnav.conf"
-SPNAV_SOCKET="/run/user/${UID}/spnav.sock"
+SPNAV_SOCKET="${XDG_RUNTIME_DIR}/spnav.sock"
 EOF
 info "Environment configuration file written to ~/.config/environment.d/99-spnav.conf"
 
@@ -134,11 +134,12 @@ cat <<'EOF'
 
 Next steps:
   1. Install the Tampermonkey browser extension.
-  2. Drag linux/onshape-spacenav.user.js onto the Tampermonkey dashboard to install the userscript.
-  3. Visit https://cad.onshape.com and open any document.
+  2. Drag linux/linapse-browser-connector.user.js onto the Tampermonkey dashboard to install the userscript.
+  3. Visit https://cad.onshape.com or SketchUp Web and open any document.
   4. Move the CAD Mouse — the viewport should respond.
 
 If the mouse was already plugged in before installing, unplug and replug it.
+For detailed setup guides for 14 apps (Blender, FreeCAD, Unreal, Unity, etc.), see docs/INTEGRATIONS.md.
 You must log out and back in (or reboot) to apply the systemd environment socket configuration for native applications.
 If buttons don't work, log out and back in (or reboot) so the 'input' group takes effect.
 EOF

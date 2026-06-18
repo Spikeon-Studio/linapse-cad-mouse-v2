@@ -141,17 +141,18 @@ systemctl --user enable --now linapse-configurator
 info "Serving $CONFIGURATOR_DIR at http://localhost:$PORT"
 
 # ── 5. Userscript ──────────────────────────────────────────────────────────────
-section "5. OnShape userscript (manual)"
+section "5. Browser userscript (manual)"
 cat <<EOF
 
   Tampermonkey can't be scripted, so finish these by hand:
     1. Install the Tampermonkey browser extension.
-    2. Drag linux/onshape-spacenav.user.js onto the Tampermonkey dashboard.
-    3. Open https://cad.onshape.com and move the mouse — the viewport should respond.
+    2. Drag linux/linapse-browser-connector.user.js onto the Tampermonkey dashboard.
+    3. Open https://cad.onshape.com or SketchUp Web and move the mouse — the viewport should respond.
 
 ######## Done
 
   Configurator:  http://localhost:$PORT   (see docs/USAGE.md)
+  Integrations:  docs/INTEGRATIONS.md     (Blender, FreeCAD, Maya, Unreal, Unity setup)
   You must log out and back in (or reboot) to apply the systemd environment socket configuration for native applications.
   If buttons don't work, log out and back in so the 'input' group takes effect.
   If the device was plugged in before install, unplug and replug it.
