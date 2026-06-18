@@ -174,10 +174,11 @@ def dispatch(action_obj):
             subprocess.Popen(val, shell=True)
     elif act == "macro":
         for step in action_obj.get("steps", []):
+            step_action = step.get("action", "none")
+            if step_action != "none":
+                dispatch(step)
             if "delay" in step:
                 time.sleep(step["delay"] / 1000.0)
-            else:
-                dispatch(step)
 
 # ── Button handler ────────────────────────────────────────────────────────────
 

@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.0] - 2026-06-18
+
+### Added
+- **Macro Step Card Configuration**: Redesigned the Macro configuration editor in the web configurator to display each step as a card containing the full action sub-form (e.g. key combo, mouse click chips, mouse scroll chips/amount, mouse move X/Y, exec command) and an embedded post-step delay field that defaults to 500ms.
+- **Embedded Step Delay Support**: Updated the host service (`linapse-service`) macro dispatcher to support dispatching action steps and executing their embedded delay sequentially.
+
 ## [2.1.9] - 2026-06-18
 
 ### Fixed

@@ -528,8 +528,7 @@ def test_tap_configuration_actions(running_service):
             "back:1": {
                 "action": "macro",
                 "steps": [
-                    {"action": "key", "value": "a"},
-                    {"delay": 50},
+                    {"action": "key", "value": "a", "delay": 50},
                     {"action": "mouse_click", "button": "left"}
                 ]
             }

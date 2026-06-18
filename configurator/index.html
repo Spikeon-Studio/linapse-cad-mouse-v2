@@ -487,10 +487,11 @@ input[type=range]::-webkit-slider-thumb {
 .macro-step {
   background: var(--bg3);
   border: 1px solid var(--border);
-  padding: 8px 10px;
-  margin-bottom: 4px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-start;
   gap: 8px;
   font-size: 11px;
   color: var(--text2);
@@ -506,7 +507,8 @@ input[type=range]::-webkit-slider-thumb {
   width: 50px;
 }
 
-.macro-step input { flex: 1; margin: 0; }
+.macro-step input { width: 100%; box-sizing: border-box; margin: 0; }
+.macro-step input.step-delay { width: 60px; text-align: center; }
 
 .btn-add-step {
   width: 100%;
@@ -1644,6 +1646,62 @@ function renderSubFields(type, act, area, onChange) {
   }
 }
 
+function renderStepFields(type, step, container) {
+  container.innerHTML = '';
+  if (type === 'key') {
+    container.innerHTML = `
+      <div class="field-group" style="margin-bottom: 0; width: 100%;">
+        <div class="field-label" style="font-size: 9px; margin-bottom: 3px;">Key Combo</div>
+        <input type="text" class="step-key" placeholder="shift+7" value="${step.action === 'key' ? (step.value || '') : ''}" style="width: 100%; box-sizing: border-box; background: var(--bg2); border: 1px solid var(--border); color: var(--text); padding: 4px 8px; font-size: 11px;">
+      </div>`;
+  } else if (type === 'mouse_click') {
+    const cur = step.action === 'mouse_click' ? (step.button || 'left') : 'left';
+    container.innerHTML = `
+      <div class="field-group" style="margin-bottom: 0; width: 100%;">
+        <div class="field-label" style="font-size: 9px; margin-bottom: 3px;">Button</div>
+        <div class="action-grid" style="grid-template-columns: 1fr 1fr 1fr; gap: 4px; margin-top: 0; width: 100%;">
+          <div class="action-chip ${cur==='left'?'active':''}"   onclick="selectBtn(this,'left')"   data-btn="left" style="padding: 4px; font-size: 10px; text-align: center;">Left</div>
+          <div class="action-chip ${cur==='right'?'active':''}"  onclick="selectBtn(this,'right')"  data-btn="right" style="padding: 4px; font-size: 10px; text-align: center;">Right</div>
+          <div class="action-chip ${cur==='middle'?'active':''}" onclick="selectBtn(this,'middle')" data-btn="middle" style="padding: 4px; font-size: 10px; text-align: center;">Middle</div>
+        </div>
+      </div>`;
+  } else if (type === 'mouse_scroll') {
+    const cur = step.action === 'mouse_scroll' ? (step.direction || 'down') : 'down';
+    container.innerHTML = `
+      <div class="field-group" style="margin-bottom: 6px; width: 100%;">
+        <div class="field-label" style="font-size: 9px; margin-bottom: 3px;">Direction</div>
+        <div class="action-grid" style="grid-template-columns: repeat(4, 1fr); gap: 4px; margin-top: 0; width: 100%;">
+          <div class="action-chip ${cur==='up'?'active':''}"    onclick="selectDir(this,'up')"    data-dir="up" style="padding: 4px; font-size: 10px; text-align: center;">Up</div>
+          <div class="action-chip ${cur==='down'?'active':''}"  onclick="selectDir(this,'down')"  data-dir="down" style="padding: 4px; font-size: 10px; text-align: center;">Down</div>
+          <div class="action-chip ${cur==='left'?'active':''}"  onclick="selectDir(this,'left')"  data-dir="left" style="padding: 4px; font-size: 10px; text-align: center;">Left</div>
+          <div class="action-chip ${cur==='right'?'active':''}" onclick="selectDir(this,'right')" data-dir="right" style="padding: 4px; font-size: 10px; text-align: center;">Right</div>
+        </div>
+      </div>
+      <div class="field-group" style="margin-bottom: 0; display: flex; align-items: center; gap: 8px; width: 100%;">
+        <span style="font-size: 10px; color: var(--text3);">Amount:</span>
+        <input type="text" class="step-amount" placeholder="3" value="${step.action === 'mouse_scroll' ? (step.amount || 3) : 3}" style="width: 40px; background: var(--bg2); border: 1px solid var(--border); color: var(--text); padding: 2px 4px; font-size: 11px;">
+      </div>`;
+  } else if (type === 'mouse_move') {
+    container.innerHTML = `
+      <div style="display: flex; gap: 8px; width: 100%;">
+        <div class="field-group" style="margin-bottom: 0; flex: 1; display: flex; align-items: center; gap: 6px;">
+          <span style="font-size: 10px; color: var(--text3);">X:</span>
+          <input type="text" class="step-mx" placeholder="0" value="${step.action === 'mouse_move' ? (step.x || 0) : 0}" style="width: 100%; background: var(--bg2); border: 1px solid var(--border); color: var(--text); padding: 2px 4px; font-size: 11px;">
+        </div>
+        <div class="field-group" style="margin-bottom: 0; flex: 1; display: flex; align-items: center; gap: 6px;">
+          <span style="font-size: 10px; color: var(--text3);">Y:</span>
+          <input type="text" class="step-my" placeholder="0" value="${step.action === 'mouse_move' ? (step.y || 0) : 0}" style="width: 100%; background: var(--bg2); border: 1px solid var(--border); color: var(--text); padding: 2px 4px; font-size: 11px;">
+        </div>
+      </div>`;
+  } else if (type === 'exec') {
+    container.innerHTML = `
+      <div class="field-group" style="margin-bottom: 0; width: 100%;">
+        <div class="field-label" style="font-size: 9px; margin-bottom: 3px;">Command</div>
+        <input type="text" class="step-exec" placeholder="notify-send hello" value="${step.action === 'exec' ? (step.value || '') : ''}" style="width: 100%; box-sizing: border-box; background: var(--bg2); border: 1px solid var(--border); color: var(--text); padding: 4px 8px; font-size: 11px;">
+      </div>`;
+  }
+}
+
 function renderMacroEditor(steps, area) {
   area.innerHTML = '';
   const head = document.createElement('div');
@@ -1663,7 +1721,7 @@ function renderMacroEditor(steps, area) {
   addBtn.textContent = '+ Add Step';
   addBtn.onclick = () => {
     const idx = stepsDiv.children.length;
-    addMacroStepRow(stepsDiv, { action: 'key', value: '' }, idx);
+    addMacroStepRow(stepsDiv, { action: 'key', value: '', delay: 500 }, idx);
   };
   area.appendChild(addBtn);
 }
@@ -1672,37 +1730,57 @@ function addMacroStepRow(container, step, idx) {
   const row = document.createElement('div');
   row.className = 'macro-step';
 
-  if (step.delay !== undefined) {
-    row.innerHTML = `
-      <span class="macro-step-type">Delay</span>
-      <input type="text" value="${step.delay}" placeholder="ms" style="width:60px">
-      <span style="font-size:10px;color:var(--text3)">ms</span>
-      <button onclick="this.parentElement.remove()" style="margin-left:auto;background:none;border:none;color:var(--text3);cursor:pointer;font-size:14px">✕</button>`;
-  } else {
-    const sel = document.createElement('select');
-    sel.style.cssText = 'width:90px;margin:0;flex-shrink:0;font-size:10px;padding:3px 6px';
-    ['key','mouse_click','mouse_scroll','exec','delay'].forEach(t => {
-      const o = new Option(t, t);
-      if (t === step.action) o.selected = true;
-      sel.add(o);
+  const initialType = step.action || (step.delay !== undefined ? 'delay' : 'key');
+
+  row.innerHTML = `
+    <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+      <span class="step-title" style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;">Step ${idx + 1}</span>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <select class="step-action-select" style="width: 110px; margin: 0; font-size: 11px; padding: 2px 4px; background: var(--bg2); color: var(--text); border: 1px solid var(--border);">
+          <option value="key" ${initialType === 'key' ? 'selected' : ''}>Key Combo</option>
+          <option value="mouse_click" ${initialType === 'mouse_click' ? 'selected' : ''}>Mouse Click</option>
+          <option value="mouse_scroll" ${initialType === 'mouse_scroll' ? 'selected' : ''}>Mouse Scroll</option>
+          <option value="mouse_move" ${initialType === 'mouse_move' ? 'selected' : ''}>Mouse Move</option>
+          <option value="exec" ${initialType === 'exec' ? 'selected' : ''}>Command</option>
+          <option value="delay" ${initialType === 'delay' ? 'selected' : ''}>Delay Only</option>
+        </select>
+        <button class="step-delete-btn" style="background: none; border: none; color: var(--text3); cursor: pointer; font-size: 14px; padding: 2px 6px;">✕</button>
+      </div>
+    </div>
+    <div class="step-fields-container" style="width: 100%;"></div>
+    <div class="step-delay-row" style="display: flex; align-items: center; gap: 8px; width: 100%; border-top: 1px dashed var(--border2); padding-top: 8px; margin-top: 4px;">
+      <span style="font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px;">Delay After:</span>
+      <input type="text" class="step-delay" value="${step.delay !== undefined ? step.delay : 500}" placeholder="500" style="width: 60px; font-size: 11px; text-align: center; background: var(--bg2); border: 1px solid var(--border); color: var(--text); padding: 2px 4px;">
+      <span style="font-size: 10px; color: var(--text3)">ms</span>
+    </div>
+  `;
+
+  const fieldsContainer = row.querySelector('.step-fields-container');
+  const select = row.querySelector('.step-action-select');
+  const delayRow = row.querySelector('.step-delay-row');
+
+  const updateDelayVisibility = (type) => {
+    if (type === 'delay') {
+      delayRow.querySelector('span').textContent = 'Delay:';
+    } else {
+      delayRow.querySelector('span').textContent = 'Delay After:';
+    }
+  };
+
+  select.onchange = () => {
+    renderStepFields(select.value, {}, fieldsContainer);
+    updateDelayVisibility(select.value);
+  };
+
+  row.querySelector('.step-delete-btn').onclick = () => {
+    row.remove();
+    container.querySelectorAll('.macro-step').forEach((el, i) => {
+      el.querySelector('.step-title').textContent = `Step ${i + 1}`;
     });
+  };
 
-    const val = document.createElement('input');
-    val.type = 'text';
-    val.value = step.value || step.button || step.direction || '';
-    val.placeholder = 'value';
-    val.style.flex = '1';
-
-    const del = document.createElement('button');
-    del.textContent = '✕';
-    del.style.cssText = 'background:none;border:none;color:var(--text3);cursor:pointer;font-size:14px;margin-left:4px';
-    del.onclick = () => row.remove();
-
-    row.appendChild(sel);
-    row.appendChild(val);
-    row.appendChild(del);
-  }
-
+  renderStepFields(initialType, step, fieldsContainer);
+  updateDelayVisibility(initialType);
   container.appendChild(row);
 }
 
@@ -1736,17 +1814,30 @@ function collectAction(type, area) {
   if (type === 'macro') {
     const steps = [];
     area.querySelectorAll('.macro-step').forEach(row => {
-      const sel = row.querySelector('select');
-      const val = row.querySelector('input[type=text]');
-      if (!sel && val) {
-        steps.push({ delay: parseInt(val.value) || 0 });
-      } else if (sel) {
+      const sel = row.querySelector('.step-action-select');
+      const delayInput = row.querySelector('.step-delay');
+      const delayVal = parseInt(delayInput?.value) !== undefined ? (parseInt(delayInput.value) || 0) : 500;
+      
+      if (sel) {
         const t = sel.value;
-        const v = val?.value || '';
-        if (t === 'delay') steps.push({ delay: parseInt(v) || 0 });
-        else if (t === 'mouse_click') steps.push({ action: t, button: v || 'left' });
-        else if (t === 'mouse_scroll') steps.push({ action: t, direction: v || 'down', amount: 3 });
-        else steps.push({ action: t, value: v });
+        if (t === 'delay') {
+          steps.push({ delay: delayVal });
+        } else if (t === 'key') {
+          steps.push({ action: 'key', value: row.querySelector('.step-key')?.value || '', delay: delayVal });
+        } else if (t === 'mouse_click') {
+          const active = row.querySelector('.action-chip.active');
+          steps.push({ action: 'mouse_click', button: active?.dataset.btn || 'left', delay: delayVal });
+        } else if (t === 'mouse_scroll') {
+          const active = row.querySelector('.action-chip.active');
+          const amount = parseInt(row.querySelector('.step-amount')?.value || '3');
+          steps.push({ action: 'mouse_scroll', direction: active?.dataset.dir || 'down', amount: amount, delay: delayVal });
+        } else if (t === 'mouse_move') {
+          const mx = parseInt(row.querySelector('.step-mx')?.value || '0');
+          const my = parseInt(row.querySelector('.step-my')?.value || '0');
+          steps.push({ action: 'mouse_move', x: mx, y: my, delay: delayVal });
+        } else if (t === 'exec') {
+          steps.push({ action: 'exec', value: row.querySelector('.step-exec')?.value || '', delay: delayVal });
+        }
       }
     });
     return { action: 'macro', steps };
