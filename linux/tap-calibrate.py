@@ -276,8 +276,8 @@ def main():
     except serial.SerialException as e:
         print(RED + f"ERROR: {e}" + RESET)
         print()
-        print("If spnav-buttons has the port open, stop it first:")
-        print("  systemctl --user stop spnav-buttons")
+        print("If linapse-service has the port open, stop it first:")
+        print("  systemctl --user stop linapse-service")
         sys.exit(1)
 
     time.sleep(0.5)  # let firmware settle

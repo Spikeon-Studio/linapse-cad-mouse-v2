@@ -1,9 +1,0 @@
-# spacenavd configuration for CAD Mouse MK2
-# Edit sensitivity values and run: sudo systemctl restart spacenavd
-
-sensitivity-translation = 0.0054
-sensitivity-rotation = 0.048
-dead-zone = 40
-grab = false
-bnact0 = none
-bnact1 = none

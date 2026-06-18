@@ -283,7 +283,7 @@ def main():
         ser = serial.Serial(port, BAUD, timeout=0.1)
     except serial.SerialException as e:
         print(RED + f"ERROR: {e}" + RESET)
-        print("Stop spnav-buttons first:  systemctl --user stop spnav-buttons")
+        print("Stop linapse-service first:  systemctl --user stop linapse-service")
         sys.exit(1)
 
     time.sleep(0.5)
