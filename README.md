@@ -1,5 +1,8 @@
 # Linapse — CAD Mouse MK2 (v2)
 
+<!-- DISTRO_BADGES_START -->
+<!-- DISTRO_BADGES_END -->
+
 **Linapse** is a complete Linux software stack for the [CAD Mouse MK2](https://github.com/sb-ocr/cad-mouse-mk2) — a DIY 6-degrees-of-freedom "space mouse" that senses motion with three magnetic field sensors instead of optics. The hardware has no Linux driver from 3Dconnexion, so this project supplies everything needed to make it a first-class input device on Linux: device firmware, a host-side service, and a web configurator.
 
 > This is an independent software fork focused on Linux support and the Linapse configurator. It is **not** intended to be merged back upstream. Hardware design, enclosure, PCB, and BOM live in the [original project](https://github.com/sb-ocr/cad-mouse-mk2).

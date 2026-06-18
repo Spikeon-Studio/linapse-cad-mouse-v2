@@ -1,0 +1,125 @@
+name: Multi-Distro CI/CD
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - distro: ubuntu
+            image: jrei/systemd-ubuntu:latest
+          - distro: debian
+            image: jrei/systemd-debian:stable
+          - distro: fedora
+            image: jrei/systemd-fedora:latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Start systemd container
+        run: |
+          docker run -d --name systemd-container \
+            --cgroupns=host \
+            --tmpfs /tmp \
+            --tmpfs /run \
+            --tmpfs /run/lock \
+            -v /sys/fs/cgroup:/sys/fs/cgroup:rw \
+            --privileged \
+            -v ${{ github.workspace }}:/workspace \
+            ${{ matrix.image }}
+
+      - name: Wait for systemd boot
+        run: |
+          sleep 5
+          docker exec systemd-container systemctl is-system-running || true
+
+      - name: Enable linger for root user
+        run: |
+          docker exec systemd-container loginctl enable-linger root
+          sleep 2
+
+      - name: Install base dependencies (Ubuntu/Debian)
+        if: matrix.distro == 'ubuntu' || matrix.distro == 'debian'
+        run: |
+          docker exec systemd-container sh -c "apt-get update && apt-get install -y sudo python3 python3-pip python3-venv git curl udev dbus"
+
+      - name: Install base dependencies (Fedora)
+        if: matrix.distro == 'fedora'
+        run: |
+          docker exec systemd-container sh -c "dnf install -y sudo python3 python3-pip git curl udev dbus-daemon"
+
+      - name: Install Python dependencies
+        run: |
+          docker exec systemd-container sh -c "python3 -m pip install pytest websockets pyserial --break-system-packages || python3 -m pip install pytest websockets pyserial || pip3 install pytest websockets pyserial"
+
+      - name: Run setup.sh
+        run: |
+          docker exec -e XDG_RUNTIME_DIR=/run/user/0 -e DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/0/bus \
+            systemd-container sh -c "cd /workspace && ./setup.sh --yes"
+
+      - name: Run pytest suite inside container
+        run: |
+          docker exec systemd-container sh -c "cd /workspace && pytest linux/"
+
+      - name: Save job status
+        if: always()
+        run: |
+          mkdir -p results
+          echo "${{ job.status }}" > results/${{ matrix.distro }}
+
+      - name: Upload status artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: status-${{ matrix.distro }}
+          path: results/${{ matrix.distro }}
+
+  update-badges:
+    needs: test
+    if: always()
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download all statuses
+        uses: actions/download-artifact@v4
+        with:
+          path: results
+          pattern: status-*
+          merge-multiple: true
+
+      - name: Show results directory
+        run: ls -la results/
+
+      - name: Run badge updater script
+        run: python3 linux/update_badges.py results/
+
+      - name: Check for changes in README.md
+        id: git-check
+        run: |
+          git status
+          if git diff --quiet README.md; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit and push changes
+        if: steps.git-check.outputs.changed == 'true' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          git commit -m "docs: update distro badges in README [skip ci]"
+          git push
