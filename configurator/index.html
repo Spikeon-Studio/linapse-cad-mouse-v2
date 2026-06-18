@@ -1507,6 +1507,26 @@ function renderTapPanel(key, body) {
     };
     tabs.appendChild(t);
   }
+
+  // Plus button
+  const addTab = document.createElement('div');
+  addTab.className = 'count-tab';
+  addTab.textContent = '+';
+  addTab.style.color = 'var(--green)';
+  addTab.style.borderColor = 'var(--border2)';
+  addTab.style.fontWeight = 'bold';
+  addTab.style.padding = '5px 12px';
+  addTab.onclick = () => {
+    MAX_COUNTS[key] = maxCount + 1;
+    currentCount = maxCount + 1;
+    const tapKey = key + ':' + currentCount;
+    if (!actions.taps[tapKey]) {
+      actions.taps[tapKey] = { action: 'none' };
+    }
+    renderPanel(key, false);
+  };
+  tabs.appendChild(addTab);
+
   body.appendChild(tabs);
 
   // Editor area
@@ -2370,6 +2390,21 @@ function toggleInversion(axis) {
 function syncActionsUI() {
   if (!actions) return;
   
+  if (actions.taps) {
+    Object.keys(actions.taps).forEach(key => {
+      const parts = key.split(':');
+      if (parts.length === 2) {
+        const dir = parts[0];
+        const count = parseInt(parts[1]);
+        if (TAP_DIRS.includes(dir) && !isNaN(count)) {
+          if (!MAX_COUNTS[dir] || count > MAX_COUNTS[dir]) {
+            MAX_COUNTS[dir] = count;
+          }
+        }
+      }
+    });
+  }
+
   // Update override toggle
   const overrideToggle = document.getElementById('overrideToggle');
   if (overrideToggle) {
