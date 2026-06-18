@@ -951,17 +951,15 @@ const ACTION_TYPES = [
   { id: 'mouse_scroll',label: 'Scroll' },
   { id: 'mouse_move',  label: 'Mouse Move' },
   { id: 'exec',        label: 'Run Command' },
-  { id: 'scroll_up',   label: 'Scroll Up' },
-  { id: 'scroll_down', label: 'Scroll Down' },
   { id: 'macro',       label: 'Macro' },
 ];
 
 const DEFAULT_ACTIONS = {
   button_override: false,
   buttons: {
-    "0": {"action": "scroll_down"},
-    "1": {"action": "scroll_up"},
-    "chord": {"action": "key", "value": "shift+7"}
+    "0": {"action": "mouse_scroll", "direction": "down", "amount": 1},
+    "1": {"action": "mouse_scroll", "direction": "up", "amount": 1},
+    "chord": {"action": "key", "value": "42:1 8:1 8:0 42:0"}
   },
   taps: {
     "top:1":{"action":"none"}, "top:2":{"action":"none"}, "top:3":{"action":"none"},
@@ -1261,7 +1259,7 @@ function renderActionEditor(act, container, onSave) {
 function renderSubFields(type, act, area, onChange) {
   area.innerHTML = '';
 
-  if (type === 'none' || type === 'scroll_up' || type === 'scroll_down') {
+  if (type === 'none') {
     return;
   }
 
@@ -1410,8 +1408,6 @@ function selectDir(el, dir) {
 
 function collectAction(type, area) {
   if (type === 'none')        return { action: 'none' };
-  if (type === 'scroll_up')   return { action: 'scroll_up' };
-  if (type === 'scroll_down') return { action: 'scroll_down' };
   if (type === 'key')         return { action: 'key', value: area.querySelector('#sf-key')?.value || '' };
   if (type === 'mouse_click') {
     const active = area.querySelector('.action-chip.active');
