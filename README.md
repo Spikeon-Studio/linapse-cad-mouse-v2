@@ -10,6 +10,21 @@
 
 ---
 
+## Features
+
+- Tap Gestures
+- On-The-Fly Configuration Changes
+- Web GUI
+- Macros
+- 6DoF Motion Sensing
+- Wayland-Native Input Injection
+- Dynamic Tap Counts
+- Live 3D Viewport Tuning
+- Addressable RGB LED Control
+- Native Linux App Integrations
+- Web CAD Connector
+- Multi-Distro Support
+
 ## What it does
 
 - **6DoF motion in OnShape, SketchUp Web, and Native Linux apps.** The firmware presents the device to the OS as a SpaceMouse, so `spacenavd` drives it. A WebSocket bridge plus a Tampermonkey userscript carry motion into browser apps (OnShape, SketchUp Web), while native apps (Blender, FreeCAD, OrcaSlicer, etc.) connect directly via UNIX socket.
