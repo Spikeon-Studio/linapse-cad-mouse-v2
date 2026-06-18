@@ -305,6 +305,7 @@ def serial_thread(actions_ref):
                             # Convert floats to rounded integers
                             coords = [int(round(float(p))) for p in parts]
                             x, y, z, rx, ry, rz = coords
+                            z = -z
                             period = 10
                             # Swap Y and Z: [0, x, z, y, rx, ry, rz, period]
                             packet = struct.pack("iiiiiiii", 0, x, z, y, rx, ry, rz, period)
