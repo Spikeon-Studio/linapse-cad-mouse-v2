@@ -62,9 +62,6 @@ exit 0
 if [[ "$*" == *"-c import websockets"* ]]; then
     exit 0
 fi
-if [[ "$*" == *"patch-spacenav-ws.py"* ]]; then
-    exit 0
-fi
 exec {sys.executable} "$@"
 """)
 

@@ -100,18 +100,3 @@ systemctl --user reset-failed spacenav-ws linapse-service
 systemctl --user restart spacenav-ws linapse-service
 ```
 
-**View snaps to front when buttons are pressed**
-
-The `spacenav-ws` patch wasn't applied. Re-run:
-```bash
-python3 linux/patch-spacenav-ws.py
-systemctl --user restart spacenav-ws
-```
-
-**spacenav-ws patch lost after update**
-
-`uvx` caches packages by version. If `spacenav-ws@latest` updates, the patch needs to be re-applied. Re-run:
-```bash
-python3 linux/patch-spacenav-ws.py
-systemctl --user restart spacenav-ws
-```

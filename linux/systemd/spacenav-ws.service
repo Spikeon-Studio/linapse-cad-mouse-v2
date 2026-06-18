@@ -3,7 +3,7 @@ Description=SpaceNav WebSocket bridge for OnShape
 After=network.target
 
 [Service]
-ExecStart=/usr/bin/env uvx spacenav-ws@latest serve
+ExecStart=/usr/bin/env uv run --with spacenav-ws %h/.local/bin/linapse-ws-proxy
 Restart=on-failure
 RestartSec=5
 

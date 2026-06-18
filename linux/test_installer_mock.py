@@ -5,11 +5,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-# Helper templates for spacenav_ws patching test
-_OLD_TASKGROUP = """    async with asyncio.TaskGroup() as tg:
-        tg.create_task(ctrl.start_mouse_event_stream(), name="mouse")
-        tg.create_task(ctrl.wamp_state_handler.start_wamp_message_stream(), name="wamp")
-"""
+# Mock installer test suite
 
 class TestInstallerMock(unittest.TestCase):
     def setUp(self):
@@ -25,22 +21,7 @@ class TestInstallerMock(unittest.TestCase):
         if self.log_file.exists():
             self.log_file.unlink()
 
-        # Set up a dummy spacenav_ws in the mock home uv cache
-        self.dummy_pkg_dir = self.mock_home / ".cache" / "uv" / "dummy_hash" / "spacenav_ws"
-        self.dummy_pkg_dir.mkdir(parents=True)
-        
-        # Write files with content that patch-spacenav-ws.py expects
-        with open(self.dummy_pkg_dir / "__init__.py", "w") as f:
-            f.write("# dummy init\n")
-            
-        with open(self.dummy_pkg_dir / "controller.py", "w") as f:
-            f.write("    def handle(self):\n        if isinstance(event, ButtonEvent):\n            pass\n")
-            
-        with open(self.dummy_pkg_dir / "main.py", "w") as f:
-            f.write("async def main():\n" + _OLD_TASKGROUP)
-            
-        with open(self.dummy_pkg_dir / "spacenav.py", "w") as f:
-            f.write('SPACENAV_SOCKET_PATH = "/var/run/spnav.sock"\n')
+
 
         # Write mock commands
         self.write_mock_bin("sudo", """#!/bin/bash
@@ -104,12 +85,8 @@ exit 0
 """)
         self.write_mock_bin("uv", """#!/bin/bash
 echo "UV: $*" >> {log_path}
-if [[ "$*" == *"spacenav_ws"* ]]; then
-    echo "{dummy_pkg_dir}"
-    exit 0
-fi
 exit 0
-""", dummy_pkg_dir=self.dummy_pkg_dir)
+""")
         self.write_mock_bin("curl", """#!/bin/bash
 echo "CURL: $*" >> {log_path}
 exit 0
@@ -226,6 +203,10 @@ exec {sys.executable} "$@"
         self.assertTrue(local_bin_linapse.exists(), "linapse-service should be copied to user bin")
         self.assertTrue(os.access(local_bin_linapse, os.X_OK), "linapse-service should be executable")
 
+        local_bin_proxy = self.mock_home / ".local" / "bin" / "linapse-ws-proxy"
+        self.assertTrue(local_bin_proxy.exists(), "linapse-ws-proxy should be copied to user bin")
+        self.assertTrue(os.access(local_bin_proxy, os.X_OK), "linapse-ws-proxy should be executable")
+
         systemd_user_dir = self.mock_home / ".config" / "systemd" / "user"
         for svc in ["ydotoold.service", "spacenav-ws.service", "linapse-service.service", "linapse-configurator.service"]:
             self.assertTrue((systemd_user_dir / svc).exists(), f"systemd user service {svc} should exist")
@@ -236,21 +217,6 @@ exec {sys.executable} "$@"
         with open(env_conf_path) as f:
             env_conf_content = f.read()
         self.assertEqual(env_conf_content, 'SPNAV_SOCKET="${XDG_RUNTIME_DIR}/spnav.sock"\n')
-
-        # Verify spacenav-ws files were patched correctly
-        with open(self.dummy_pkg_dir / "controller.py") as f:
-            controller_content = f.read()
-        self.assertIn("return", controller_content)
-        self.assertNotIn("pass", controller_content)
-
-        with open(self.dummy_pkg_dir / "main.py") as f:
-            main_content = f.read()
-        self.assertIn("_mouse_with_reconnect", main_content)
-        self.assertNotIn("start_mouse_event_stream()", main_content.split("\n")[2]) # original shouldn't be bare
-
-        with open(self.dummy_pkg_dir / "spacenav.py") as f:
-            spacenav_content = f.read()
-        self.assertIn("SPACENAV_SOCKET_PATH = f\"/run/user/{os.getuid()}/spnav.sock\"", spacenav_content)
 
 
 if __name__ == "__main__":

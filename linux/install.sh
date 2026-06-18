@@ -72,7 +72,9 @@ python3 -c "import websockets" || err "websockets install failed"
 mkdir -p "$USER_BIN"
 cp "$SCRIPT_DIR/linapse-service" "$USER_BIN/linapse-service"
 chmod +x "$USER_BIN/linapse-service"
-info "Installed to $USER_BIN/linapse-service"
+cp "$SCRIPT_DIR/linapse-ws-proxy" "$USER_BIN/linapse-ws-proxy"
+chmod +x "$USER_BIN/linapse-ws-proxy"
+info "Installed to $USER_BIN/linapse-service and $USER_BIN/linapse-ws-proxy"
 
 # Disable old spnav-buttons if it was installed
 systemctl --user disable --now spnav-buttons 2>/dev/null || true
@@ -92,17 +94,6 @@ info "Services enabled and started."
 
 
 
-# ── spacenav-ws patch ────────────────────────────────────────────────────────
-section "Patching spacenav-ws (disabling button-snap behaviour)"
-
-# Ensure spacenav-ws is cached by running it briefly
-info "Fetching spacenav-ws (this may take a moment)..."
-uvx spacenav-ws@latest --help >/dev/null 2>&1 || true
-
-python3 "$SCRIPT_DIR/patch-spacenav-ws.py"
-
-# Restart spacenav-ws to pick up the patch
-systemctl --user restart spacenav-ws || true
 
 
 # ── Environment Setup ────────────────────────────────────────────────────────
