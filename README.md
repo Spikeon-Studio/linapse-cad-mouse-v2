@@ -134,7 +134,7 @@ The USB VID/PID used to emulate a SpaceMouse are **not** included in this reposi
 
 ## Credits & license
 
-Built on the open-source hardware and firmware of **[sb-ocr/cad-mouse-mk2](https://github.com/sb-ocr/cad-mouse-mk2)** by sb-ocr. Hardware build guide: [Instructables](https://www.instructables.com/CAD-Mouse-MK2-a-6DoF-Space-Mouse-Using-Magnets).
+Built on the open-source hardware and firmware of **[sb-ocr/cad-mouse-mk2](https://github.com/sb-ocr/cad-mouse-mk2)** by sb-ocr, incorporating the Kalman filter and sensitivity curves logic by **[lenkaiser](https://github.com/lenkaiser)** from pull request [sb-ocr/cad-mouse-mk2#3](https://github.com/sb-ocr/cad-mouse-mk2/pull/3). Hardware build guide: [Instructables](https://www.instructables.com/CAD-Mouse-MK2-a-6DoF-Space-Mouse-Using-Magnets).
 
 Licensed under [CC BY-NC-SA 4.0][cc-by-nc-sa], matching the upstream project.
 
