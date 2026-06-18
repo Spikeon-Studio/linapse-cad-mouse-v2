@@ -215,5 +215,11 @@ void setup() {
 void loop() {
   hidController.task();
   handleSerial();
-  stateMachine.update();
+
+  static unsigned long lastUpdate = 0;
+  unsigned long now = millis();
+  if (now - lastUpdate >= 10) {  // 100Hz polling rate
+    lastUpdate = now;
+    stateMachine.update();
+  }
 }

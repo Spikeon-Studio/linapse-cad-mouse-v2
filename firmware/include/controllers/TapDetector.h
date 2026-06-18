@@ -25,6 +25,7 @@ class TapDetector {
 
   bool     hasTap() const;
   TapEvent takeTap();
+  bool     isTapping() const { return suppressMotion_; }
 
  private:
   enum class Phase { Idle, Rising, Falling, Cooldown };
@@ -51,4 +52,5 @@ class TapDetector {
 
   TapDir        lastConfirmedDir_ = TapDir::None;
   unsigned long lastConfirmedMs_  = 0;
+  bool          suppressMotion_   = false;
 };

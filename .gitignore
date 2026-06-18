@@ -7,3 +7,4 @@ AGENTS.md
 *.uf2
 __pycache__/
 *.pyc
+.agents/

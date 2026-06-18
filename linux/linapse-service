@@ -76,11 +76,66 @@ def ydotool(*args):
             flat_args.extend(arg.split())
         else:
             flat_args.append(arg)
-    res = subprocess.run(["ydotool"] + flat_args, env=env, capture_output=True)
-    if res.returncode != 0:
-        print(f"[ydotool] ERROR (exit {res.returncode}): {res.stderr.decode().strip()}")
+    try:
+        subprocess.Popen(["ydotool"] + flat_args, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    except Exception as e:
+        print(f"[ydotool] spawn error: {e}")
 
-_MOUSE_BTN = {"left": 0x40001, "right": 0x40002, "middle": 0x40003}
+_MOUSE_BTN = {"left": 0xC0, "right": 0xC1, "middle": 0xC2}
+
+_KEY_CODES = {
+    # Modifiers
+    "shift": 42, "lshift": 42, "rshift": 54,
+    "ctrl": 29, "control": 29, "lctrl": 29, "rctrl": 97,
+    "alt": 56, "lalt": 56, "ralt": 100,
+    "meta": 125, "super": 125, "win": 125, "cmd": 125,
+    # Numbers
+    "1": 2, "2": 3, "3": 4, "4": 5, "5": 6, "6": 7, "7": 8, "8": 9, "9": 10, "0": 11,
+    # Letters
+    "a": 30, "b": 48, "c": 46, "d": 32, "e": 18, "f": 33, "g": 34, "h": 35, "i": 23,
+    "j": 36, "k": 37, "l": 38, "m": 50, "n": 49, "o": 24, "p": 25, "q": 16, "r": 19,
+    "s": 31, "t": 20, "u": 22, "v": 47, "w": 17, "x": 45, "y": 21, "z": 44,
+    # Function keys
+    "f1": 59, "f2": 60, "f3": 61, "f4": 62, "f5": 63, "f6": 64,
+    "f7": 65, "f8": 66, "f9": 67, "f10": 68, "f11": 87, "f12": 88,
+    # Others
+    "enter": 28, "return": 28, "space": 57, "spacebar": 57, "backspace": 14, "tab": 15,
+    "escape": 1, "esc": 1,
+    "up": 103, "down": 108, "left": 105, "right": 106,
+    "pageup": 104, "pgup": 104, "pagedown": 109, "pgdn": 109,
+    "home": 102, "end": 107, "insert": 110, "ins": 110, "delete": 111, "del": 111,
+    # Symbols
+    "-": 12, "minus": 12,
+    "=": 13, "equal": 13,
+    "[": 26, "]": 27,
+    ";": 39, "semicolon": 39,
+    "'": 40,
+    "`": 41, "grave": 41,
+    "\\": 43, "backslash": 43,
+    ",": 51, "comma": 51,
+    ".": 52, "period": 52,
+    "/": 53, "slash": 53
+}
+
+def translate_friendly_combo(combo_str: str) -> str:
+    combo_str = combo_str.lower().strip()
+    if not combo_str:
+        return ""
+    if ":" in combo_str:
+        return combo_str
+    parts = [p.strip() for p in combo_str.split("+") if p.strip()]
+    keycodes = []
+    for p in parts:
+        code = _KEY_CODES.get(p)
+        if code is not None:
+            keycodes.append(code)
+        else:
+            print(f"[dispatch] warning: unknown key name '{p}' in combo '{combo_str}'")
+    if not keycodes:
+        return ""
+    presses = " ".join(f"{code}:1" for code in keycodes)
+    releases = " ".join(f"{code}:0" for code in reversed(keycodes))
+    return f"{presses} {releases}"
 
 def dispatch(action_obj):
     if not action_obj:
@@ -92,9 +147,14 @@ def dispatch(action_obj):
     elif act == "key":
         val = action_obj.get("value", "")
         if val:
-            ydotool("key", val)
+            if ":" not in val:
+                translated = translate_friendly_combo(val)
+                print(f"[dispatch] key '{val}' translated to raw codes '{translated}'")
+                val = translated
+            if val:
+                ydotool("key", val)
     elif act == "mouse_click":
-        code = _MOUSE_BTN.get(action_obj.get("button", "left"), 0x40001)
+        code = _MOUSE_BTN.get(action_obj.get("button", "left"), 0xC0)
         ydotool("click", hex(code))
     elif act == "mouse_scroll":
         d = action_obj.get("direction", "down")
@@ -135,6 +195,7 @@ def _scroll_loop(btn, stop_event, actions):
 def _on_single(btn, actions):
     if _chord_fired:
         return
+    _broadcast_from_thread(f"BUTTON:{btn}:1")
     if actions.get("button_override", False):
         return
     act = actions.get("buttons", {}).get(str(btn), {"action": "scroll_down" if btn == 0 else "scroll_up"})
@@ -147,6 +208,7 @@ def _on_single(btn, actions):
         dispatch(act)
 
 def _on_chord(actions):
+    _broadcast_from_thread("BUTTON:chord:1")
     act = actions.get("buttons", {}).get("chord", {"action": "key", "value": "shift+7"})
     dispatch(act)
 
@@ -174,6 +236,7 @@ def _on_release(btn):
         stop_event.set()
     if not _held:
         _chord_fired = False
+    _broadcast_from_thread(f"BUTTON:{btn}:0")
 
 # ── Broadcast helper (thread-safe) ────────────────────────────────────────────
 
@@ -238,39 +301,45 @@ def _broadcast_socket_from_thread(packet: bytes):
 # ── HID thread ────────────────────────────────────────────────────────────────
 
 def hid_thread(actions_ref):
-    candidates = (
-        glob.glob("/dev/input/by-id/usb-*CAD_Mouse*-if02-hidraw") +
-        glob.glob("/dev/input/by-id/usb-Seeed_Studio*-if02-hidraw")
-    )
-    if not candidates:
-        print("[hid] hidraw not found — button dispatch disabled")
-        return
-    fd = open(candidates[0], "rb")
-    os.set_blocking(fd.fileno(), False)
-    prev_bits = 0
-    print(f"[hid] watching {fd.name}")
     while True:
-        r, _, _ = select.select([fd], [], [], 1)
-        if not r:
+        candidates = (
+            glob.glob("/dev/input/by-id/usb-*CAD_Mouse*-if02-hidraw") +
+            glob.glob("/dev/input/by-id/usb-Seeed_Studio*-if02-hidraw")
+        )
+        if not candidates:
+            time.sleep(3)
             continue
-        data = fd.read(64)
-        if not data:
-            continue
-        print(f"[hid] read data: {list(data)}")
-        if data[0] != BUTTON_REPORT_ID:
-            continue
-        bits = data[1] & 0x03
-        if bits == prev_bits:
-            continue
-        for btn in range(2):
-            mask = 1 << btn
-            was = bool(prev_bits & mask)
-            now = bool(bits & mask)
-            if now and not was:
-                _on_press(btn, actions_ref[0])
-            elif was and not now:
+        try:
+            with open(candidates[0], "rb") as fd:
+                os.set_blocking(fd.fileno(), False)
+                prev_bits = 0
+                print(f"[hid] watching {fd.name}")
+                while True:
+                    r, _, _ = select.select([fd], [], [], 1)
+                    if not r:
+                        continue
+                    data = fd.read(64)
+                    if not data:
+                        raise OSError("no data (disconnected)")
+                    if data[0] != BUTTON_REPORT_ID:
+                        continue
+                    bits = data[1] & 0x03
+                    if bits == prev_bits:
+                        continue
+                    for btn in range(2):
+                        mask = 1 << btn
+                        was = bool(prev_bits & mask)
+                        now = bool(bits & mask)
+                        if now and not was:
+                            _on_press(btn, actions_ref[0])
+                        elif was and not now:
+                            _on_release(btn)
+                    prev_bits = bits
+        except (OSError, IOError) as e:
+            print(f"[hid] error/disconnect: {e} — retrying in 3s")
+            for btn in list(_held):
                 _on_release(btn)
-        prev_bits = bits
+            time.sleep(3)
 
 # ── Serial thread ─────────────────────────────────────────────────────────────
 
@@ -329,6 +398,15 @@ def serial_thread(actions_ref):
                             ry = ry * sens.get("ry_pos" if ry >= 0 else "ry_neg", 1.0)
                             rz = rz * sens.get("rz_pos" if rz >= 0 else "rz_neg", 1.0)
                             
+                            # Apply user-configured axis inversions
+                            inv = actions_ref[0].get("inversion", {})
+                            if inv.get("x", False): x = -x
+                            if inv.get("y", False): y = -y
+                            if inv.get("z", False): z = -z
+                            if inv.get("rx", False): rx = -rx
+                            if inv.get("ry", False): ry = -ry
+                            if inv.get("rz", False): rz = -rz
+
                             # Apply direction inversions for spacenav mapping
                             z = -z
                             y = -y
@@ -342,8 +420,8 @@ def serial_thread(actions_ref):
                             irz = int(round(rz))
                             
                             period = 10
-                            # Swap Y and Z: [0, x, z, y, rx, ry, rz, period]
-                            packet = struct.pack("iiiiiiii", 0, ix, iz, iy, irx, iry, irz, period)
+                            # Swap Y and Z for both translation and rotation: [0, x, z, y, rx, rz, ry, period]
+                            packet = struct.pack("iiiiiiii", 0, ix, iz, iy, irx, irz, iry, period)
                             _broadcast_socket_from_thread(packet)
                     except Exception as e:
                         print(f"[serial] motion parse/pack error: {e}")
@@ -406,6 +484,8 @@ async def ws_handler(websocket, actions_ref):
             if message.startswith("actions "):
                 ok = _save_actions(message[8:], actions_ref)
                 await websocket.send("OK actions saved" if ok else "ERR actions save failed")
+            elif message == "actions_get":
+                await websocket.send("ACTIONS:" + json.dumps(actions_ref[0]))
             else:
                 await _serial_queue.put(message)
     except websockets.exceptions.ConnectionClosed:

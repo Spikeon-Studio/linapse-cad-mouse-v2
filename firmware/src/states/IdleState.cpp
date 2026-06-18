@@ -42,6 +42,12 @@ void IdleState::runMotionPipeline(float dt, unsigned long now) {
   float motion[6] = {};
   motionController.compute(raw, sensorController.baseline(), dt, motion);
 
+  if (tapDetector.isTapping()) {
+    for (int i = 0; i < 6; i++) {
+      motion[i] = 0.0f;
+    }
+  }
+
   if (motionController.hasMotionActivity()) {
     lastActivityMs_ = now;
   }

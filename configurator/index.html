@@ -701,6 +701,75 @@ input[type=range]::-webkit-slider-thumb {
   .side-panel.open { transform: none !important; }
   #benchyViewport { min-height: 45vh; }
 }
+
+/* Toast Notification System */
+.toast-container {
+  position: fixed;
+  bottom: 60px; /* Above the footer */
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 2000;
+  pointer-events: none;
+}
+
+.toast {
+  background: rgba(17, 17, 17, 0.9);
+  border-left: 3px solid var(--green); /* Accent color */
+  color: var(--text);
+  padding: 12px 20px;
+  font-family: 'Barlow', sans-serif;
+  font-size: 13px;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  border-left-width: 3px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 250px;
+  transform: translateX(120%);
+  transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s;
+  opacity: 0;
+  pointer-events: auto;
+}
+
+.toast.show {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.toast-header {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--green);
+}
+
+.toast-body {
+  font-size: 12px;
+  color: var(--text2);
+}
+
+.toast-action {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: #fff;
+  background: var(--green-dim);
+  padding: 2px 6px;
+  border-radius: 2px;
+  font-size: 11px;
+  display: inline-block;
+  margin-top: 4px;
+  align-self: flex-start;
+  text-transform: uppercase;
+}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/three@0.140.2/build/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.140.2/examples/js/lines/LineSegmentsGeometry.js"></script>
@@ -889,27 +958,258 @@ input[type=range]::-webkit-slider-thumb {
 
         <div class="field-group">
           <div class="field-label" style="color:var(--green);letter-spacing:2px;font-size:10px;font-family:'Barlow Condensed',sans-serif">DEAD ZONES</div>
-          <div class="field-label">Translation — <span id="sensDeadTVal">16.0</span></div>
+          
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+            <span class="field-label" style="margin: 0;">Translation</span>
+            <input type="number" id="sensDeadTVal" min="0" max="50" step="0.5" value="16.0"
+                   style="width: 48px; background: var(--border2); border: 1px solid var(--border); color: var(--text); font-size: 10px; text-align: right; padding: 1px 3px; border-radius: 3px; font-family: inherit;"
+                   oninput="onSensTextChange('dead_t','sensDeadT','sensDeadTVal')"
+                   onchange="onSensTextBlur('dead_t','sensDeadT','sensDeadTVal')">
+          </div>
           <input type="range" id="sensDeadT" min="0" max="50" step="0.5" value="16" oninput="onSensChange('dead_t','sensDeadT','sensDeadTVal')">
-          <div class="field-label" style="margin-top:12px">Rotation — <span id="sensDeadRVal">20.0</span></div>
+          
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; margin-top: 12px;">
+            <span class="field-label" style="margin: 0;">Rotation</span>
+            <input type="number" id="sensDeadRVal" min="0" max="50" step="0.5" value="20.0"
+                   style="width: 48px; background: var(--border2); border: 1px solid var(--border); color: var(--text); font-size: 10px; text-align: right; padding: 1px 3px; border-radius: 3px; font-family: inherit;"
+                   oninput="onSensTextChange('dead_r','sensDeadR','sensDeadRVal')"
+                   onchange="onSensTextBlur('dead_r','sensDeadR','sensDeadRVal')">
+          </div>
           <input type="range" id="sensDeadR" min="0" max="50" step="0.5" value="20" oninput="onSensChange('dead_r','sensDeadR','sensDeadRVal')">
         </div>
 
         <div class="field-group">
           <div class="field-label" style="color:var(--green);letter-spacing:2px;font-size:10px;font-family:'Barlow Condensed',sans-serif">KALMAN FILTER</div>
-          <div class="field-label">Responsiveness (Q) — <span id="sensKalQVal">0.500</span></div>
+          
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+            <span class="field-label" style="margin: 0;">Responsiveness (Q)</span>
+            <input type="number" id="sensKalQVal" min="0.05" max="2" step="0.05" value="0.500"
+                   style="width: 48px; background: var(--border2); border: 1px solid var(--border); color: var(--text); font-size: 10px; text-align: right; padding: 1px 3px; border-radius: 3px; font-family: inherit;"
+                   oninput="onSensTextChange('kalman_q','sensKalQ','sensKalQVal')"
+                   onchange="onSensTextBlur('kalman_q','sensKalQ','sensKalQVal')">
+          </div>
           <input type="range" id="sensKalQ" min="0.05" max="2" step="0.05" value="0.5" oninput="onSensChange('kalman_q','sensKalQ','sensKalQVal')">
-          <div class="field-label" style="margin-top:12px">Smoothness (R) — <span id="sensKalRVal">4.0</span></div>
+          
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; margin-top: 12px;">
+            <span class="field-label" style="margin: 0;">Smoothness (R)</span>
+            <input type="number" id="sensKalRVal" min="0.5" max="15" step="0.5" value="4.0"
+                   style="width: 48px; background: var(--border2); border: 1px solid var(--border); color: var(--text); font-size: 10px; text-align: right; padding: 1px 3px; border-radius: 3px; font-family: inherit;"
+                   oninput="onSensTextChange('kalman_r','sensKalR','sensKalRVal')"
+                   onchange="onSensTextBlur('kalman_r','sensKalR','sensKalRVal')">
+          </div>
           <input type="range" id="sensKalR" min="0.5" max="15" step="0.5" value="4" oninput="onSensChange('kalman_r','sensKalR','sensKalRVal')">
         </div>
 
         <div class="field-group">
           <div class="field-label" style="color:var(--green);letter-spacing:2px;font-size:10px;font-family:'Barlow Condensed',sans-serif">CURVE</div>
-          <div class="field-label">Exponent — <span id="sensExpVal">3.0</span></div>
+          
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+            <span class="field-label" style="margin: 0;">Exponent</span>
+            <input type="number" id="sensExpVal" min="1" max="5" step="0.1" value="3.0"
+                   style="width: 48px; background: var(--border2); border: 1px solid var(--border); color: var(--text); font-size: 10px; text-align: right; padding: 1px 3px; border-radius: 3px; font-family: inherit;"
+                   oninput="onSensTextChange('exp','sensExp','sensExpVal')"
+                   onchange="onSensTextBlur('exp','sensExp','sensExpVal')">
+          </div>
           <input type="range" id="sensExp" min="1" max="5" step="0.1" value="3" oninput="onSensChange('exp','sensExp','sensExpVal')">
           <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-top:2px">
             <span>Linear</span><span>Cubic</span><span>Steep</span>
           </div>
+        </div>
+
+        <div class="field-group">
+          <div class="field-label" style="color:var(--green);letter-spacing:2px;font-size:10px;font-family:'Barlow Condensed',sans-serif">AXIS INVERSIONS</div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; margin-top: 8px;">
+            <div class="toggle-row" style="padding: 4px 0; border: none; margin-bottom: 0;">
+              <span class="toggle-label">Invert X</span>
+              <div class="toggle" id="invX" onclick="toggleInversion('x')"></div>
+            </div>
+            <div class="toggle-row" style="padding: 4px 0; border: none; margin-bottom: 0;">
+              <span class="toggle-label">Invert Y</span>
+              <div class="toggle" id="invY" onclick="toggleInversion('y')"></div>
+            </div>
+            <div class="toggle-row" style="padding: 4px 0; border: none; margin-bottom: 0;">
+              <span class="toggle-label">Invert Z</span>
+              <div class="toggle" id="invZ" onclick="toggleInversion('z')"></div>
+            </div>
+            <div class="toggle-row" style="padding: 4px 0; border: none; margin-bottom: 0;">
+              <span class="toggle-label">Invert Rx</span>
+              <div class="toggle" id="invRx" onclick="toggleInversion('rx')"></div>
+            </div>
+            <div class="toggle-row" style="padding: 4px 0; border: none; margin-bottom: 0;">
+              <span class="toggle-label">Invert Ry</span>
+              <div class="toggle" id="invRy" onclick="toggleInversion('ry')"></div>
+            </div>
+            <div class="toggle-row" style="padding: 4px 0; border: none; margin-bottom: 0;">
+              <span class="toggle-label">Invert Rz</span>
+              <div class="toggle" id="invRz" onclick="toggleInversion('rz')"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <div class="field-label" style="color:var(--green);letter-spacing:2px;font-size:10px;font-family:'Barlow Condensed',sans-serif">DIRECTIONAL SENSITIVITY (TRANSLATION)</div>
+          
+          <div style="margin-top: 8px;">
+            <div class="field-label">X Axis (Right / Left)</div>
+            <div style="display: flex; gap: 12px; margin-top: 4px;">
+              <div style="flex: 1;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                  <span class="field-label" style="font-size: 10px; color: var(--text3); margin: 0;">X+ (Right)</span>
+                  <input type="number" id="sensXPosVal" min="0.1" max="5.0" step="0.1" value="1.0" 
+                         style="width: 48px; background: var(--border2); border: 1px solid var(--border); color: var(--text); font-size: 10px; text-align: right; padding: 1px 3px; border-radius: 3px; font-family: inherit;"
+                         oninput="onDirSensTextChange('x_pos','sensXPos','sensXPosVal')"
+                         onchange="onDirSensTextBlur('x_pos','sensXPos','sensXPosVal')">
+                </div>
+                <input type="range" id="sensXPos" min="0.1" max="5.0" step="0.1" value="1.0" oninput="onDirSensChange('x_pos','sensXPos','sensXPosVal')">
+              </div>
+              <div style="flex: 1;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                  <span class="field-label" style="font-size: 10px; color: var(--text3); margin: 0;">X- (Left)</span>
+                  <input type="number" id="sensXNegVal" min="0.1" max="5.0" step="0.1" value="1.0" 
+                         style="width: 48px; background: var(--border2); border: 1px solid var(--border); color: var(--text); font-size: 10px; text-align: right; padding: 1px 3px; border-radius: 3px; font-family: inherit;"
+                         oninput="onDirSensTextChange('x_neg','sensXNeg','sensXNegVal')"
+                         onchange="onDirSensTextBlur('x_neg','sensXNeg','sensXNegVal')">
+                </div>
+                <input type="range" id="sensXNeg" min="0.1" max="5.0" step="0.1" value="1.0" oninput="onDirSensChange('x_neg','sensXNeg','sensXNegVal')">
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top: 12px;">
+            <div class="field-label">Y Axis (Forward / Backward)</div>
+            <div style="display: flex; gap: 12px; margin-top: 4px;">
+              <div style="flex: 1;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                  <span class="field-label" style="font-size: 10px; color: var(--text3); margin: 0;">Y+ (Forward)</span>
+                  <input type="number" id="sensYPosVal" min="0.1" max="5.0" step="0.1" value="1.0" 
+                         style="width: 48px; background: var(--border2); border: 1px solid var(--border); color: var(--text); font-size: 10px; text-align: right; padding: 1px 3px; border-radius: 3px; font-family: inherit;"
+                         oninput="onDirSensTextChange('y_pos','sensYPos','sensYPosVal')"
+                         onchange="onDirSensTextBlur('y_pos','sensYPos','sensYPosVal')">
+                </div>
+                <input type="range" id="sensYPos" min="0.1" max="5.0" step="0.1" value="1.0" oninput="onDirSensChange('y_pos','sensYPos','sensYPosVal')">
+              </div>
+              <div style="flex: 1;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                  <span class="field-label" style="font-size: 10px; color: var(--text3); margin: 0;">Y- (Backward)</span>
+                  <input type="number" id="sensYNegVal" min="0.1" max="5.0" step="0.1" value="1.0" 
+                         style="width: 48px; background: var(--border2); border: 1px solid var(--border); color: var(--text); font-size: 10px; text-align: right; padding: 1px 3px; border-radius: 3px; font-family: inherit;"
+                         oninput="onDirSensTextChange('y_neg','sensYNeg','sensYNegVal')"
+                         onchange="onDirSensTextBlur('y_neg','sensYNeg','sensYNegVal')">
+                </div>
+                <input type="range" id="sensYNeg" min="0.1" max="5.0" step="0.1" value="1.0" oninput="onDirSensChange('y_neg','sensYNeg','sensYNegVal')">
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top: 12px;">
+            <div class="field-label">Z Axis (Up / Down)</div>
+            <div style="display: flex; gap: 12px; margin-top: 4px;">
+              <div style="flex: 1;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                  <span class="field-label" style="font-size: 10px; color: var(--text3); margin: 0;">Z+ (Up)</span>
+                  <input type="number" id="sensZPosVal" min="0.1" max="5.0" step="0.1" value="1.0" 
+                         style="width: 48px; background: var(--border2); border: 1px solid var(--border); color: var(--text); font-size: 10px; text-align: right; padding: 1px 3px; border-radius: 3px; font-family: inherit;"
+                         oninput="onDirSensTextChange('z_pos','sensZPos','sensZPosVal')"
+                         onchange="onDirSensTextBlur('z_pos','sensZPos','sensZPosVal')">
+                </div>
+                <input type="range" id="sensZPos" min="0.1" max="5.0" step="0.1" value="1.0" oninput="onDirSensChange('z_pos','sensZPos','sensZPosVal')">
+              </div>
+              <div style="flex: 1;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                  <span class="field-label" style="font-size: 10px; color: var(--text3); margin: 0;">Z- (Down)</span>
+                  <input type="number" id="sensZNegVal" min="0.1" max="5.0" step="0.1" value="1.0" 
+                         style="width: 48px; background: var(--border2); border: 1px solid var(--border); color: var(--text); font-size: 10px; text-align: right; padding: 1px 3px; border-radius: 3px; font-family: inherit;"
+                         oninput="onDirSensTextChange('z_neg','sensZNeg','sensZNegVal')"
+                         onchange="onDirSensTextBlur('z_neg','sensZNeg','sensZNegVal')">
+                </div>
+                <input type="range" id="sensZNeg" min="0.1" max="5.0" step="0.1" value="1.0" oninput="onDirSensChange('z_neg','sensZNeg','sensZNegVal')">
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="field-group">
+          <div class="field-label" style="color:var(--green);letter-spacing:2px;font-size:10px;font-family:'Barlow Condensed',sans-serif">DIRECTIONAL SENSITIVITY (ROTATION)</div>
+          
+          <div style="margin-top: 8px;">
+            <div class="field-label">Rx Axis (Tilt Forward / Back)</div>
+            <div style="display: flex; gap: 12px; margin-top: 4px;">
+              <div style="flex: 1;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                  <span class="field-label" style="font-size: 10px; color: var(--text3); margin: 0;">Rx+ (Forward)</span>
+                  <input type="number" id="sensRxPosVal" min="0.1" max="5.0" step="0.1" value="1.0" 
+                         style="width: 48px; background: var(--border2); border: 1px solid var(--border); color: var(--text); font-size: 10px; text-align: right; padding: 1px 3px; border-radius: 3px; font-family: inherit;"
+                         oninput="onDirSensTextChange('rx_pos','sensRxPos','sensRxPosVal')"
+                         onchange="onDirSensTextBlur('rx_pos','sensRxPos','sensRxPosVal')">
+                </div>
+                <input type="range" id="sensRxPos" min="0.1" max="5.0" step="0.1" value="1.0" oninput="onDirSensChange('rx_pos','sensRxPos','sensRxPosVal')">
+              </div>
+              <div style="flex: 1;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                  <span class="field-label" style="font-size: 10px; color: var(--text3); margin: 0;">Rx- (Back)</span>
+                  <input type="number" id="sensRxNegVal" min="0.1" max="5.0" step="0.1" value="1.0" 
+                         style="width: 48px; background: var(--border2); border: 1px solid var(--border); color: var(--text); font-size: 10px; text-align: right; padding: 1px 3px; border-radius: 3px; font-family: inherit;"
+                         oninput="onDirSensTextChange('rx_neg','sensRxNeg','sensRxNegVal')"
+                         onchange="onDirSensTextBlur('rx_neg','sensRxNeg','sensRxNegVal')">
+                </div>
+                <input type="range" id="sensRxNeg" min="0.1" max="5.0" step="0.1" value="1.0" oninput="onDirSensChange('rx_neg','sensRxNeg','sensRxNegVal')">
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top: 12px;">
+            <div class="field-label">Ry Axis (Tilt Left / Right)</div>
+            <div style="display: flex; gap: 12px; margin-top: 4px;">
+              <div style="flex: 1;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                  <span class="field-label" style="font-size: 10px; color: var(--text3); margin: 0;">Ry+ (Left)</span>
+                  <input type="number" id="sensRyPosVal" min="0.1" max="5.0" step="0.1" value="1.0" 
+                         style="width: 48px; background: var(--border2); border: 1px solid var(--border); color: var(--text); font-size: 10px; text-align: right; padding: 1px 3px; border-radius: 3px; font-family: inherit;"
+                         oninput="onDirSensTextChange('ry_pos','sensRyPos','sensRyPosVal')"
+                         onchange="onDirSensTextBlur('ry_pos','sensRyPos','sensRyPosVal')">
+                </div>
+                <input type="range" id="sensRyPos" min="0.1" max="5.0" step="0.1" value="1.0" oninput="onDirSensChange('ry_pos','sensRyPos','sensRyPosVal')">
+              </div>
+              <div style="flex: 1;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                  <span class="field-label" style="font-size: 10px; color: var(--text3); margin: 0;">Ry- (Right)</span>
+                  <input type="number" id="sensRyNegVal" min="0.1" max="5.0" step="0.1" value="1.0" 
+                         style="width: 48px; background: var(--border2); border: 1px solid var(--border); color: var(--text); font-size: 10px; text-align: right; padding: 1px 3px; border-radius: 3px; font-family: inherit;"
+                         oninput="onDirSensTextChange('ry_neg','sensRyNeg','sensRyNegVal')"
+                         onchange="onDirSensTextBlur('ry_neg','sensRyNeg','sensRyNegVal')">
+                </div>
+                <input type="range" id="sensRyNeg" min="0.1" max="5.0" step="0.1" value="1.0" oninput="onDirSensChange('ry_neg','sensRyNeg','sensRyNegVal')">
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top: 12px;">
+            <div class="field-label">Rz Axis (Twist Left / Right)</div>
+            <div style="display: flex; gap: 12px; margin-top: 4px;">
+              <div style="flex: 1;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                  <span class="field-label" style="font-size: 10px; color: var(--text3); margin: 0;">Rz+ (Left)</span>
+                  <input type="number" id="sensRzPosVal" min="0.1" max="5.0" step="0.1" value="1.0" 
+                         style="width: 48px; background: var(--border2); border: 1px solid var(--border); color: var(--text); font-size: 10px; text-align: right; padding: 1px 3px; border-radius: 3px; font-family: inherit;"
+                         oninput="onDirSensTextChange('rz_pos','sensRzPos','sensRzPosVal')"
+                         onchange="onDirSensTextBlur('rz_pos','sensRzPos','sensRzPosVal')">
+                </div>
+                <input type="range" id="sensRzPos" min="0.1" max="5.0" step="0.1" value="1.0" oninput="onDirSensChange('rz_pos','sensRzPos','sensRzPosVal')">
+              </div>
+              <div style="flex: 1;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                  <span class="field-label" style="font-size: 10px; color: var(--text3); margin: 0;">Rz- (Right)</span>
+                  <input type="number" id="sensRzNegVal" min="0.1" max="5.0" step="0.1" value="1.0" 
+                         style="width: 48px; background: var(--border2); border: 1px solid var(--border); color: var(--text); font-size: 10px; text-align: right; padding: 1px 3px; border-radius: 3px; font-family: inherit;"
+                         oninput="onDirSensTextChange('rz_neg','sensRzNeg','sensRzNegVal')"
+                         onchange="onDirSensTextBlur('rz_neg','sensRzNeg','sensRzNegVal')">
+                </div>
+                <input type="range" id="sensRzNeg" min="0.1" max="5.0" step="0.1" value="1.0" oninput="onDirSensChange('rz_neg','sensRzNeg','sensRzNegVal')">
+              </div>
+            </div>
+          </div>
+
         </div>
 
         <button class="btn-apply" onclick="sensReset()">Reset to Defaults</button>
@@ -967,6 +1267,13 @@ const DEFAULT_ACTIONS = {
     "right:1":{"action":"none"}, "right:2":{"action":"none"},
     "front:1":{"action":"none"}, "front:2":{"action":"none"},
     "back:1":{"action":"none"}, "back:2":{"action":"none"}
+  },
+  sensitivity: {
+    "x_pos": 1.0, "x_neg": 1.0, "y_pos": 1.0, "y_neg": 1.0, "z_pos": 1.0, "z_neg": 1.0,
+    "rx_pos": 1.0, "rx_neg": 1.0, "ry_pos": 1.0, "ry_neg": 1.0, "rz_pos": 1.0, "rz_neg": 1.0
+  },
+  inversion: {
+    "x": false, "y": false, "z": false, "rx": false, "ry": false, "rz": false
   }
 };
 
@@ -1266,8 +1573,11 @@ function renderSubFields(type, act, area, onChange) {
   if (type === 'key') {
     area.innerHTML = `
       <div class="field-group">
-        <div class="field-label">Key Combo (e.g. ctrl+z)</div>
-        <input type="text" id="sf-key" placeholder="ctrl+z" value="${act.value || ''}">
+        <div class="field-label">Key Combo (e.g. ctrl+z, shift+7)</div>
+        <input type="text" id="sf-key" placeholder="shift+7" value="${act.value || ''}">
+        <div style="font-size: 10px; color: var(--text3); margin-top: 4px; line-height: 1.4; font-family: sans-serif;">
+          Type standard modifiers joined with + (e.g. ctrl+c, alt+tab, shift+7).
+        </div>
       </div>`;
     return;
   }
@@ -1447,10 +1757,11 @@ function collectAction(type, area) {
 function toggleOverride(el) {
   el.classList.toggle('on');
   actions.button_override = el.classList.contains('on');
+  sendCmd('actions ' + JSON.stringify(actions));
 }
 
 // ── WebSocket to linapse-service ──────────────────────────────────────────────
-const WS_URL = 'ws://localhost:13000';
+const WS_URL = 'ws://' + (window.location.hostname || 'localhost') + ':13000';
 
 function connectWS() {
   if (wsReconnectTimer) { clearTimeout(wsReconnectTimer); wsReconnectTimer = null; }
@@ -1460,6 +1771,7 @@ function connectWS() {
     setConnected(true);
     setStatus('Connected', 'ok');
     sendCmd('config get');
+    sendCmd('actions_get');
   };
 
   ws.onclose = () => {
@@ -1476,6 +1788,89 @@ function connectWS() {
     if (msg.startsWith('MOTION:')) {
       const vals = msg.slice(7).split(',').map(Number);
       if (vals.length === 6) applyMotion(vals);
+      return;
+    }
+    if (msg.startsWith('TAP:')) {
+      const parts = msg.split(':');
+      if (parts.length === 3) {
+        const [, humanDir, countStr] = parts;
+        const sensActive = document.getElementById('tab-sensitivity').classList.contains('active');
+        if (sensActive) {
+          const key = `${humanDir}:${countStr}`;
+          const actionObj = (actions && actions.taps) ? actions.taps[key] : null;
+          let actionDesc = 'None';
+          if (actionObj) {
+            if (actionObj.action === 'key') {
+              actionDesc = `Key Combo (${actionObj.value})`;
+            } else if (actionObj.action === 'mouse_click') {
+              actionDesc = `Mouse Click (${actionObj.button})`;
+            } else if (actionObj.action === 'mouse_scroll') {
+              actionDesc = `Scroll ${actionObj.direction} (${actionObj.amount})`;
+            } else if (actionObj.action === 'exec') {
+              actionDesc = `Exec (${actionObj.value})`;
+            } else if (actionObj.action === 'macro') {
+              actionDesc = 'Macro sequence';
+            }
+          }
+          const tapLabel = `${humanDir.toUpperCase()} TAP (${countStr}x)`;
+          showToast('Tap Registered', tapLabel, actionDesc);
+        }
+      }
+      return;
+    }
+    if (msg.startsWith('BUTTON:')) {
+      const parts = msg.split(':');
+      if (parts.length === 3) {
+        const [, btnId, stateStr] = parts;
+        const state = parseInt(stateStr);
+        if (state === 1) {
+          const sensActive = document.getElementById('tab-sensitivity').classList.contains('active');
+          if (sensActive) {
+            let label = 'Unknown Button';
+            let actionObj = null;
+            if (btnId === '0') {
+              label = 'Left Button';
+              actionObj = (actions && actions.buttons) ? actions.buttons['0'] : null;
+            } else if (btnId === '1') {
+              label = 'Right Button';
+              actionObj = (actions && actions.buttons) ? actions.buttons['1'] : null;
+            } else if (btnId === 'chord') {
+              label = 'Both Buttons';
+              actionObj = (actions && actions.buttons) ? actions.buttons['chord'] : null;
+            }
+            
+            let actionDesc = 'None';
+            if (actionObj) {
+              if (actionObj.action === 'key') {
+                actionDesc = `Key Combo (${actionObj.value})`;
+              } else if (actionObj.action === 'mouse_click') {
+                actionDesc = `Mouse Click (${actionObj.button})`;
+              } else if (actionObj.action === 'mouse_scroll') {
+                actionDesc = `Scroll ${actionObj.direction} (${actionObj.amount})`;
+              } else if (actionObj.action === 'exec') {
+                actionDesc = `Exec (${actionObj.value})`;
+              } else if (actionObj.action === 'macro') {
+                actionDesc = 'Macro sequence';
+              } else if (actionObj.action === 'scroll_up') {
+                actionDesc = 'Scroll Up';
+              } else if (actionObj.action === 'scroll_down') {
+                actionDesc = 'Scroll Down';
+              }
+            }
+            showToast('Button Pressed', label.toUpperCase(), actionDesc);
+          }
+        }
+      }
+      return;
+    }
+    if (msg.startsWith('ACTIONS:')) {
+      try {
+        const loaded = JSON.parse(msg.slice(8));
+        actions = loaded;
+        syncActionsUI();
+      } catch (err) {
+        console.error(err);
+      }
       return;
     }
     if (msg.startsWith('{')) {
@@ -1507,7 +1902,12 @@ function applyDeviceConfig(cfg) {
   for (const [key, sliderId, valId, dec] of sensMap) {
     if (cfg[key] !== undefined) {
       document.getElementById(sliderId).value = cfg[key];
-      document.getElementById(valId).textContent = parseFloat(cfg[key]).toFixed(dec);
+      const valEl = document.getElementById(valId);
+      if (valEl.tagName === 'INPUT') {
+        valEl.value = parseFloat(cfg[key]).toFixed(dec);
+      } else {
+        valEl.textContent = parseFloat(cfg[key]).toFixed(dec);
+      }
     }
   }
   animateLedPreview();
@@ -1782,13 +2182,167 @@ function applyMotion(v) {
 function onSensChange(param, sliderId, valId) {
   const v = parseFloat(document.getElementById(sliderId).value);
   const decimals = param.startsWith('kalman') ? 3 : 1;
-  document.getElementById(valId).textContent = v.toFixed(decimals);
+  const valEl = document.getElementById(valId);
+  if (valEl.tagName === 'INPUT') {
+    valEl.value = v.toFixed(decimals);
+  } else {
+    valEl.textContent = v.toFixed(decimals);
+  }
   sendCmd(`sens set ${param} ${v}`);
+}
+
+function onSensTextChange(param, sliderId, valId) {
+  const decimals = param.startsWith('kalman') ? 3 : 1;
+  const inputEl = document.getElementById(valId);
+  const sliderEl = document.getElementById(sliderId);
+  let v = parseFloat(inputEl.value);
+  if (isNaN(v)) return;
+  
+  const min = parseFloat(sliderEl.min);
+  const max = parseFloat(sliderEl.max);
+  if (v >= min && v <= max) {
+    sliderEl.value = v;
+    sendCmd(`sens set ${param} ${v}`);
+  }
+}
+
+function onSensTextBlur(param, sliderId, valId) {
+  const decimals = param.startsWith('kalman') ? 3 : 1;
+  const inputEl = document.getElementById(valId);
+  const sliderEl = document.getElementById(sliderId);
+  let v = parseFloat(inputEl.value);
+  
+  const min = parseFloat(sliderEl.min);
+  const max = parseFloat(sliderEl.max);
+  if (isNaN(v) || v < min) v = min;
+  if (v > max) v = max;
+  
+  inputEl.value = v.toFixed(decimals);
+  sliderEl.value = v;
+  sendCmd(`sens set ${param} ${v}`);
+}
+
+function onDirSensChange(key, sliderId, valId) {
+  const val = parseFloat(document.getElementById(sliderId).value);
+  const valEl = document.getElementById(valId);
+  if (valEl.tagName === 'INPUT') {
+    valEl.value = val.toFixed(1);
+  } else {
+    valEl.textContent = val.toFixed(1);
+  }
+  if (!actions.sensitivity) actions.sensitivity = {};
+  actions.sensitivity[key] = val;
+  sendCmd('actions ' + JSON.stringify(actions));
+}
+
+function onDirSensTextChange(key, sliderId, valId) {
+  const inputEl = document.getElementById(valId);
+  const sliderEl = document.getElementById(sliderId);
+  let val = parseFloat(inputEl.value);
+  if (isNaN(val)) return;
+  
+  const min = parseFloat(sliderEl.min);
+  const max = parseFloat(sliderEl.max);
+  if (val >= min && val <= max) {
+    sliderEl.value = val;
+    if (!actions.sensitivity) actions.sensitivity = {};
+    actions.sensitivity[key] = val;
+    sendCmd('actions ' + JSON.stringify(actions));
+  }
+}
+
+function onDirSensTextBlur(key, sliderId, valId) {
+  const inputEl = document.getElementById(valId);
+  const sliderEl = document.getElementById(sliderId);
+  let val = parseFloat(inputEl.value);
+  
+  const min = parseFloat(sliderEl.min);
+  const max = parseFloat(sliderEl.max);
+  if (isNaN(val) || val < min) val = 1.0;
+  if (val > max) val = max;
+  
+  inputEl.value = val.toFixed(1);
+  sliderEl.value = val;
+  if (!actions.sensitivity) actions.sensitivity = {};
+  actions.sensitivity[key] = val;
+  sendCmd('actions ' + JSON.stringify(actions));
+}
+
+function toggleInversion(axis) {
+  const el = document.getElementById('inv' + axis.charAt(0).toUpperCase() + axis.slice(1));
+  el.classList.toggle('on');
+  if (!actions.inversion) actions.inversion = {};
+  actions.inversion[axis] = el.classList.contains('on');
+  sendCmd('actions ' + JSON.stringify(actions));
+}
+
+function syncActionsUI() {
+  if (!actions) return;
+  
+  // Update override toggle
+  const overrideToggle = document.getElementById('overrideToggle');
+  if (overrideToggle) {
+    overrideToggle.classList.toggle('on', !!actions.button_override);
+  }
+
+  // Ensure default structure
+  if (!actions.sensitivity) actions.sensitivity = {};
+  if (!actions.inversion) actions.inversion = {};
+
+  const dirSensKeys = [
+    'x_pos', 'x_neg', 'y_pos', 'y_neg', 'z_pos', 'z_neg',
+    'rx_pos', 'rx_neg', 'ry_pos', 'ry_neg', 'rz_pos', 'rz_neg'
+  ];
+  dirSensKeys.forEach(k => {
+    if (actions.sensitivity[k] === undefined) actions.sensitivity[k] = 1.0;
+  });
+
+  const idMap = {
+    'x_pos': ['sensXPos', 'sensXPosVal'],
+    'x_neg': ['sensXNeg', 'sensXNegVal'],
+    'y_pos': ['sensYPos', 'sensYPosVal'],
+    'y_neg': ['sensYNeg', 'sensYNegVal'],
+    'z_pos': ['sensZPos', 'sensZPosVal'],
+    'z_neg': ['sensZNeg', 'sensZNegVal'],
+    'rx_pos': ['sensRxPos', 'sensRxPosVal'],
+    'rx_neg': ['sensRxNeg', 'sensRxNegVal'],
+    'ry_pos': ['sensRyPos', 'sensRyPosVal'],
+    'ry_neg': ['sensRyNeg', 'sensRyNegVal'],
+    'rz_pos': ['sensRzPos', 'sensRzPosVal'],
+    'rz_neg': ['sensRzNeg', 'sensRzNegVal']
+  };
+  Object.entries(idMap).forEach(([k, [sliderId, valId]]) => {
+    const slider = document.getElementById(sliderId);
+    const valEl = document.getElementById(valId);
+    if (slider && valEl) {
+      const v = actions.sensitivity[k];
+      slider.value = v;
+      if (valEl.tagName === 'INPUT') {
+        valEl.value = parseFloat(v).toFixed(1);
+      } else {
+        valEl.textContent = parseFloat(v).toFixed(1);
+      }
+    }
+  });
+
+  const axes = ['x', 'y', 'z', 'rx', 'ry', 'rz'];
+  axes.forEach(axis => {
+    if (actions.inversion[axis] === undefined) actions.inversion[axis] = false;
+    const capAxis = axis.charAt(0).toUpperCase() + axis.slice(1);
+    const el = document.getElementById('inv' + capAxis);
+    if (el) {
+      el.classList.toggle('on', !!actions.inversion[axis]);
+    }
+  });
 }
 
 function sensReset() {
   sendCmd('sens reset');
   sendCmd('sens get');
+  actions.sensitivity = {};
+  actions.inversion = {};
+  syncActionsUI();
+  sendCmd('actions ' + JSON.stringify(actions));
 }
 
 function onBrightChange() {
@@ -1934,7 +2488,9 @@ async function loadActionsFile() {
     const file = await fh.getFile();
     const text = await file.text();
     actions = JSON.parse(text);
-    setStatus('Loaded: ' + file.name, 'ok');
+    syncActionsUI();
+    sendCmd('actions ' + JSON.stringify(actions));
+    setStatus('Loaded & Applied: ' + file.name, 'ok');
     closePanel();
   } catch (e) {
     if (e.name !== 'AbortError') setStatus('Load error: ' + e.message, 'err');
@@ -2030,6 +2586,47 @@ const RING_DEFAULTS = [
     }
   }
 })();
+
+function showToast(title, message, actionText) {
+  let container = document.getElementById('toast-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'toast-container';
+    container.className = 'toast-container';
+    document.body.appendChild(container);
+  }
+
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  
+  let actionHtml = '';
+  if (actionText && actionText !== 'none' && actionText !== 'None') {
+    actionHtml = `<div class="toast-action">Action: ${actionText}</div>`;
+  } else {
+    actionHtml = `<div class="toast-action" style="background: #252525; color: #666;">Action: None</div>`;
+  }
+
+  toast.innerHTML = `
+    <div class="toast-header">${title}</div>
+    <div class="toast-body">${message}</div>
+    ${actionHtml}
+  `;
+
+  container.appendChild(toast);
+
+  // Trigger layout reflow & show
+  setTimeout(() => {
+    toast.classList.add('show');
+  }, 10);
+
+  // Auto remove
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => {
+      toast.remove();
+    }, 350);
+  }, 4000);
+}
 
 initCallouts();
 animateLedPreview();

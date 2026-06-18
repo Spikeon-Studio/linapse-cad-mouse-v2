@@ -16,6 +16,8 @@ err()  { echo "ERROR: $*" >&2; exit 1; }
 info() { echo "  $*"; }
 section() { echo; echo "==> $*"; }
 
+export PATH="$PATH:$HOME/.platformio/penv/bin"
+
 command -v pio >/dev/null || err "PlatformIO (pio) not found. Install with: pipx install platformio  (or pip install platformio)"
 [ -f "$INI" ] || err "platformio.ini not found at $INI"
 
@@ -27,26 +29,83 @@ section "Building firmware (pio run -e $ENV)"
 [ -f "$UF2" ] || err "Build finished but $UF2 not found"
 info "Built $UF2"
 
-# ── Wait for BOOTSEL ──────────────────────────────────────────────────────────
-section "Put the device into BOOTSEL mode"
-echo "  Hold B and tap R on the XIAO RP2040 (or hold B while plugging in)."
-echo "  Waiting for the RPI-RP2 drive to mount (Ctrl-C to abort)..."
+# ── Stop Host Service ────────────────────────────────────────────────────────
+if systemctl --user is-active --quiet linapse-service; then
+    info "Stopping linapse-service..."
+    systemctl --user stop linapse-service
+    RESTART_SERVICE=1
+else
+    RESTART_SERVICE=0
+fi
 
+# ── Auto BOOTSEL reboot ──────────────────────────────────────────────────────
+section "Rebooting device into BOOTSEL mode"
+python3 -c "import serial, glob; p = (glob.glob('/dev/serial/by-id/usb-Seeed_Studio_CAD_Mouse*') + glob.glob('/dev/ttyACM*')); [serial.Serial(port, 1200).close() for port in p] if p else None" 2>/dev/null || true
+
+# ── Wait and Mount ────────────────────────────────────────────────────────────
+section "Locating RPI-RP2 drive"
 target=""
-for _ in $(seq 1 120); do
+device_node=""
+
+for _ in $(seq 1 15); do
+    # Check if already mounted
     for base in "/run/media/$USER" "/media/$USER" "/media" "/mnt"; do
         [ -d "$base/RPI-RP2" ] && target="$base/RPI-RP2" && break
     done
     [ -n "$target" ] && break
+
+    # Try to locate block device by label
+    device_node=$(lsblk -o PATH,LABEL | grep -w "RPI-RP2" | awk '{print $1}' | head -n 1 || true)
+    if [ -n "$device_node" ] && command -v udisksctl >/dev/null; then
+        info "Found RPI-RP2 block device at $device_node. Attempting to mount..."
+        if udisksctl mount -b "$device_node" >/dev/null 2>&1; then
+            sleep 1.5
+            for base in "/run/media/$USER" "/media/$USER" "/media" "/mnt"; do
+                [ -d "$base/RPI-RP2" ] && target="$base/RPI-RP2" && break
+            done
+            [ -n "$target" ] && break
+        fi
+    fi
     sleep 1
 done
-[ -n "$target" ] || err "RPI-RP2 drive never appeared. Mount it and copy $UF2 manually."
-info "Found $target"
+
+if [ -z "$target" ]; then
+    echo "  Could not auto-reboot or mount automatically."
+    echo "  Please put the device into BOOTSEL mode physically (hold B and tap R)."
+    echo "  Waiting for RPI-RP2 drive to appear (Ctrl-C to abort)..."
+    for _ in $(seq 1 60); do
+        for base in "/run/media/$USER" "/media/$USER" "/media" "/mnt"; do
+            [ -d "$base/RPI-RP2" ] && target="$base/RPI-RP2" && break
+        done
+        [ -n "$target" ] && break
+
+        # Try mounting if block device appears
+        device_node=$(lsblk -o PATH,LABEL | grep -w "RPI-RP2" | awk '{print $1}' | head -n 1 || true)
+        if [ -n "$device_node" ] && command -v udisksctl >/dev/null; then
+            if udisksctl mount -b "$device_node" >/dev/null 2>&1; then
+                sleep 1.5
+            fi
+        fi
+        sleep 1
+    done
+fi
+
+[ -n "$target" ] || err "RPI-RP2 drive never appeared. Please mount it and copy $UF2 manually."
+info "Found mount point: $target"
 
 # ── Flash ─────────────────────────────────────────────────────────────────────
 section "Copying firmware.uf2"
 cp "$UF2" "$target/"
 sync
-info "Copied. The device will reboot and re-enumerate."
+info "Copied. Device is rebooting..."
+sleep 3.5
+
+# ── Restart Host Service ──────────────────────────────────────────────────────
+if [ "$RESTART_SERVICE" -eq 1 ]; then
+    section "Restarting host service"
+    systemctl --user start linapse-service
+    info "Service restarted."
+fi
+
 echo
-echo "If it was already plugged in for the host install, unplug and replug it now."
+info "Flashing complete and service is active!"

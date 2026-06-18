@@ -7,12 +7,22 @@ import sys
 import time
 import signal
 import subprocess
+import importlib.util
 from pathlib import Path
 from importlib.machinery import SourceFileLoader
 
+def get_free_port():
+    import socket
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.bind(('', 0))
+        return s.getsockname()[1]
+
 # Load the service module
 service_path = Path(__file__).parent / "linapse-service"
-linapse_service = SourceFileLoader("linapse_service", str(service_path)).load_module()
+loader = SourceFileLoader("linapse_service", str(service_path))
+spec = importlib.util.spec_from_loader("linapse_service", loader)
+linapse_service = importlib.util.module_from_spec(spec)
+loader.exec_module(linapse_service)
 
 class TestAdversarialStress(unittest.TestCase):
     def setUp(self):
@@ -279,6 +289,8 @@ class TestAdversarialStress(unittest.TestCase):
         if os.path.exists(test_sock):
             os.unlink(test_sock)
 
+        free_port = get_free_port()
+
         # Code to execute the service in a subprocess
         code = f"""
 import asyncio
@@ -286,6 +298,7 @@ import os
 import sys
 import time
 from pathlib import Path
+import importlib.util
 from importlib.machinery import SourceFileLoader
 
 service_path = Path("linux/linapse-service")
@@ -303,10 +316,14 @@ import importlib
 import pathlib
 pathlib.Path = PatchedPath
 
-# Now load the module
-linapse_service = SourceFileLoader("linapse_service", str(service_path)).load_module()
+# Now load the module using exec_module
+loader = SourceFileLoader("linapse_service", str(service_path))
+spec = importlib.util.spec_from_loader("linapse_service", loader)
+linapse_service = importlib.util.module_from_spec(spec)
+loader.exec_module(linapse_service)
+
 linapse_service.Path = PatchedPath
-linapse_service.WS_PORT = 13006
+linapse_service.WS_PORT = {free_port}
 
 # Run main
 try:
@@ -317,8 +334,12 @@ except KeyboardInterrupt:
         # Start subprocess
         proc = subprocess.Popen([sys.executable, "-c", code], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         
-        # Wait a bit for the socket file to be created
-        time.sleep(1.5)
+        # Wait for the socket file to be created (polling loop up to 5 seconds)
+        start_time = time.time()
+        while time.time() - start_time < 5.0:
+            if os.path.exists(test_sock):
+                break
+            time.sleep(0.05)
         
         # Check if the socket file was created
         if not os.path.exists(test_sock):
@@ -346,11 +367,13 @@ except KeyboardInterrupt:
     def test_sigterm_cleanup(self):
         """
         Verify if the socket file is cleaned up when the process receives SIGTERM.
-        This is an expected failure because the service doesn't handle SIGTERM signals.
+        This test is expected to succeed as the service properly handles SIGTERM to perform cleanups.
         """
         test_sock = f"/tmp/test_sigterm_{os.getuid()}.sock"
         if os.path.exists(test_sock):
             os.unlink(test_sock)
+
+        free_port = get_free_port()
 
         # Code to execute the service in a subprocess
         code = f"""
@@ -359,6 +382,7 @@ import os
 import sys
 import time
 from pathlib import Path
+import importlib.util
 from importlib.machinery import SourceFileLoader
 
 service_path = Path("linux/linapse-service")
@@ -376,10 +400,14 @@ import importlib
 import pathlib
 pathlib.Path = PatchedPath
 
-# Now load the module
-linapse_service = SourceFileLoader("linapse_service", str(service_path)).load_module()
+# Now load the module using exec_module
+loader = SourceFileLoader("linapse_service", str(service_path))
+spec = importlib.util.spec_from_loader("linapse_service", loader)
+linapse_service = importlib.util.module_from_spec(spec)
+loader.exec_module(linapse_service)
+
 linapse_service.Path = PatchedPath
-linapse_service.WS_PORT = 13007
+linapse_service.WS_PORT = {free_port}
 
 # Run main
 try:
@@ -390,8 +418,12 @@ except KeyboardInterrupt:
         # Start subprocess
         proc = subprocess.Popen([sys.executable, "-c", code], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         
-        # Wait a bit for the socket file to be created
-        time.sleep(1.5)
+        # Wait for the socket file to be created (polling loop up to 5 seconds)
+        start_time = time.time()
+        while time.time() - start_time < 5.0:
+            if os.path.exists(test_sock):
+                break
+            time.sleep(0.05)
         
         # Check if the socket file was created
         if not os.path.exists(test_sock):

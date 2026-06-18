@@ -3,12 +3,16 @@ import asyncio
 import os
 import struct
 import unittest
+import importlib.util
 from importlib.machinery import SourceFileLoader
 from pathlib import Path
 
 # Import linapse-service using SourceFileLoader since it has no .py extension and a hyphen
 service_path = Path(__file__).parent / "linapse-service"
-linapse_service = SourceFileLoader("linapse_service", str(service_path)).load_module()
+loader = SourceFileLoader("linapse_service", str(service_path))
+spec = importlib.util.spec_from_loader("linapse_service", loader)
+linapse_service = importlib.util.module_from_spec(spec)
+loader.exec_module(linapse_service)
 
 class TestLinapseSocket(unittest.TestCase):
     def setUp(self):
@@ -32,7 +36,7 @@ class TestLinapseSocket(unittest.TestCase):
         # We want to test that a motion event string is correctly parsed, Y/Z swapped, and packed.
         # Original: >MOTION:10.6,-20.4,30.6,5.1,-2.9,0.0
         # Rounded: x=11, y=-20, z=31, rx=5, ry=-3, rz=0
-        # Swapped: [0, 11, 31, -20, 5, -3, 0, 10]
+        # Swapped: [0, 11, 31, -20, 5, 0, -3, 10]
         
         line = ">MOTION:10.6,-20.4,30.6,5.1,-2.9,0.0"
         
@@ -53,7 +57,7 @@ class TestLinapseSocket(unittest.TestCase):
                     coords = [int(round(float(p))) for p in parts]
                     x, y, z, rx, ry, rz = coords
                     period = 10
-                    packet = struct.pack("iiiiiiii", 0, x, z, y, rx, ry, rz, period)
+                    packet = struct.pack("iiiiiiii", 0, x, z, y, rx, rz, ry, period)
                     linapse_service._broadcast_socket_from_thread(packet)
         finally:
             linapse_service._broadcast_socket_from_thread = orig_broadcast
@@ -65,8 +69,8 @@ class TestLinapseSocket(unittest.TestCase):
         self.assertEqual(unpacked[2], 31) # Z (swapped from Y)
         self.assertEqual(unpacked[3], -20) # Y (swapped from Z)
         self.assertEqual(unpacked[4], 5)  # RX
-        self.assertEqual(unpacked[5], -3) # RY
-        self.assertEqual(unpacked[6], 0)  # RZ
+        self.assertEqual(unpacked[5], 0)  # RZ (swapped from RY)
+        self.assertEqual(unpacked[6], -3) # RY (swapped from RZ)
         self.assertEqual(unpacked[7], 10) # Period
 
     def test_socket_server_and_broadcast(self):
@@ -105,6 +109,80 @@ class TestLinapseSocket(unittest.TestCase):
             await server.wait_closed()
 
         self.loop.run_until_complete(run_server_test())
+
+    def test_directional_sensitivity_and_inversion(self):
+        actions_ref = [{
+            "sensitivity": {
+                "x_pos": 2.0,
+                "y_neg": 0.5
+            },
+            "inversion": {
+                "z": True,
+                "rx": True
+            }
+        }]
+        
+        import serial
+        from unittest.mock import MagicMock
+        
+        mock_ser = MagicMock()
+        mock_ser.readline.side_effect = [
+            b">MOTION:10.0,-20.0,30.0,5.0,-2.0,0.0\n",
+            Exception("stop thread")
+        ]
+        
+        packets_sent = []
+        def mock_broadcast_socket(packet):
+            packets_sent.append(packet)
+            
+        orig_find_serial = linapse_service.find_serial
+        orig_serial_class = linapse_service.serial.Serial
+        orig_ser_holder = linapse_service._ser_holder
+        orig_broadcast = linapse_service._broadcast_socket_from_thread
+        
+        linapse_service.find_serial = MagicMock(return_value="/dev/ttyACM0")
+        linapse_service.serial.Serial = MagicMock(return_value=mock_ser)
+        linapse_service._ser_holder = [mock_ser]
+        linapse_service._broadcast_socket_from_thread = mock_broadcast_socket
+        
+        try:
+            try:
+                linapse_service.serial_thread(actions_ref)
+            except Exception as e:
+                if str(e) != "stop thread":
+                    raise
+        finally:
+            linapse_service.find_serial = orig_find_serial
+            linapse_service.serial.Serial = orig_serial_class
+            linapse_service._ser_holder = orig_ser_holder
+            linapse_service._broadcast_socket_from_thread = orig_broadcast
+            
+        self.assertEqual(len(packets_sent), 1)
+        unpacked = struct.unpack("iiiiiiii", packets_sent[0])
+        self.assertEqual(unpacked[0], 0)   # Type
+        self.assertEqual(unpacked[1], 20)  # X (scaled by 2.0)
+        self.assertEqual(unpacked[2], 30)  # Z (swapped from Y, scaled y=-10, inverted z=-30, spacenav maps z=-z=30, y=-y=10)
+        self.assertEqual(unpacked[3], 10)  # Y
+        self.assertEqual(unpacked[4], -5)  # RX
+        self.assertEqual(unpacked[5], 0)   # RZ (swapped from RY)
+        self.assertEqual(unpacked[6], -2)  # RY (swapped from RZ)
+
+    def test_friendly_key_combo_translation(self):
+        # Test shift+7
+        res = linapse_service.translate_friendly_combo("shift+7")
+        self.assertEqual(res, "42:1 8:1 8:0 42:0")
+        
+        # Test ctrl+shift+z (case-insensitive and spaces)
+        res = linapse_service.translate_friendly_combo("  CTRL + Shift + z  ")
+        self.assertEqual(res, "29:1 42:1 44:1 44:0 42:0 29:0")
+        
+        # Test single key
+        res = linapse_service.translate_friendly_combo("a")
+        self.assertEqual(res, "30:1 30:0")
+        
+        # Test raw sequence bypass
+        res = linapse_service.translate_friendly_combo("42:1 8:1 8:0 42:0")
+        self.assertEqual(res, "42:1 8:1 8:0 42:0")
 
 if __name__ == "__main__":
     unittest.main()

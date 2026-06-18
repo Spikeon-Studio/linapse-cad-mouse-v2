@@ -54,14 +54,14 @@ const unsigned long LED_CALIBRATING_COLOR = 0x0000FF;
 // Tap detection — velocity threshold is in raw axis units per frame.
 // A tap on the head registers as a spike in TX (left/right), TY (forward/back),
 // or TZ (top/down) before the spring returns the head to center.
-const float TAP_VELOCITY_THRESHOLD = 5.0f;   // tune on hardware; lower = more sensitive
+const float TAP_VELOCITY_THRESHOLD = 3.0f;   // tune on hardware; lower = more sensitive
 const float TAP_RETURN_ZONE        = 25.0f;  // axis must return within this of zero to confirm
 const unsigned long TAP_MAX_DURATION_MS  = 250;  // longer impulse treated as intentional motion
 const unsigned long TAP_COOLDOWN_MIN_MS  = 50;   // minimum lockout after tap
 const unsigned long TAP_COOLDOWN_MAX_MS  = 300;  // hard ceiling (undampened worst case)
 const unsigned long TAP_REBOUND_MS       = 400;  // suppress opposite-direction spike after a tap
 const float         TAP_SETTLE_VELOCITY  = 2.0f; // early-exit cooldown when vel drops below this
-const unsigned long TAP_MULTI_WINDOW_MS  = 600;  // window to accumulate multi-taps
+const unsigned long TAP_MULTI_WINDOW_MS  = 300;  // window to accumulate multi-taps
 
 // LED effect parameters
 const float EFFECT_BREATHE_SPEED  = 0.5f;    // cycles/sec (2 s full period)

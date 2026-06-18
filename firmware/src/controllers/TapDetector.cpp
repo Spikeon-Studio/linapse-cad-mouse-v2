@@ -14,6 +14,7 @@ void TapDetector::reset() {
   pending_          = false;
   lastConfirmedDir_ = TapDir::None;
   lastConfirmedMs_  = 0;
+  suppressMotion_   = false;
 }
 
 void TapDetector::update(const float raw[9], const float* baseline, unsigned long now) {
@@ -93,6 +94,10 @@ void TapDetector::update(const float raw[9], const float* baseline, unsigned lon
   }
 
   for (int i = 0; i < 6; i++) prevAxes_[i] = axes[i];
+
+  suppressMotion_ = (phase_ != Phase::Idle) ||
+                    (tapCount_ > 0) ||
+                    (lastConfirmedMs_ > 0 && (now - lastConfirmedMs_) < Config::TAP_MULTI_WINDOW_MS + 300);
 }
 
 bool TapDetector::isOpposite(TapDir a, TapDir b) {
