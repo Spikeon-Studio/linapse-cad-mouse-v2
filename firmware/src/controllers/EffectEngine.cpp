@@ -137,16 +137,17 @@ void EffectEngine::doVolume() {
   const int n = ledController.numPixels();
 
   ledController.effectBegin();
-  for (int i = 0; i < n; i++) {
+  for (int L = 0; L < n; L++) {
     float factor = 0.0f;
-    if (active_leds >= (float)(i + 1)) {
+    if (active_leds >= (float)(L + 1)) {
       factor = 1.0f;
-    } else if (active_leds > (float)i) {
-      factor = active_leds - (float)i;
+    } else if (active_leds > (float)L) {
+      factor = active_leds - (float)L;
     } else {
       factor = 0.0f;
     }
-    ledController.effectPixel(i, scaledColor(factor));
+    int P = (4 - L + n) % n;
+    ledController.effectPixel(P, scaledColor(factor));
   }
   ledController.effectCommit();
 }

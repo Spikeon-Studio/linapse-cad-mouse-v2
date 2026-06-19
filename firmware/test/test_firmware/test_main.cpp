@@ -392,21 +392,27 @@ void test_effect_volume(void) {
 
     g_currentVolume = 50;
     effectEngine.update(100);
-    for (int i = 0; i < 4; i++) {
-        TEST_ASSERT_EQUAL_HEX32(0x00FF00, ledController.getPixelColor(i));
-    }
-    for (int i = 4; i < 8; i++) {
-        TEST_ASSERT_EQUAL_HEX32(0x000000, ledController.getPixelColor(i));
-    }
+    // Logical indices 0,1,2,3 map to physical (4-L+8)%8 -> 4,3,2,1
+    TEST_ASSERT_EQUAL_HEX32(0x00FF00, ledController.getPixelColor(4));
+    TEST_ASSERT_EQUAL_HEX32(0x00FF00, ledController.getPixelColor(3));
+    TEST_ASSERT_EQUAL_HEX32(0x00FF00, ledController.getPixelColor(2));
+    TEST_ASSERT_EQUAL_HEX32(0x00FF00, ledController.getPixelColor(1));
+    TEST_ASSERT_EQUAL_HEX32(0x000000, ledController.getPixelColor(0));
+    TEST_ASSERT_EQUAL_HEX32(0x000000, ledController.getPixelColor(5));
+    TEST_ASSERT_EQUAL_HEX32(0x000000, ledController.getPixelColor(6));
+    TEST_ASSERT_EQUAL_HEX32(0x000000, ledController.getPixelColor(7));
 
     g_currentVolume = 75; // active_leds = 6.0
     effectEngine.update(200);
-    for (int i = 0; i < 6; i++) {
-        TEST_ASSERT_EQUAL_HEX32(0x00FF00, ledController.getPixelColor(i));
-    }
-    for (int i = 6; i < 8; i++) {
-        TEST_ASSERT_EQUAL_HEX32(0x000000, ledController.getPixelColor(i));
-    }
+    // Logical indices 0,1,2,3,4,5 map to physical -> 4,3,2,1,0,7
+    TEST_ASSERT_EQUAL_HEX32(0x00FF00, ledController.getPixelColor(4));
+    TEST_ASSERT_EQUAL_HEX32(0x00FF00, ledController.getPixelColor(3));
+    TEST_ASSERT_EQUAL_HEX32(0x00FF00, ledController.getPixelColor(2));
+    TEST_ASSERT_EQUAL_HEX32(0x00FF00, ledController.getPixelColor(1));
+    TEST_ASSERT_EQUAL_HEX32(0x00FF00, ledController.getPixelColor(0));
+    TEST_ASSERT_EQUAL_HEX32(0x00FF00, ledController.getPixelColor(7));
+    TEST_ASSERT_EQUAL_HEX32(0x000000, ledController.getPixelColor(5));
+    TEST_ASSERT_EQUAL_HEX32(0x000000, ledController.getPixelColor(6));
 }
 
 // ── StateMachine Tests ───────────────────────────────────────────────────────
