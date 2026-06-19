@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.8.2] - 2026-06-19
+
+### Added
+- **Native Testing Environment**: Configured native environment block in `platformio.ini` to support building and running unit tests locally using host gcc/g++.
+- **Mocking Infrastructure**: Implemented mock headers (`Arduino.h`, `EEPROM.h`, `Adafruit_NeoPixel.h`, and stub controllers `SensorController.h`, `InputController.h`, `HIDController.h`, `TelemetryController.h`) to emulate hardware dependency APIs in native test builds.
+
+## [2.8.1] - 2026-06-19
+
+### Changed
+- **Firmware Documentation Restructuring**: Comprehensively restructured and updated `firmware/README.md` and `firmware/LED_COLOR_CONFIG.md` for complete technical accuracy.
+- **Linapse Fork Documentation**: Added detailed guides on all Linapse fork firmware changes, including the volume visualizer LED effect, serial commands, Kalman filtering, configuration persistence layout, and multi-tap detector.
+
 ## [2.8.0] - 2026-06-19
 
 ### Added
