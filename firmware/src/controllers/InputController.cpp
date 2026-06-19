@@ -117,28 +117,44 @@ void InputController::handleButtonEvent(AceButton* button, uint8_t eventType,
 
 void InputController::onButtonEvent(AceButton* button, uint8_t eventType) {
   if (eventType == AceButton::kEventPressed) {
+    int btnIdx = -1;
     if (button->getPin() == Config::PIN_LEFT_BTN) {
       leftPressed_ = true;
       leftClicked_ = true;
+      btnIdx = 0;
     } else if (button->getPin() == Config::PIN_RIGHT_BTN) {
       rightPressed_ = true;
       rightClicked_ = true;
+      btnIdx = 1;
     } else {
       return;
     }
     hadActivity_ = true;
+    if (btnIdx != -1) {
+      Serial.print("BUTTON:");
+      Serial.print(btnIdx);
+      Serial.println(":1");
+    }
     return;
   }
 
   if (eventType == AceButton::kEventReleased) {
+    int btnIdx = -1;
     if (button->getPin() == Config::PIN_LEFT_BTN) {
       leftPressed_ = false;
+      btnIdx = 0;
     } else if (button->getPin() == Config::PIN_RIGHT_BTN) {
       rightPressed_ = false;
+      btnIdx = 1;
     } else {
       return;
     }
     hadActivity_ = true;
+    if (btnIdx != -1) {
+      Serial.print("BUTTON:");
+      Serial.print(btnIdx);
+      Serial.println(":0");
+    }
   }
 }
 

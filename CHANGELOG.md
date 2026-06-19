@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.11.0] - 2026-06-19
+
+### Added
+- **SpaceMouse Buttons on macOS/Windows**: Added button click support (including double clicks and chords) on macOS and Windows by routing button press/release events from the firmware over serial telemetry (`BUTTON:<btn>:<state>`).
+
+### Fixed
+- **macOS Puck Mouse/Gesture Interference**: Suppressed sending raw HID motion reports back to the device on macOS when using default Seeed Studio mode, eliminating system-wide cursor drift and gesture interference. Allows HID reports to still be sent if Custom USB emulation is enabled for official drivers.
+
 ## [2.10.12] - 2026-06-19
 
 ### Fixed

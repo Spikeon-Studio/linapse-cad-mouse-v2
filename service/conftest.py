@@ -9,7 +9,8 @@ def pytest_runtest_setup(item):
             "test_installer_config.py",
             "test_userscript_headers.py",
             "test_playwright_benchy.py",
-            "test_multi_click.py"
+            "test_multi_click.py",
+            "test_serial_buttons.py"
         }
         if filename not in cross_platform_files:
             pytest.skip(f"Linux-only test: skipped on {sys.platform}")

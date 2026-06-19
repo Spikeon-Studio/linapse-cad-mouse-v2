@@ -7,6 +7,7 @@ import time
 from . import state
 from .config import get_active_mode_config
 from .emulation import dispatch
+from .hid import _on_press, _on_release
 
 SERIAL_BAUD = 115200
 
@@ -115,6 +116,21 @@ def serial_thread(actions_ref):
                                 print(f"[tap] {key} → {act}")
                                 dispatch(act)
                             state.broadcast_from_thread(f"TAP:{human}:{count_str}")
+                elif line.startswith("BUTTON:"):
+                    parts = line.split(":")
+                    if len(parts) == 3:
+                        _, btn_str, state_str = parts
+                        try:
+                            btn = int(btn_str)
+                            val = int(state_str)
+                            import sys
+                            if sys.platform in ("win32", "darwin"):
+                                if val == 1:
+                                    _on_press(btn, actions_ref[0])
+                                else:
+                                    _on_release(btn, actions_ref[0])
+                        except Exception as e:
+                            print(f"[serial] button parse error: {e}")
                 elif line.startswith(">MOTION:"):
                     current_mode = actions_ref[0].get("current_mode", "Default") if actions_ref[0] else "Default"
                     try:
@@ -209,10 +225,13 @@ def serial_thread(actions_ref):
 
                             # Send processed coordinates back to the device to emit via USB HID
                             try:
-                                if current_mode not in ("Browser", "Media"):
-                                    ser.write(f"hid_report {x:.1f},{y:.1f},{z:.1f},{rx:.1f},{ry:.1f},{rz:.1f}\n".encode())
-                                else:
-                                    ser.write(b"hid_report 0,0,0,0,0,0\n")
+                                custom_usb = actions_ref[0].get("custom_usb", {}) if actions_ref[0] else {}
+                                import sys
+                                if sys.platform != "darwin" or custom_usb.get("enabled", False):
+                                    if current_mode not in ("Browser", "Media"):
+                                        ser.write(f"hid_report {x:.1f},{y:.1f},{z:.1f},{rx:.1f},{ry:.1f},{rz:.1f}\n".encode())
+                                    else:
+                                        ser.write(b"hid_report 0,0,0,0,0,0\n")
                             except Exception as e:
                                 print(f"[serial] failed to write hid_report back: {e}")
 
