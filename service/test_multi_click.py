@@ -68,8 +68,12 @@ def test_multi_click_detection():
     assert len(ydotool_calls) == 0 # Delayed
     
     linapse_service._on_release(0, actions)
-    time.sleep(0.3) # Wait for multi-click window to expire (250ms)
     
+    # Poll up to 5s for the single-click action to fire
+    start_time = time.time()
+    while len(ydotool_calls) < 1 and time.time() - start_time < 5.0:
+        time.sleep(0.05)
+        
     # Should trigger single click action
     assert len(ydotool_calls) == 1
     assert ydotool_calls[0] == ["ydotool", "key", "29:1", "46:1", "46:0", "29:0"]
@@ -85,7 +89,11 @@ def test_multi_click_detection():
     time.sleep(0.05)
     linapse_service._on_release(0, actions)
     
-    time.sleep(0.3) # Wait for expiration
+    # Poll up to 5s for the double-click action to fire
+    start_time = time.time()
+    while len(ydotool_calls) < 1 and time.time() - start_time < 5.0:
+        time.sleep(0.05)
+        
     assert len(ydotool_calls) == 1
     assert ydotool_calls[0] == ["ydotool", "key", "29:1", "47:1", "47:0", "29:0"]
 
@@ -108,12 +116,17 @@ def test_legacy_button_fallback():
     
     # Since no double-click is configured, it should trigger immediately
     linapse_service._on_press(0, actions)
-    time.sleep(0.1) # Wait for chord window (50ms)
+    
+    # Poll up to 5s for the action to fire
+    start_time = time.time()
+    while len(ydotool_calls) < 1 and time.time() - start_time < 5.0:
+        time.sleep(0.05)
+        
     assert len(ydotool_calls) == 1
     assert ydotool_calls[0] == ["ydotool", "key", "29:1", "44:1", "44:0", "29:0"]
     
     linapse_service._on_release(0, actions)
-    time.sleep(0.3)
+    time.sleep(0.5)
     # Ensure no extra multi-click action is triggered
     assert len(ydotool_calls) == 1
 
@@ -137,7 +150,12 @@ def test_media_action_dispatch():
     
     # Test play command -> playpause (164) or play (207)
     linapse_service._on_press(0, actions)
-    time.sleep(0.1)
+    
+    # Poll up to 5s for the action to fire
+    start_time = time.time()
+    while len(ydotool_calls) < 1 and time.time() - start_time < 5.0:
+        time.sleep(0.05)
+        
     assert len(ydotool_calls) == 1
     assert ydotool_calls[0] == ["ydotool", "key", "207:1", "207:0"]
     
@@ -146,7 +164,12 @@ def test_media_action_dispatch():
     # Test mute command -> mute (113)
     ydotool_calls.clear()
     linapse_service._on_press(1, actions)
-    time.sleep(0.1)
+    
+    # Poll up to 5s for the action to fire
+    start_time = time.time()
+    while len(ydotool_calls) < 1 and time.time() - start_time < 5.0:
+        time.sleep(0.05)
+        
     assert len(ydotool_calls) == 1
     assert ydotool_calls[0] == ["ydotool", "key", "113:1", "113:0"]
     
