@@ -1,7 +1,7 @@
 # Linapse — CAD Mouse MK2 (v2)
 
 <!-- DISTRO_BADGES_START -->
-[![Ubuntu](https://img.shields.io/badge/Ubuntu-passing-success)](#) [![Debian](https://img.shields.io/badge/Debian-passing-success)](#) [![Fedora](https://img.shields.io/badge/Fedora-passing-success)](#) [![Windows](https://img.shields.io/badge/Windows-passing-success)](#) [![macOS](https://img.shields.io/badge/macOS-passing-success)](#)
+[![Ubuntu](https://img.shields.io/badge/Ubuntu-failing-critical)](#) [![Debian](https://img.shields.io/badge/Debian-failing-critical)](#) [![Fedora](https://img.shields.io/badge/Fedora-failing-critical)](#) [![Windows](https://img.shields.io/badge/Windows-failing-critical)](#) [![macOS](https://img.shields.io/badge/macOS-failing-critical)](#)
 <!-- DISTRO_BADGES_END -->
 
 [![Windows Setup](https://img.shields.io/badge/Windows-v2.5.7-0078D6?logo=windows&logoColor=white)](https://github.com/spikeon/linapse-cad-mouse-v2/releases/latest/download/LinapseServiceSetup.exe)
