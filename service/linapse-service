@@ -734,7 +734,12 @@ async def handle_socket_client(reader: asyncio.StreamReader, writer: asyncio.Str
         _socket_clients_busy.discard(writer)
         try:
             writer.close()
-            await writer.wait_closed()
+            try:
+                loop = asyncio.get_running_loop()
+                if loop.is_running():
+                    await writer.wait_closed()
+            except RuntimeError:
+                pass
         except Exception:
             pass
         print(f"[sock] client disconnected ({len(_socket_clients)} total)")
@@ -1148,7 +1153,12 @@ async def main():
                 pass
         if unix_server:
             unix_server.close()
-            await unix_server.wait_closed()
+            try:
+                loop = asyncio.get_running_loop()
+                if loop.is_running():
+                    await unix_server.wait_closed()
+            except RuntimeError:
+                pass
         if socket_path and socket_path.exists():
             try:
                 socket_path.unlink()

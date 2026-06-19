@@ -224,12 +224,22 @@ def test_benchy_viewport_motion_and_toasts(tmp_path):
     # Run linapse-service inside a background thread
     loop = asyncio.new_event_loop()
     loop.add_signal_handler = lambda *args, **kwargs: None
+    main_task = None
     def run_service():
+        nonlocal main_task
         asyncio.set_event_loop(loop)
         try:
-            loop.run_until_complete(linapse_service.main())
+            main_task = loop.create_task(linapse_service.main())
+            loop.run_until_complete(main_task)
+        except asyncio.CancelledError:
+            pass
         except Exception as e:
             print(f"Service main failed: {e}")
+        finally:
+            pending = asyncio.all_tasks(loop)
+            if pending:
+                loop.run_until_complete(asyncio.gather(*pending, return_exceptions=True))
+            loop.close()
 
     service_thread = threading.Thread(target=run_service, daemon=True)
     service_thread.start()
@@ -411,7 +421,9 @@ def test_benchy_viewport_motion_and_toasts(tmp_path):
 
         # Stop service
         mock_serial.close()
-        loop.call_soon_threadsafe(loop.stop)
+        if main_task:
+            loop.call_soon_threadsafe(main_task.cancel)
+        service_thread.join(timeout=3.0)
         http_server.stop()
 
         # Join started daemon threads to ensure clean exit
