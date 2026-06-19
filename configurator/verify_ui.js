@@ -185,7 +185,7 @@ const path = require('path');
   // 6. Verify mode action dropdown logic in the UI
   console.log('\n--- Testing Mode Action Dropdown Logic ---');
   // First, create a new mode to target
-  promptValue = 'TargetMode';
+  promptValue = 'DropdownTargetMode';
   await newModeBtn.click();
   
   // Go back to Default mode
@@ -207,21 +207,21 @@ const path = require('path');
   
   const targetModes = await page.$$eval('#sf-mode option', options => options.map(o => o.value));
   console.log('Target modes listed in dropdown:', targetModes);
-  if (!targetModes.includes('Default') || !targetModes.includes('TargetMode')) {
+  if (!targetModes.includes('Default') || !targetModes.includes('DropdownTargetMode')) {
     console.error('FAIL: Target mode dropdown does not contain all modes!');
     process.exit(1);
   }
   
-  // Select "TargetMode" and apply
-  await page.selectOption('#sf-mode', 'TargetMode');
+  // Select "DropdownTargetMode" and apply
+  await page.selectOption('#sf-mode', 'DropdownTargetMode');
   const applyBtn = await page.locator('#sidePanel .btn-apply');
   await applyBtn.click();
   
   // Check if saved action in actions object is correct
-  const savedAction = await page.evaluate(() => actions.modes['Default'].buttons['0']);
+  const savedAction = await page.evaluate(() => actions.modes['Default'].buttons['0:1'] || actions.modes['Default'].buttons['0']);
   console.log('Saved action on button 0 in Default mode:', savedAction);
   
-  if (!savedAction || savedAction.action !== 'mode' || savedAction.value !== 'TargetMode') {
+  if (!savedAction || savedAction.action !== 'mode' || savedAction.value !== 'DropdownTargetMode') {
     console.error('FAIL: Saved action was not updated correctly!', savedAction);
     process.exit(1);
   }
