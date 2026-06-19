@@ -18,7 +18,7 @@ macOS does not use UNIX sockets or `udev` rules. Instead:
 
 ### Option 1: Automatic Setup (Recommended)
 
-1. Download the latest `linapse-service.pkg` installer package from the [GitHub Releases](https://github.com/spikeon/linapse-cad-mouse-v2/releases).
+1. Download the latest `linapse-service.pkg` installer package directly from the [latest release download link](https://github.com/spikeon/linapse-cad-mouse-v2/releases/latest/download/linapse-service.pkg).
 2. Open and run the package installer. This will:
    - Copy the service binary to `/usr/local/bin/linapse-service`.
    - Register a `launchd` launch agent plist at `/Library/LaunchAgents/com.linapse.service.plist`.

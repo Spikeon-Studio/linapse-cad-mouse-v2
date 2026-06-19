@@ -18,7 +18,7 @@ Windows does not use UNIX sockets or `udev` rules. Instead:
 
 ### Option 1: Automatic Setup (Recommended)
 
-1. Download the latest `LinapseServiceSetup.exe` installer from the [GitHub Releases](https://github.com/spikeon/linapse-cad-mouse-v2/releases).
+1. Download the latest `LinapseServiceSetup.exe` installer directly from the [latest release download link](https://github.com/spikeon/linapse-cad-mouse-v2/releases/latest/download/LinapseServiceSetup.exe).
 2. Run the installer. It will:
    - Copy the service executable to your program files directory.
    - Configure the service to start automatically as a background daemon whenever you log into Windows.
