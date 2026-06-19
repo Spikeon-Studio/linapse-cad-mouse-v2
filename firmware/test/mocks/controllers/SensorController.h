@@ -6,8 +6,8 @@ class SensorController {
 
   void begin() {}
   bool readRaw(float out[9]) {
-    for (int i = 0; i < 9; i++) out[i] = 0.0f;
-    return true;
+    for (int i = 0; i < 9; i++) out[i] = mockRaw_[i];
+    return readRawSuccess_;
   }
 
   void beginCalibration() {
@@ -32,4 +32,6 @@ class SensorController {
   bool calibrationActive_;
   bool calibrationDone_;
   float baseline_[9] = {0.0f};
+  float mockRaw_[9] = {0.0f};
+  bool readRawSuccess_ = true;
 };

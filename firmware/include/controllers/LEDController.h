@@ -20,6 +20,7 @@ class LEDController {
   void effectPixel(int idx, uint32_t rrggbb);
   void effectCommit();
   int  numPixels() const;
+  uint32_t getPixelColor(int idx) const;
 
  private:
   enum class Mode {

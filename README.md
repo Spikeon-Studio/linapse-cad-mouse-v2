@@ -8,8 +8,8 @@
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-passing-success)](#) [![Debian](https://img.shields.io/badge/Debian-passing-success)](#) [![Fedora](https://img.shields.io/badge/Fedora-passing-success)](#) [![Windows](https://img.shields.io/badge/Windows-passing-success)](#) [![macOS](https://img.shields.io/badge/macOS-passing-success)](#)
 <!-- DISTRO_BADGES_END -->
 
-[![Windows Setup](https://img.shields.io/badge/Windows-v2.8.2-0078D6?logo=windows&logoColor=white)](https://github.com/spikeon/linapse-cad-mouse-v2/releases/latest/download/LinapseServiceSetup.exe)
-[![macOS Package](https://img.shields.io/badge/macOS-v2.8.2-000000?logo=apple&logoColor=white)](https://github.com/spikeon/linapse-cad-mouse-v2/releases/latest/download/linapse-service.pkg)
+[![Windows Setup](https://img.shields.io/badge/Windows-v2.8.3-0078D6?logo=windows&logoColor=white)](https://github.com/spikeon/linapse-cad-mouse-v2/releases/latest/download/LinapseServiceSetup.exe)
+[![macOS Package](https://img.shields.io/badge/macOS-v2.8.3-000000?logo=apple&logoColor=white)](https://github.com/spikeon/linapse-cad-mouse-v2/releases/latest/download/linapse-service.pkg)
 
 
 **Linapse** is a cross-platform software stack (supporting Linux, Windows, and macOS) for the [CAD Mouse MK2](https://github.com/sb-ocr/cad-mouse-mk2) — a DIY 6-degrees-of-freedom "space mouse" that senses motion with three magnetic field sensors instead of optics. Since the hardware has no official drivers from 3Dconnexion, this project supplies everything needed to make it a first-class input device on Linux, Windows, and macOS: device firmware, a host-side service, and a web configurator.
@@ -189,7 +189,10 @@ It connects to `linapse-service` at `ws://localhost:13000`. From there you can r
 
 To run native unit tests locally on the host machine:
 - Run `pio test -e native` from the root directory.
-- For design details, architecture, and mocking details, see **[docs/TESTING.md](docs/TESTING.md)**.
+
+The project also uses a cross-platform CI/CD pipeline in GitHub Actions, generating interactive test reports on every push and pull request via `dorny/test-reporter` (supporting Linux, Windows, and macOS test suites).
+
+For design details, architecture, mocking details, and CI/CD interactive reports explanation, see **[docs/TESTING.md](docs/TESTING.md)**.
 
 ## Credits & license
 

@@ -9,6 +9,9 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    permissions:
+      checks: write
+      contents: read
     strategy:
       fail-fast: false
       matrix:
@@ -67,9 +70,18 @@ jobs:
             systemd-container sh -c "cd /workspace && ./setup.sh --yes"
 
       - name: Run pytest suite inside container
+        id: run_tests
         run: |
           docker exec -e XDG_RUNTIME_DIR=/run/user/0 -e DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/0/bus \
-            systemd-container sh -c "cd /workspace && pytest service/ --tb=short 2>&1 | tee pytest_${{ matrix.distro }}_output.log"
+            systemd-container sh -c "cd /workspace && pytest service/ --junitxml=pytest_${{ matrix.distro }}_results.xml --tb=short 2>&1 | tee pytest_${{ matrix.distro }}_output.log; status=\$?; chmod 666 pytest_${{ matrix.distro }}_results.xml pytest_${{ matrix.distro }}_output.log || true; exit \$status"
+
+      - name: Publish Test Report
+        uses: dorny/test-reporter@v1
+        if: always() && steps.run_tests.outcome != 'skipped'
+        with:
+          name: Pytest Results (${{ matrix.distro }})
+          path: pytest_${{ matrix.distro }}_results.xml
+          reporter: java-junit
 
       - name: Upload Linux test logs on failure
         if: failure()
@@ -150,6 +162,9 @@ jobs:
 
   build-windows:
     runs-on: windows-latest
+    permissions:
+      checks: write
+      contents: read
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -168,9 +183,18 @@ jobs:
           playwright install chromium
 
       - name: Run tests on Windows
+        id: run_tests
         shell: bash
         run: |
-          pytest service/ --tb=short 2>&1 | tee pytest_windows_output.log
+          pytest service/ --junitxml=pytest_windows_results.xml --tb=short 2>&1 | tee pytest_windows_output.log
+
+      - name: Publish Test Report
+        uses: dorny/test-reporter@v1
+        if: always() && steps.run_tests.outcome != 'skipped'
+        with:
+          name: Pytest Results (Windows)
+          path: pytest_windows_results.xml
+          reporter: java-junit
 
       - name: Upload Windows test logs on failure
         if: failure()
@@ -216,6 +240,9 @@ jobs:
 
   build-macos:
     runs-on: macos-latest
+    permissions:
+      checks: write
+      contents: read
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -234,8 +261,17 @@ jobs:
           playwright install chromium
 
       - name: Run tests on macOS
+        id: run_tests
         run: |
-          pytest service/
+          pytest service/ --junitxml=pytest_macos_results.xml
+
+      - name: Publish Test Report
+        uses: dorny/test-reporter@v1
+        if: always() && steps.run_tests.outcome != 'skipped'
+        with:
+          name: Pytest Results (macOS)
+          path: pytest_macos_results.xml
+          reporter: java-junit
 
       - name: Compile linapse-service
         run: |

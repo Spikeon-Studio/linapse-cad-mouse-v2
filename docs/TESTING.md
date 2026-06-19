@@ -41,3 +41,21 @@ pio test -e native
 ```
 
 Tests are located under the `firmware/test/` directory. Each test subdirectory can contain test scripts using the Unity testing framework.
+
+## CI/CD Pipeline & Interactive Test Reporting
+
+The project uses GitHub Actions to run test suites on every commit and pull request across Linux, Windows, and macOS.
+
+### Automated Test Runs
+- **Linux (Ubuntu, Debian, Fedora)**: Executed inside systemd-enabled Docker containers.
+- **Windows**: Executed natively on a Windows runner.
+- **macOS**: Executed natively on a macOS runner.
+
+### Interactive Reports in GitHub Actions
+To view test results inside the GitHub UI rather than reading raw terminal stdout logs, the CI pipeline generates standard JUnit XML format test reports (using `pytest --junitxml=...`).
+
+These test reports are parsed and published as GitHub check runs using `dorny/test-reporter`. In the GitHub repository Actions run or Pull Request Checks tab, you can click on each suite (e.g., `Pytest Results (ubuntu)`) to see a visual tree of:
+- Passed tests
+- Failed tests (with stack traces and annotations mapped directly to the line of code that failed)
+- Skipped tests
+

@@ -116,3 +116,7 @@ void LEDController::effectCommit() {
 int LEDController::numPixels() const {
   return ring_.numPixels();
 }
+
+uint32_t LEDController::getPixelColor(int idx) const {
+  return ring_.getPixelColor(idx);
+}

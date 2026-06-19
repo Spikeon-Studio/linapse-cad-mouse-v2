@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.8.3] - 2026-06-19
+
+### Added
+- **Comprehensive Firmware Unit Tests**: Implemented 19 detailed test cases under `firmware/test/test_firmware/test_main.cpp` covering:
+  - `MotionController`: Geometric decomposition, Kalman filter convergence, deadzone thresholding, and linear/cubic sensitivity power curves.
+  - `TapDetector`: Tap spike detection, multi-direction classification (PosX, NegX, PosY, NegY, NegZ), double/multi-tap window accumulation, cooldowns, and spring return thresholds/timeouts.
+  - `EffectEngine`: Color scaling, HSV-to-RGB conversion, and all LED effect patterns (Solid, Breathing, Reactive, Dot Swirl, Gradient Swirl, Rainbow Swirl, and Volume).
+  - `StateMachine`: Verification of state transitions and hook callbacks (CalibratingState, IdleState, ColorConfigState, SleepState).
+  - `Config Management`: EEPROM load/save serialization, default resets, and non-overlapping layout boundary verification.
+- **Test Build Customization Script**: Added `test_build_config.py` to dynamically adjust compilation include paths and source filters during PlatformIO test execution, enabling mock dependencies on both native and target (`seeed_xiao_rp2040`) test runs.
+- **GitHub Actions Test Reporting**: Integrated `dorny/test-reporter` to publish JUnit XML test results from Linux (Ubuntu, Debian, Fedora), Windows, and macOS directly to the GitHub Check Runs UI for rich, interactive test reporting in CI.
+
 ## [2.8.2] - 2026-06-19
 
 ### Added
