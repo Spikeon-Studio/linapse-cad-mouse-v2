@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.10.9] - 2026-06-19
+
+### Fixed
+- **Cross-Platform Tests**: Mocked `sys.platform` to be `"linux"` during the execution of `test_multi_click.py` so that it calls the ydotool emulation path and passes successfully on Windows and macOS.
+- **macOS Tests**: Enabled running `test_installer_mock.py` and `test_installer_adversarial.py` on macOS.
+
 ## [2.10.8] - 2026-06-19
 
 ### Added

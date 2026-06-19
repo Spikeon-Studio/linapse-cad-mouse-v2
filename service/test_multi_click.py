@@ -38,6 +38,7 @@ def setup_mocks(monkeypatch):
     global ydotool_calls
     ydotool_calls.clear()
     monkeypatch.setattr("subprocess.Popen", mock_popen)
+    monkeypatch.setattr("sys.platform", "linux")
     # Mock loop and broadcast
     monkeypatch.setattr(linapse_service, "_loop", asyncio.new_event_loop())
     monkeypatch.setattr(linapse_service, "_broadcast_from_thread", MagicMock())
