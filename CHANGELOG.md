@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.6.5] - 2026-06-19
+
+### Changed
+- **CI/CD Debugging**: Updated GitHub Actions `multi-distro-test.yml` workflow to write Windows pytest output to `pytest_output.txt` and upload it on failure as an artifact to assist in debugging test failures.
+
 ## [2.6.4] - 2026-06-19
 
 ### Added

@@ -146,8 +146,16 @@ jobs:
           playwright install chromium
 
       - name: Run tests on Windows
+        shell: bash
         run: |
-          pytest linux/
+          pytest linux/ --tb=short 2>&1 | tee pytest_output.txt
+
+      - name: Upload Windows test logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-windows-log
+          path: pytest_output.txt
 
       - name: Compile linapse-service
         run: |
