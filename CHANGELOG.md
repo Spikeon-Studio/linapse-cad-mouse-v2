@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - **New Project Defaults**: Pulled user's local `actions.json` settings (modes, buttons, taps, sensitivities, inversions, and active mode 'Browser') into the project as the new default configuration in `configurator/index.html` and `linapse-service`.
+- **Documentation**: Added documentation and screenshots for profiles/modes, active mode selector dropdown, multi-click physical buttons, and media action settings in `README.md` and `docs/USAGE.md`.
 
 ## [2.4.1] - 2026-06-19
 

@@ -12,6 +12,7 @@
 
 ## Features
 
+- **Profiles & Configurable Modes** (Default, Browser, Media, and custom modes)
 - Tap Gestures
 - On-The-Fly Configuration Changes
 - Web GUI
@@ -28,18 +29,24 @@
 ## What it does
 
 - **6DoF motion in OnShape, SketchUp Web, and Native Linux apps.** Motion coordinates are decoded in firmware and sent via USB serial to `linapse-service`. The service processes the motion and exposes it through a user-space UNIX socket, eliminating the need for system-wide `spacenavd`. A WebSocket bridge plus a Tampermonkey userscript carry motion into browser apps (OnShape, SketchUp Web), while native apps (Blender, FreeCAD, OrcaSlicer, etc.) connect directly via the UNIX socket.
-- **Physical buttons, taps, and gestures.** The host service maps the two buttons (read via `hidraw` from the USB HID interface) and tap-on-the-cap gestures (detected in firmware and sent over serial) to keystrokes, clicks, scrolling, and macros via `ydotool` (Wayland-native input injection).
-- **Addressable RGB lighting.** SK6812 LEDs with multiple effects (solid, breathing, motion-reactive, swirls) configured live.
-- **Linapse web configurator.** A browser UI to remap buttons/taps, design lighting, and tune the motion filter — with a live 3D Benchy viewport you can push around with the puck to feel sensitivity changes in real time.
+- **Physical buttons, taps, and gestures.** The host service maps physical button clicks (including single click, double click, and multi-click actions), button chords, and cap-tap gestures to keystrokes, mouse events, custom shell commands, macros, or profile/mode switches.
+- **Configurable modes & input suppression.** In specialized modes like **Browser** and **Media**, standard 6DoF translation/rotation reports are suppressed. Browser Mode maps the puck's pitch rotation to web page scrolling and physical buttons to browser tab navigation. Media Mode maps puck pitch to system volume control, puck twist to scrubbing, and buttons to track navigation.
+- **Addressable RGB lighting.** SK6812 LEDs with multiple effects (solid, breathing, motion-reactive, swirls) configured live per-mode.
+- **Linapse web configurator.** A browser UI to manage modes, remap buttons/taps, design lighting, and tune the motion filter — with a live 3D Benchy viewport you can push around with the puck to feel sensitivity changes in real time.
 
 ## The configurator
 
 A single static web app with three tabs, talking to `linapse-service` over WebSocket and writing changes to the device live. Full walkthrough: **[docs/USAGE.md](docs/USAGE.md)**.
 
+### Active Mode Selector
+![Active Mode Selector](docs/images/configurator-modes.png)
+
+Create, rename, delete, and switch between lighting and button layout profiles/modes directly from the active mode selector header.
+
 ### Customize Tab
 ![Customize Tab](docs/images/configurator-customize-tap.png)
 
-Remap the 2 buttons, the chord, and 5 cap-tap zones to keys, clicks, scrolls, commands, or macros.
+Remap the 2 buttons (supporting multi-click tabs), the chord, and 5 cap-tap zones to keys, clicks, scrolls, commands, modes, or macros.
 
 ### Lighting Tab
 ![Lighting Tab](docs/images/configurator-lighting.gif)

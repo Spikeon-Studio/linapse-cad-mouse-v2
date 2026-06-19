@@ -19,11 +19,30 @@ The three tabs — **Customize**, **Lighting**, **Sensitivity** — run across t
 
 ---
 
+## Modes — profiles & overrides
+
+![Active Mode Selector](images/configurator-modes.png)
+
+The configurator supports a **Modes** system, letting you define multiple distinct button layouts and LED configurations for different applications or states. 
+
+- **Mode Selector**: Create, rename, delete, and switch between modes using the dropdown controls in the header. Changing buttons or lighting settings automatically updates the currently selected active mode.
+- **Active Mode**: The selected mode is immediately applied to the device. You can configure buttons or tap gestures to switch modes on-the-fly.
+
+### Pre-Configured Overrides
+Linapse includes two specialized modes that suppress standard 6DoF motion reports:
+- **Browser Mode**: Puck pitch (`rx` axis) scrolls web pages, and the physical buttons navigate between browser tabs (`ctrl+pageup`/`ctrl+pagedown`).
+- **Media Mode**: Puck pitch (`rx` axis) controls system volume (inverted: push forward for volume up, pull back for volume down), twist (`rz` axis) scrubs forward/back, and physical buttons trigger previous/next track.
+
+---
+
 ## Customize — buttons & taps
 
 ![Customize tab](images/configurator-customize-tap.png)
 
 The 3D device is annotated with every input zone. Click a callout to open its action panel on the right.
+
+### Multi-Click Button Configurations
+For the physical **Left Button** and **Right Button**, you can configure different actions for single click (`1×`), double click (`2×`), or triple click (`+`) events. Click on the corresponding click tab inside the callout panel to customize these. Standard scrolling remains zero-latency.
 
 ### Action Configuration Screens
 
@@ -40,7 +59,7 @@ The 3D device is annotated with every input zone. Click a callout to open its ac
 
 | Zone | What triggers it |
 |------|------------------|
-| **Left Button** / **Right Button** | The two physical buttons. |
+| **Left Button** / **Right Button** | The two physical buttons (supports multi-click tabs). |
 | **Both Buttons** | Chord — press both buttons together. |
 | **Top Tap** | Tap the top of the cap. |
 | **Front / Back / Left / Right Tap** | Tap a side of the cap (gesture detected in firmware). |
@@ -56,6 +75,8 @@ The 3D device is annotated with every input zone. Click a callout to open its ac
 | **Mouse Move** | Move the cursor. |
 | **Run Command** | Execute a shell command on the host. |
 | **Scroll Up** / **Scroll Down** | One-shot scroll step. |
+| **Mode** | Switch active button/LED profile mode. |
+| **Media** | Send media control keys (*Play, Pause, Forward, Back, Fast Forward, Rewind, Mute, Volume Up, Volume Down*). |
 | **Macro** | A sequence of steps with per-step delays. |
 
 Pick the action type, fill in its parameters, then hit **Apply** to write the mapping to the device.
