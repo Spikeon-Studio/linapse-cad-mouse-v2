@@ -28,6 +28,7 @@ class EffectEngine {
   void doGradientSwirl(unsigned long now);
   void doRainbowSwirl(unsigned long now);
   void doVolume();
+  void doEqualizer();
 
   // Returns color scaled by factor [0..1], premultiplied with brightness_/255
   uint32_t scaledColor(float factor) const;

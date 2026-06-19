@@ -27,6 +27,8 @@ EffectEngine       effectEngine;
 
 bool g_debugAxes = false;  // accessed by IdleState
 int g_currentVolume = 50;  // accessed by EffectEngine
+int g_bassLevel = 0;       // accessed by EffectEngine
+int g_trebleLevel = 0;     // accessed by EffectEngine
 
 namespace {
 String serialBuf;
@@ -40,6 +42,7 @@ const char* effectName(LedEffect fx) {
     case LedEffect::GradientSwirl: return "gradient_swirl";
     case LedEffect::RainbowSwirl:  return "rainbow_swirl";
     case LedEffect::Volume:        return "volume";
+    case LedEffect::Equalizer:     return "equalizer";
     default:                       return "unknown";
   }
 }
@@ -52,6 +55,7 @@ LedEffect effectFromName(const String& name) {
   if (name == "gradient_swirl") return LedEffect::GradientSwirl;
   if (name == "rainbow_swirl")  return LedEffect::RainbowSwirl;
   if (name == "volume")         return LedEffect::Volume;
+  if (name == "equalizer")      return LedEffect::Equalizer;
   return LedEffect::kCount;  // invalid sentinel
 }
 
@@ -95,7 +99,7 @@ void handleLedCommand(const String& args) {
     String name = args.substring(7); name.trim();
     LedEffect fx = effectFromName(name);
     if (fx == LedEffect::kCount) {
-      Serial.println("ERR effect: solid|breathing|reactive|dot_swirl|gradient_swirl|rainbow_swirl|volume");
+      Serial.println("ERR effect: solid|breathing|reactive|dot_swirl|gradient_swirl|rainbow_swirl|volume|equalizer");
       return;
     }
     ledConfig.effect = fx;
@@ -180,7 +184,7 @@ void handleSerial() {
       else if (serialBuf.startsWith("config ")) handleConfigCommand(serialBuf.substring(7));
       else if (serialBuf.startsWith("sens "))   handleSensCommand(serialBuf.substring(5));
       else if (serialBuf.startsWith("debug "))  handleDebugCommand(serialBuf.substring(6));
-      else if (serialBuf == "version")          { Serial.println("version=2.9.5"); }
+      else if (serialBuf == "version")          { Serial.println("version=2.9.7"); }
       else if (serialBuf.startsWith("volume ")) {
         int val = serialBuf.substring(7).toInt();
         if (val >= 0 && val <= 100) {
@@ -188,6 +192,22 @@ void handleSerial() {
           Serial.println("OK");
         } else {
           Serial.println("ERR volume 0-100");
+        }
+      }
+      else if (serialBuf.startsWith("eq ")) {
+        int spaceIdx = serialBuf.indexOf(' ', 3);
+        if (spaceIdx != -1) {
+          int bass = serialBuf.substring(3, spaceIdx).toInt();
+          int treble = serialBuf.substring(spaceIdx + 1).toInt();
+          if (bass >= 0 && bass <= 100 && treble >= 0 && treble <= 100) {
+            g_bassLevel = bass;
+            g_trebleLevel = treble;
+            Serial.println("OK");
+          } else {
+            Serial.println("ERR eq 0-100 0-100");
+          }
+        } else {
+          Serial.println("ERR eq <bass> <treble>");
         }
       }
       serialBuf = "";

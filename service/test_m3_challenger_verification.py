@@ -198,21 +198,21 @@ def test_challenger_accumulator_boundary_stress(running_service):
     linapse_service._rx_volume_accumulator = 0.0
     tsi.ydotool_calls.clear()
     
-    # RZ scrub: nan & inf tests
-    mock_serial.input_queue.put(b">MOTION:0,0,0,0,0,nan\n")
+    # RY scrub: nan & inf tests
+    mock_serial.input_queue.put(b">MOTION:0,0,0,0,nan,0\n")
     time.sleep(0.02)
     assert linapse_service._rz_scrub_accumulator == 0.0
     
-    mock_serial.input_queue.put(b">MOTION:0,0,0,0,0,inf\n")
+    mock_serial.input_queue.put(b">MOTION:0,0,0,0,inf,0\n")
     time.sleep(0.02)
     assert linapse_service._rz_scrub_accumulator == 0.0
 
-    # RX volume: nan & inf tests
-    mock_serial.input_queue.put(b">MOTION:0,0,0,nan,0,0\n")
+    # RZ volume: nan & inf tests
+    mock_serial.input_queue.put(b">MOTION:0,0,0,0,0,nan\n")
     time.sleep(0.02)
     assert linapse_service._rx_volume_accumulator == 0.0
     
-    mock_serial.input_queue.put(b">MOTION:0,0,0,inf,0,0\n")
+    mock_serial.input_queue.put(b">MOTION:0,0,0,0,0,inf\n")
     time.sleep(0.02)
     assert linapse_service._rx_volume_accumulator == 0.0
 

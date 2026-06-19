@@ -2,7 +2,7 @@ import asyncio
 import threading
 
 # Version information
-service_version = "2.9.5"
+service_version = "2.9.7"
 firmware_version = "unknown"
 
 # Shared state variables
@@ -15,6 +15,7 @@ ser_holder: list = [None]  # [serial.Serial | None]
 actions_ref: list = [None]  # [dict | None]
 config_lock = threading.Lock()
 flashing_active = False
+last_volume_change_time = 0.0
 
 async def broadcast(msg: str):
     dead = set()

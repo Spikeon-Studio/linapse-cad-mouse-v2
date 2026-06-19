@@ -6,7 +6,7 @@ from . import state
 
 def volume_watcher():
     last_val = -1
-    last_change_time = 0.0
+    state.last_volume_change_time = 0.0
     while True:
         try:
             vol = -1
@@ -48,11 +48,11 @@ def volume_watcher():
 
             if vol != -1 and vol != last_val:
                 if last_val != -1:
-                    last_change_time = time.time()
+                    state.last_volume_change_time = time.time()
                 last_val = vol
                 if state.loop and state.serial_queue:
                     state.loop.call_soon_threadsafe(state.serial_queue.put_nowait, f"volume {vol}")
         except Exception:
             pass
-        sleep_time = 0.25 if (time.time() - last_change_time < 10.0) else 1.0
+        sleep_time = 0.25 if (time.time() - state.last_volume_change_time < 10.0) else 1.0
         time.sleep(sleep_time)

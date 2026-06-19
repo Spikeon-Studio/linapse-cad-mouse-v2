@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.9.7] - 2026-06-19
+
+### Added
+- **Equalizer LED Lighting Effect**: Integrated two-channel audio visualizer effect using RP2040 firmware and Python daemon (using parec and IIR lowpass/highpass filters).
+- **Immediate Volume Polling Latency Scaling**: Automatically scale up host-side volume polling frequency (0.25s interval) as soon as the volume control axis is rotated on the mouse.
+
+### Changed
+- **Media Mode Controls**: Re-mapped volume control to Z-rotation (Rotate) and scrub control to Y-rotation (Roll) in Media mode.
+- **Configurator UI**: Integrated Equalizer visual preview and mouse render animation to the LED config panel.
+
 ## [2.9.5] - 2026-06-19
 
 ### Changed

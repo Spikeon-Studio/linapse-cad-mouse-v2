@@ -23,6 +23,7 @@ void EffectEngine::update(unsigned long now, float motionMag) {
     case LedEffect::GradientSwirl: doGradientSwirl(now);           break;
     case LedEffect::RainbowSwirl:  doRainbowSwirl(now);            break;
     case LedEffect::Volume:        doVolume();                     break;
+    case LedEffect::Equalizer:     doEqualizer();                  break;
     default:                       doSolid();                      break;
   }
   lastMs_ = now;
@@ -149,6 +150,54 @@ void EffectEngine::doVolume() {
     int P = (3 - L + n) % n;
     ledController.effectPixel(P, scaledColor(factor));
   }
+  ledController.effectCommit();
+}
+
+void EffectEngine::doEqualizer() {
+  extern int g_bassLevel;
+  extern int g_trebleLevel;
+  
+  float bass = (float)g_bassLevel;
+  if (bass < 0.0f) bass = 0.0f;
+  if (bass > 100.0f) bass = 100.0f;
+
+  float treble = (float)g_trebleLevel;
+  if (treble < 0.0f) treble = 0.0f;
+  if (treble > 100.0f) treble = 100.0f;
+
+  float bass_active = (bass / 100.0f) * 4.0f;
+  float treble_active = (treble / 100.0f) * 4.0f;
+
+  ledController.effectBegin();
+
+  // Bass: physical pixels 3, 2, 1, 0 (logical L_bass = 0..3)
+  for (int L = 0; L < 4; L++) {
+    float factor = 0.0f;
+    if (bass_active >= (float)(L + 1)) {
+      factor = 1.0f;
+    } else if (bass_active > (float)L) {
+      factor = bass_active - (float)L;
+    } else {
+      factor = 0.0f;
+    }
+    int P = 3 - L;
+    ledController.effectPixel(P, scaledColor(factor));
+  }
+
+  // Treble: physical pixels 4, 5, 6, 7 (logical L_treble = 0..3)
+  for (int L = 0; L < 4; L++) {
+    float factor = 0.0f;
+    if (treble_active >= (float)(L + 1)) {
+      factor = 1.0f;
+    } else if (treble_active > (float)L) {
+      factor = treble_active - (float)L;
+    } else {
+      factor = 0.0f;
+    }
+    int P = 4 + L;
+    ledController.effectPixel(P, scaledColor(factor));
+  }
+
   ledController.effectCommit();
 }
 

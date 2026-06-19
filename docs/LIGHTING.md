@@ -1,6 +1,6 @@
 # Linapse CAD Mouse — LED Lighting Guide
 
-This guide describes how the SK6812 addressable RGB LED ring works on the **CAD Mouse MK2**, documents the 7 available lighting effects, and explains how to configure them.
+This guide describes how the SK6812 addressable RGB LED ring works on the **CAD Mouse MK2**, documents the 8 available lighting effects, and explains how to configure them.
 
 ---
 
@@ -88,6 +88,18 @@ Displays the host operating system's current playback volume (0% to 100%) on LED
 
 ---
 
+### 8. Equalizer
+Translates host system audio levels into a two-channel stereo visualizer on the LED ring.
+- **LED Channel Layout**:
+  - **Bass (Left Channel)**: Represented on LEDs 1 to 4 (bottom-left to top-left).
+  - **Treble (Right Channel)**: Represented on LEDs 8 to 5 (bottom-right to top-right).
+- **Host Syncing**: `linapse-service` captures playback from the default monitor output on Linux (`parec` + IIR filters), computes low-frequency and high-frequency energy levels (0 to 100), and sends them over serial (command: `eq <bass> <treble>\n`).
+- **Configurability**: Respects the configured max brightness.
+
+![Equalizer Effect](images/led-effect-equalizer.png)
+
+---
+
 ## Configuring Lighting
 
 There are two ways to configure the lighting effects:
@@ -100,7 +112,7 @@ There are two ways to configure the lighting effects:
 
 ### Method 2: Command Line (Serial)
 If you are connected via serial or writing script triggers, you can send raw text commands to change settings on-the-fly:
-- `led effect <solid|breathing|reactive|dot_swirl|gradient_swirl|rainbow_swirl|volume>`
+- `led effect <solid|breathing|reactive|dot_swirl|gradient_swirl|rainbow_swirl|volume|equalizer>`
 - `led color <RRGGBB>` (e.g. `led color FF00FF`)
 - `led brightness <0-255>` (e.g. `led brightness 128`)
 - `led show` (dumps active lighting values)

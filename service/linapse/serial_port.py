@@ -151,8 +151,8 @@ def serial_thread(actions_ref):
                                     _rx_scroll_accumulator += scrolls * 150.0
 
                             elif current_mode == "Media":
-                                if abs(rz) > 15.0:
-                                    _rz_scrub_accumulator += rz
+                                if abs(ry) > 15.0:
+                                    _rz_scrub_accumulator += ry
                                 else:
                                     _rz_scrub_accumulator *= 0.8
 
@@ -167,18 +167,21 @@ def serial_thread(actions_ref):
                                         dispatch({"action": "key", "value": "left"})
                                     _rz_scrub_accumulator += presses * 200.0
 
-                                if abs(rx) > 15.0:
-                                    _rx_volume_accumulator -= rx
+                                if abs(rz) > 15.0:
+                                    _rx_volume_accumulator += rz
+                                    state.last_volume_change_time = time.time()
                                 else:
                                     _rx_volume_accumulator *= 0.8
 
                                 if _rx_volume_accumulator >= 250.0:
                                     presses = int(_rx_volume_accumulator // 250.0)
+                                    state.last_volume_change_time = time.time()
                                     for _ in range(presses):
                                         dispatch({"action": "key", "value": "volup"})
                                     _rx_volume_accumulator -= presses * 250.0
                                 elif _rx_volume_accumulator <= -250.0:
                                     presses = int(-_rx_volume_accumulator // 250.0)
+                                    state.last_volume_change_time = time.time()
                                     for _ in range(presses):
                                         dispatch({"action": "key", "value": "voldown"})
                                     _rx_volume_accumulator += presses * 250.0

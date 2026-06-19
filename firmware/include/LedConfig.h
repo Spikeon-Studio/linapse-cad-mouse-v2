@@ -10,6 +10,7 @@ enum class LedEffect : uint8_t {
   GradientSwirl = 4,  // comet with fading trail
   RainbowSwirl  = 5,  // full rainbow rotating around ring
   Volume        = 6,  // show volume 0-100% on LEDs 1-8
+  Equalizer     = 7,  // show two-channel audio equalizer
   kCount
 };
 

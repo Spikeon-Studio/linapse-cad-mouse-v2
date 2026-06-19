@@ -255,20 +255,20 @@ def test_m3_accumulator_stress_boundaries(running_service):
     linapse_service._rx_volume_accumulator = 0.0
     tsi.ydotool_calls.clear()
     
-    # A. Send inf to RZ (scrub)
-    # RZ scrub: inf is sanitized to 0.0, should decay accumulator
+    # A. Send inf to RY (scrub)
+    # RY scrub: inf is sanitized to 0.0, should decay accumulator
     linapse_service._rz_scrub_accumulator = 10.0
-    mock_serial.input_queue.put(b">MOTION:0,0,0,0,0,inf\n")
+    mock_serial.input_queue.put(b">MOTION:0,0,0,0,inf,0\n")
     time.sleep(0.02)
     assert abs(linapse_service._rz_scrub_accumulator - 8.0) < 0.01
     
     # Reset RZ scrub accumulator
     linapse_service._rz_scrub_accumulator = 0.0
     
-    # B. Send inf to RX (volume)
-    # RX volume: inf is sanitized to 0.0, should decay accumulator
+    # B. Send inf to RZ (volume)
+    # RZ volume: inf is sanitized to 0.0, should decay accumulator
     linapse_service._rx_volume_accumulator = 10.0
-    mock_serial.input_queue.put(b">MOTION:0,0,0,inf,0,0\n")
+    mock_serial.input_queue.put(b">MOTION:0,0,0,0,0,inf\n")
     time.sleep(0.02)
     assert abs(linapse_service._rx_volume_accumulator - 8.0) < 0.01
 

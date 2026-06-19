@@ -20,6 +20,8 @@ EffectEngine        effectEngine;
 // Define global variables required by the linker
 bool g_debugAxes = false;
 int g_currentVolume = 50;
+int g_bassLevel = 0;
+int g_trebleLevel = 0;
 
 void setUp(void) {
     inputController.setButtonBits(0);
@@ -415,6 +417,27 @@ void test_effect_volume(void) {
     TEST_ASSERT_EQUAL_HEX32(0x000000, ledController.getPixelColor(5));
 }
 
+void test_effect_equalizer(void) {
+    effectEngine.configure(LedEffect::Equalizer, 0x00FF00, 255);
+
+    // 50% Bass (active: 3, 2) & 75% Treble (active: 4, 5, 6)
+    g_bassLevel = 50;
+    g_trebleLevel = 75;
+    effectEngine.update(100);
+
+    // Bass: active L_bass=0,1 -> physical 3, 2
+    TEST_ASSERT_EQUAL_HEX32(0x00FF00, ledController.getPixelColor(3));
+    TEST_ASSERT_EQUAL_HEX32(0x00FF00, ledController.getPixelColor(2));
+    TEST_ASSERT_EQUAL_HEX32(0x000000, ledController.getPixelColor(1));
+    TEST_ASSERT_EQUAL_HEX32(0x000000, ledController.getPixelColor(0));
+
+    // Treble: active L_treble=0,1,2 -> physical 4, 5, 6
+    TEST_ASSERT_EQUAL_HEX32(0x00FF00, ledController.getPixelColor(4));
+    TEST_ASSERT_EQUAL_HEX32(0x00FF00, ledController.getPixelColor(5));
+    TEST_ASSERT_EQUAL_HEX32(0x00FF00, ledController.getPixelColor(6));
+    TEST_ASSERT_EQUAL_HEX32(0x000000, ledController.getPixelColor(7));
+}
+
 // ── StateMachine Tests ───────────────────────────────────────────────────────
 
 void test_state_machine_transitions(void) {
@@ -582,6 +605,7 @@ int main(int argc, char **argv) {
     RUN_TEST(test_effect_dot_swirl);
     RUN_TEST(test_effect_gradient_swirl);
     RUN_TEST(test_effect_volume);
+    RUN_TEST(test_effect_equalizer);
 
     // StateMachine
     RUN_TEST(test_state_machine_transitions);
