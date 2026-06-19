@@ -54,6 +54,7 @@ def find_serial(actions_ref=None):
 def serial_thread(actions_ref):
     global _rx_scroll_accumulator, _rz_scrub_accumulator, _rx_volume_accumulator
     while True:
+        state.firmware_version = "unknown"
         if state.flashing_active:
             time.sleep(1)
             continue
@@ -69,6 +70,7 @@ def serial_thread(actions_ref):
             ser = serial.Serial(port, SERIAL_BAUD, timeout=1.0)
             state.ser_holder[0] = ser
             print(f"[serial] connected to {port}")
+            time.sleep(0.1)
             
             # Send initial active mode's LED settings to the device so they are in sync on startup.
             actions = actions_ref[0]
@@ -95,6 +97,8 @@ def serial_thread(actions_ref):
                 if not line:
                     try:
                         ser.write(b"service_hid 1\n")
+                        if state.firmware_version == "unknown":
+                            ser.write(b"version\n")
                     except Exception as e:
                         print(f"[serial] failed to write heartbeat: {e}")
                     continue
@@ -239,5 +243,6 @@ def serial_thread(actions_ref):
                     state.broadcast_from_thread(line)
         except (serial.SerialException, TypeError, OSError, AttributeError) as e:
             state.ser_holder[0] = None
+            state.firmware_version = "unknown"
             print(f"[serial] {e} — retrying in 3s")
             time.sleep(3)
