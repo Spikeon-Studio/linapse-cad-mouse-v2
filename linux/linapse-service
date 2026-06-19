@@ -21,12 +21,31 @@ import math
 import os
 import select
 import signal
+import sys
 import serial
+import serial.tools.list_ports
 import struct
 import subprocess
 import threading
 import time
 from pathlib import Path
+
+# Try loading pynput conditionally
+pynput_keyboard = None
+pynput_mouse = None
+Button = None
+Key = None
+KeyCode = None
+if sys.platform in ("win32", "darwin"):
+    try:
+        import pynput
+        from pynput.keyboard import Controller as KeyboardController, Key, KeyCode
+        from pynput.mouse import Controller as MouseController, Button
+        pynput_keyboard = KeyboardController()
+        pynput_mouse = MouseController()
+    except ImportError:
+        print("[pynput] warning: pynput not installed. Emulation will fail on Windows/macOS.")
+
 
 try:
     import websockets
@@ -337,6 +356,67 @@ _KEY_CODES = {
     "mute": 113
 }
 
+_REVERSE_KEY_CODES = {v: k for k, v in _KEY_CODES.items()}
+
+def get_pynput_key(name: str):
+    name = name.lower().strip()
+    mapping = {
+        "ctrl": Key.ctrl if Key else None,
+        "control": Key.ctrl if Key else None,
+        "lctrl": Key.ctrl_l if Key else None,
+        "rctrl": Key.ctrl_r if Key else None,
+        "shift": Key.shift if Key else None,
+        "lshift": Key.shift_l if Key else None,
+        "rshift": Key.shift_r if Key else None,
+        "alt": Key.alt if Key else None,
+        "lalt": Key.alt_l if Key else None,
+        "ralt": Key.alt_gr if Key else None,
+        "meta": Key.cmd if Key else None,
+        "super": Key.cmd if Key else None,
+        "win": Key.cmd if Key else None,
+        "cmd": Key.cmd if Key else None,
+        "enter": Key.enter if Key else None,
+        "return": Key.enter if Key else None,
+        "space": Key.space if Key else None,
+        "spacebar": Key.space if Key else None,
+        "backspace": Key.backspace if Key else None,
+        "tab": Key.tab if Key else None,
+        "escape": Key.esc if Key else None,
+        "esc": Key.esc if Key else None,
+        "up": Key.up if Key else None,
+        "down": Key.down if Key else None,
+        "left": Key.left if Key else None,
+        "right": Key.right if Key else None,
+        "pageup": Key.page_up if Key else None,
+        "pgup": Key.page_up if Key else None,
+        "pagedown": Key.page_down if Key else None,
+        "pgdn": Key.page_down if Key else None,
+        "home": Key.home if Key else None,
+        "end": Key.end if Key else None,
+        "insert": Key.insert if Key else None,
+        "ins": Key.insert if Key else None,
+        "delete": Key.delete if Key else None,
+        "del": Key.delete if Key else None,
+        "volup": getattr(Key, "media_volume_up", None) if Key else None,
+        "voldown": getattr(Key, "media_volume_down", None) if Key else None,
+        "next": getattr(Key, "media_next", None) if Key else None,
+        "prev": getattr(Key, "media_previous", None) if Key else None,
+        "playpause": getattr(Key, "media_play_pause", None) if Key else None,
+        "mute": getattr(Key, "media_volume_mute", None) if Key else None,
+    }
+    # Add F1-F12
+    for i in range(1, 13):
+        mapping[f"f{i}"] = getattr(Key, f"f{i}", None) if Key else None
+        
+    if name in mapping:
+        return mapping[name]
+    if len(name) == 1:
+        try:
+            return KeyCode.from_char(name) if KeyCode else name
+        except Exception:
+            return name
+    return None
+
 def translate_friendly_combo(combo_str: str) -> str:
     combo_str = combo_str.lower().strip()
     if not combo_str:
@@ -387,27 +467,92 @@ def dispatch(action_obj):
     elif act == "key":
         val = action_obj.get("value", "")
         if val:
-            if ":" not in val:
-                translated = translate_friendly_combo(val)
-                print(f"[dispatch] key '{val}' translated to raw codes '{translated}'")
-                val = translated
-            if val:
-                ydotool("key", val)
+            if sys.platform in ("win32", "darwin"):
+                if pynput_keyboard:
+                    try:
+                        if ":" in val:
+                            for token in val.split():
+                                if ":" in token:
+                                    code_str, state_str = token.split(":", 1)
+                                    code = int(code_str)
+                                    state = int(state_str)
+                                    friendly = _REVERSE_KEY_CODES.get(code)
+                                    if friendly:
+                                        key = get_pynput_key(friendly)
+                                        if key:
+                                            if state == 1:
+                                                pynput_keyboard.press(key)
+                                            else:
+                                                pynput_keyboard.release(key)
+                        else:
+                            parts = [p.strip() for p in val.split("+") if p.strip()]
+                            keys = []
+                            for p in parts:
+                                key = get_pynput_key(p)
+                                if key:
+                                    keys.append(key)
+                                else:
+                                    print(f"[pynput] warning: unknown key name '{p}' in combo '{val}'")
+                            for k in keys:
+                                pynput_keyboard.press(k)
+                            for k in reversed(keys):
+                                pynput_keyboard.release(k)
+                    except Exception as e:
+                        print(f"[pynput] error emulating key combo '{val}': {e}")
+                else:
+                    print(f"[pynput] cannot emulate key '{val}', keyboard not initialized")
+            else:
+                if ":" not in val:
+                    translated = translate_friendly_combo(val)
+                    print(f"[dispatch] key '{val}' translated to raw codes '{translated}'")
+                    val = translated
+                if val:
+                    ydotool("key", val)
     elif act == "mouse_click":
-        code = _MOUSE_BTN.get(action_obj.get("button", "left"), 0xC0)
-        ydotool("click", hex(code))
-    elif act == "mouse_scroll":
-        d = action_obj.get("direction", "down")
-        a = int(action_obj.get("amount", 3))
-        delta = (-a if d == "up" else a) if d in ("up", "down") else (-a if d == "left" else a)
-        if d in ("up", "down"):
-            ydotool("mousemove", "-w", "--", "0", str(delta))
+        if sys.platform in ("win32", "darwin"):
+            if pynput_mouse:
+                btn_name = action_obj.get("button", "left")
+                btn = Button.left if btn_name == "left" else (Button.right if btn_name == "right" else Button.middle)
+                pynput_mouse.click(btn)
         else:
-            ydotool("mousemove", "-w", "--", str(delta), "0")
+            code = _MOUSE_BTN.get(action_obj.get("button", "left"), 0xC0)
+            ydotool("click", hex(code))
+    elif act == "mouse_scroll":
+        if sys.platform in ("win32", "darwin"):
+            if pynput_mouse:
+                d = action_obj.get("direction", "down")
+                a = int(action_obj.get("amount", 3))
+                dx, dy = 0, 0
+                if d == "up":
+                    dy = a
+                elif d == "down":
+                    dy = -a
+                elif d == "left":
+                    dx = -a
+                elif d == "right":
+                    dx = a
+                pynput_mouse.scroll(dx, dy)
+        else:
+            d = action_obj.get("direction", "down")
+            a = int(action_obj.get("amount", 3))
+            delta = (-a if d == "up" else a) if d in ("up", "down") else (-a if d == "left" else a)
+            if d in ("up", "down"):
+                ydotool("mousemove", "-w", "--", "0", str(delta))
+            else:
+                ydotool("mousemove", "-w", "--", str(delta), "0")
     elif act == "mouse_move":
-        ydotool("mousemove", "--", str(action_obj.get("x", 0)), str(action_obj.get("y", 0)))
+        if sys.platform in ("win32", "darwin"):
+            if pynput_mouse:
+                pynput_mouse.move(action_obj.get("x", 0), action_obj.get("y", 0))
+        else:
+            ydotool("mousemove", "--", str(action_obj.get("x", 0)), str(action_obj.get("y", 0)))
     elif act in ("scroll_up", "scroll_down"):
-        ydotool("mousemove", "-w", "--", "0", str(-3 if act == "scroll_up" else 3))
+        if sys.platform in ("win32", "darwin"):
+            if pynput_mouse:
+                dy = 3 if act == "scroll_up" else -3
+                pynput_mouse.scroll(0, dy)
+        else:
+            ydotool("mousemove", "-w", "--", "0", str(-3 if act == "scroll_up" else 3))
     elif act == "exec":
         val = action_obj.get("value", "")
         if val:
@@ -633,6 +778,9 @@ def _broadcast_socket_from_thread(packet: bytes):
 # ── HID thread ────────────────────────────────────────────────────────────────
 
 def hid_thread(actions_ref):
+    if sys.platform in ("win32", "darwin"):
+        print("[hid] disabled on Windows/macOS")
+        return
     while True:
         candidates = (
             glob.glob("/dev/input/by-id/usb-*CAD_Mouse*-if02-hidraw") +
@@ -675,19 +823,37 @@ def hid_thread(actions_ref):
 
 # ── Serial thread ─────────────────────────────────────────────────────────────
 
-def find_serial():
+def find_serial(actions_ref=None):
+    if actions_ref and actions_ref[0] and isinstance(actions_ref[0], dict):
+        manual_port = actions_ref[0].get("serial_port") or actions_ref[0].get("port")
+        if manual_port:
+            return manual_port
+
+    try:
+        for p in serial.tools.list_ports.comports():
+            vid = getattr(p, "vid", None)
+            desc = getattr(p, "description", "") or ""
+            prod = getattr(p, "product", "") or ""
+            if vid == 0x2886:
+                return p.device
+            for term in ("Seeed", "CAD Mouse", "CAD_Mouse"):
+                if term in desc or term in prod:
+                    return p.device
+    except Exception as e:
+        print(f"[serial] error listing comports: {e}")
+
     m = (glob.glob("/dev/serial/by-id/usb-Seeed_Studio_CAD_Mouse*") +
          glob.glob("/dev/ttyACM*"))
     return m[0] if m else None
 
 def serial_thread(actions_ref):
     global _rx_scroll_accumulator, _rz_scrub_accumulator, _rx_volume_accumulator
-    port = find_serial()
+    port = find_serial(actions_ref)
     if not port:
         print("[serial] no serial port found — retrying in 5s")
         while True:
             time.sleep(5)
-            port = find_serial()
+            port = find_serial(actions_ref)
             if port:
                 break
     while True:
@@ -934,8 +1100,9 @@ async def main():
         print("[main] signal received, cancelling main task")
         main_task.cancel()
 
-    _loop.add_signal_handler(signal.SIGINT, handle_signal)
-    _loop.add_signal_handler(signal.SIGTERM, handle_signal)
+    if sys.platform != "win32":
+        _loop.add_signal_handler(signal.SIGINT, handle_signal)
+        _loop.add_signal_handler(signal.SIGTERM, handle_signal)
 
     global _actions_ref
     _actions_ref[0] = load_actions()
@@ -947,17 +1114,23 @@ async def main():
 
     asyncio.create_task(serial_writer())
 
-    # Unix Socket Setup
-    socket_path = Path(f"/run/user/{os.getuid()}/spnav.sock")
-    socket_path.parent.mkdir(parents=True, exist_ok=True)
-    if socket_path.exists():
+    unix_server = None
+    socket_path = None
+    if sys.platform not in ("win32", "darwin"):
         try:
-            socket_path.unlink()
-        except Exception as e:
-            print(f"[sock] failed to unlink stale socket: {e}")
+            # Unix Socket Setup
+            socket_path = Path(f"/run/user/{os.getuid()}/spnav.sock")
+            socket_path.parent.mkdir(parents=True, exist_ok=True)
+            if socket_path.exists():
+                try:
+                    socket_path.unlink()
+                except Exception as e:
+                    print(f"[sock] failed to unlink stale socket: {e}")
 
-    print(f"[sock] server starting on {socket_path}")
-    unix_server = await asyncio.start_unix_server(handle_socket_client, path=str(socket_path))
+            print(f"[sock] server starting on {socket_path}")
+            unix_server = await asyncio.start_unix_server(handle_socket_client, path=str(socket_path))
+        except Exception as e:
+            print(f"[sock] error setting up unix socket: {e}")
 
     handler = lambda ws: ws_handler(ws, actions_ref)
     print(f"[ws] server starting on ws://{WS_HOST}:{WS_PORT}")
@@ -973,13 +1146,17 @@ async def main():
                 writer.close()
             except Exception:
                 pass
-        unix_server.close()
-        await unix_server.wait_closed()
-        if socket_path.exists():
+        if unix_server:
+            unix_server.close()
+            await unix_server.wait_closed()
+        if socket_path and socket_path.exists():
             try:
                 socket_path.unlink()
             except Exception as e:
                 print(f"[sock] failed to unlink socket on shutdown: {e}")
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        print("[main] keyboard interrupt, exiting")

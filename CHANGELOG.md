@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.1] - 2026-06-19
+
+### Added
+- **Packaging and CI/CD**: Added Inno Setup script `installer.iss` for Windows packaging and installer.
+- **Workflow Automation**: Updated `.github/workflows/multi-distro-test.yml` with automated Windows and macOS compilation and packaging jobs, compiling executables via PyInstaller, updating version dynamically, and uploading setup/package artifacts.
+
+## [2.5.0] - 2026-06-19
+
+
+### Added
+- **Cross-Platform Support**: Added compatibility for Windows and macOS to `linapse-service`.
+- **Modular Input Backend**: Integrated conditional `pynput` input simulation for key combos, mouse clicks, mouse scrolls, and mouse moves on Windows and macOS.
+- **Enhanced Serial Auto-Discovery**: Added `serial.tools.list_ports` scanning to match Seeed Studio serial ports by USB Vendor ID `0x2886` or product/description descriptions ("Seeed", "CAD Mouse", or "CAD_Mouse") on all platforms, fallback to glob-based scanning on Linux.
+- **Manual Port Override**: Added support for `serial_port` or `port` configuration keys in `actions.json` for manual serial port specification.
+
+### Changed
+- **OS Guards**: Wrapped Linux-only Unix socket servers, udev/hidraw candidacy checks, and signal handlers in platform guards to prevent crashes on Windows and macOS.
+
 ## [2.4.2] - 2026-06-19
 
 ### Changed

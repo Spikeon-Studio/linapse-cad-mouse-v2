@@ -125,3 +125,94 @@ jobs:
           git add README.md
           git commit -m "docs: update distro badges in README [skip ci]"
           git push
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install pyinstaller websockets pyserial pynput hidapi
+
+      - name: Compile linapse-service
+        run: |
+          pyinstaller --onefile --name linapse-service --hidden-import=pynput --hidden-import=hid --hidden-import=websockets linux/linapse-service
+
+      - name: Update AppVersion in installer.iss
+        shell: powershell
+        run: |
+          $version = (Get-Content VERSION).Trim()
+          (Get-Content installer.iss) -replace 'AppVersion=.*', "AppVersion=$version" | Set-Content installer.iss
+
+      - name: Compile Inno Setup Installer
+        shell: powershell
+        run: |
+          iscc installer.iss
+
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: LinapseServiceSetup
+          path: LinapseServiceSetup.exe
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install pyinstaller websockets pyserial pynput hidapi
+
+      - name: Compile linapse-service
+        run: |
+          pyinstaller --onefile --name linapse-service --hidden-import=pynput --hidden-import=hid --hidden-import=websockets linux/linapse-service
+
+      - name: Prepare launchd agent payload directory structures
+        run: |
+          mkdir -p payload/usr/local/bin
+          mkdir -p payload/Library/LaunchAgents
+          cp dist/linapse-service payload/usr/local/bin/linapse-service
+          cat << 'EOF' > payload/Library/LaunchAgents/com.linapse.service.plist
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>Label</key>
+              <string>com.linapse.service</string>
+              <key>ProgramArguments</key>
+              <array>
+                  <string>/usr/local/bin/linapse-service</string>
+              </array>
+              <key>RunAtLoad</key>
+              <true/>
+              <key>KeepAlive</key>
+              <true/>
+          </dict>
+          </plist>
+          EOF
+
+      - name: Build macOS Package
+        run: |
+          VERSION=$(cat VERSION | tr -d '\r\n[:space:]')
+          pkgbuild --root payload --identifier com.linapse.cadmouse --version "$VERSION" --install-location / linapse-service.pkg
+
+      - name: Upload macOS Package
+        uses: actions/upload-artifact@v4
+        with:
+          name: linapse-service-pkg
+          path: linapse-service.pkg
+

@@ -43,6 +43,7 @@ def test_challenger_6dof_suppression(running_service):
         uri = f"ws://localhost:{ws_port}"
         async with websockets.connect(uri) as ws:
             reader, writer = await asyncio.open_unix_connection(str(socket_path))
+            await asyncio.sleep(0.05)
             try:
                 # Clear ws queue if any
                 # Send motion telemetry in Browser mode (should be suppressed)
@@ -73,6 +74,7 @@ def test_challenger_6dof_suppression(running_service):
         uri = f"ws://localhost:{ws_port}"
         async with websockets.connect(uri) as ws:
             reader, writer = await asyncio.open_unix_connection(str(socket_path))
+            await asyncio.sleep(0.05)
             try:
                 # Send motion telemetry in Media mode (should be suppressed)
                 mock_serial.input_queue.put(b">MOTION:10.0,-20.0,30.0,-40.0,50.0,-60.0\n")
@@ -102,6 +104,7 @@ def test_challenger_6dof_suppression(running_service):
         uri = f"ws://localhost:{ws_port}"
         async with websockets.connect(uri) as ws:
             reader, writer = await asyncio.open_unix_connection(str(socket_path))
+            await asyncio.sleep(0.05)
             try:
                 mock_serial.input_queue.put(b">MOTION:1.0,2.0,3.0,4.0,5.0,6.0\n")
                 

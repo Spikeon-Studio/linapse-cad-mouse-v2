@@ -36,6 +36,7 @@ def test_m3_browser_media_suppression(running_service):
         uri = f"ws://localhost:{ws_port}"
         async with websockets.connect(uri) as ws:
             reader, writer = await asyncio.open_unix_connection(str(socket_path))
+            await asyncio.sleep(0.05)
             try:
                 # Send motion telemetry
                 mock_serial.input_queue.put(b">MOTION:10.0,20.0,30.0,40.0,50.0,60.0\n")
@@ -66,6 +67,7 @@ def test_m3_browser_media_suppression(running_service):
         uri = f"ws://localhost:{ws_port}"
         async with websockets.connect(uri) as ws:
             reader, writer = await asyncio.open_unix_connection(str(socket_path))
+            await asyncio.sleep(0.05)
             try:
                 # Send motion telemetry
                 mock_serial.input_queue.put(b">MOTION:5.0,-15.0,25.0,35.0,-45.0,55.0\n")
@@ -95,6 +97,7 @@ def test_m3_browser_media_suppression(running_service):
         uri = f"ws://localhost:{ws_port}"
         async with websockets.connect(uri) as ws:
             reader, writer = await asyncio.open_unix_connection(str(socket_path))
+            await asyncio.sleep(0.05)
             try:
                 # Send motion telemetry
                 mock_serial.input_queue.put(b">MOTION:1.0,2.0,3.0,4.0,5.0,6.0\n")
