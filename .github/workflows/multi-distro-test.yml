@@ -139,7 +139,11 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install pyinstaller websockets pyserial pynput hidapi pytest
+          pip install pyinstaller websockets pyserial pynput hidapi pytest playwright
+
+      - name: Install Playwright Browsers
+        run: |
+          playwright install chromium
 
       - name: Run tests on Windows
         run: |
@@ -179,7 +183,11 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install pyinstaller websockets pyserial pynput hidapi pytest
+          pip install pyinstaller websockets pyserial pynput hidapi pytest playwright
+
+      - name: Install Playwright Browsers
+        run: |
+          playwright install chromium
 
       - name: Run tests on macOS
         run: |

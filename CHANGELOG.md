@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.3] - 2026-06-19
+
+### Added
+- **Benchy 3D Viewport Playwright Tests**: Added browser-based automated testing using Playwright (`linux/test_playwright_benchy.py`) to verify that motion signals received by the configurator move the 3D Benchy model in the correct directions for all 6 DoF axes.
+- **Workflow Playwright Configuration**: Updated `.github/workflows/multi-distro-test.yml` to install `playwright` and Chromium binaries inside GHA runners on Windows and macOS.
+
 ## [2.5.2] - 2026-06-19
 
 ### Added
