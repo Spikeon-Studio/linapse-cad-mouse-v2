@@ -10,7 +10,7 @@ function createWindow() {
     width: 1020,
     height: 820,
     title: "Linapse Configurator",
-    icon: path.join(__dirname, 'linapse-header-logo.png'),
+    icon: path.join(__dirname, 'linapse-square-logo.png'),
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true

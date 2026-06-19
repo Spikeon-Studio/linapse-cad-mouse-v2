@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.6.6] - 2026-06-19
+
+### Added
+- **Square App Logo**: Integrated the new `linapse-square-logo.png` square logo for system shortcuts, application menu items, and installers.
+- **Shortcut Icon Update**: Updated the Linux launcher `.desktop` template to use the square logo icon.
+- **Electron Build Icon**: Configured `electron-builder` and window instantiation to bundle and display the new square logo icon instead of the wide header logo.
+
 ## [2.6.5] - 2026-06-19
 
 ### Changed

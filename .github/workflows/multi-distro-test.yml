@@ -101,17 +101,32 @@ jobs:
           pattern: status-*
           merge-multiple: true
 
+      - name: Download Windows test logs on failure
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: pytest-windows-log
+          path: results/logs
+
+      - name: Copy Windows test logs if present
+        run: |
+          if [ -d results/logs ] && [ -f results/logs/pytest_output.txt ]; then
+            mkdir -p ci_logs
+            cp results/logs/pytest_output.txt ci_logs/windows_pytest_failure.log
+          fi
+
       - name: Show results directory
         run: ls -la results/
 
       - name: Run badge updater script
         run: python3 linux/update_badges.py results/
 
-      - name: Check for changes in README.md
+      - name: Check for changes
         id: git-check
         run: |
           git status
-          if git diff --quiet README.md; then
+          git add README.md ci_logs/ || true
+          if git diff --cached --quiet; then
             echo "changed=false" >> $GITHUB_OUTPUT
           else
             echo "changed=true" >> $GITHUB_OUTPUT
@@ -122,8 +137,7 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add README.md
-          git commit -m "docs: update distro badges in README [skip ci]"
+          git commit -m "docs: update distro badges and commit CI logs [skip ci]"
           git push
 
   build-windows:

@@ -2,7 +2,7 @@
 Name=Linapse Configurator
 Comment=CAD Mouse MK2 Web Configurator (Electron App)
 Exec=sh -c "cd __REPO_DIR__/configurator && npm start"
-Icon=__REPO_DIR__/configurator/linapse-header-logo.png
+Icon=__REPO_DIR__/configurator/linapse-square-logo.png
 Terminal=false
 Type=Application
 Categories=Utility;Settings;
