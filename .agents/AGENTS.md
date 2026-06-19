@@ -13,6 +13,7 @@ Every time you make any change to the codebase, you MUST:
    - **MAJOR** (`X.y.z`): Increment for breaking API changes, hardware protocol updates, or massive structural refactors.
 3. **Write the new version** back to the [VERSION](file:///home/spikeon/Dev/linapse-cad-mouse-v2/VERSION) file.
 4. Update any other files that track version metadata (such as browser userscript headers or configuration files) to match the new version.
+5. If changes are made to the device firmware (under the `firmware/` directory), you MUST update the firmware version returned by the serial command inside [main.cpp](file:///home/spikeon/Dev/linapse-cad-mouse-v2/firmware/src/main.cpp) to match the new version.
 
 ## Changelog Updates
 
