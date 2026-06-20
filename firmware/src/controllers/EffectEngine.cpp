@@ -163,27 +163,24 @@ void EffectEngine::doEqualizer() {
     if (val < 0.0f) val = 0.0f;
     if (val > 1.0f) val = 1.0f;
 
-    float r = 0.0f, g = 0.0f, b = 0.0f;
+    float hue = 240.0f;
     if (val <= 0.5f) {
       float t = val / 0.5f;
-      r = t * 255.0f;
-      g = t * 128.0f;
-      b = (1.0f - t) * 255.0f;
+      hue = 240.0f - t * 210.0f;
     } else {
       float t = (val - 0.5f) / 0.5f;
-      r = 255.0f;
-      g = (1.0f - t) * 128.0f;
-      b = 0.0f;
+      hue = 30.0f - t * 30.0f;
     }
 
+    uint32_t baseColor = hsvToRgb(hue, 1.0f, 1.0f);
     float scale = val * (brightness_ / 255.0f);
-    auto ch = [scale](float v, float gamma) -> uint8_t {
-      return (uint8_t)(powf(v / 255.0f, gamma) * scale * 255.0f + 0.5f);
+    auto ch = [scale](uint32_t v, float gamma) -> uint8_t {
+      return (uint8_t)(powf((float)v / 255.0f, gamma) * scale * 255.0f + 0.5f);
     };
 
-    uint32_t col = ((uint32_t)ch(r, 1.8f) << 16)
-                 | ((uint32_t)ch(g, 2.2f) << 8)
-                 |  (uint32_t)ch(b, 2.2f);
+    uint32_t col = ((uint32_t)ch((baseColor >> 16) & 0xFF, 1.8f) << 16)
+                 | ((uint32_t)ch((baseColor >> 8) & 0xFF, 2.2f) << 8)
+                 |  (uint32_t)ch(baseColor & 0xFF, 2.2f);
 
     ledController.effectPixel(i, col);
   }

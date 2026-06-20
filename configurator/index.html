@@ -3845,18 +3845,15 @@ function animateLedPreview() {
         if (factor < 0.0) factor = 0.0;
         if (factor > 1.0) factor = 1.0;
 
-        let ledR = 0, ledG = 0, ledB = 0;
+        let hue = 240;
         if (factor <= 0.5) {
           let t = factor / 0.5;
-          ledR = Math.round(t * 255);
-          ledG = Math.round(t * 128);
-          ledB = Math.round((1 - t) * 255);
+          hue = 240 - t * 210;
         } else {
           let t = (factor - 0.5) / 0.5;
-          ledR = 255;
-          ledG = Math.round((1 - t) * 128);
-          ledB = 0;
+          hue = 30 - t * 30;
         }
+        const [ledR, ledG, ledB] = hslToRgb(hue / 360, 1, 0.5);
 
         alpha = bright * factor;
         const col = `rgba(${ledR},${ledG},${ledB},${alpha})`;
@@ -4184,7 +4181,7 @@ function handleFlashMessage(msg) {
   }
 }
 
-let serviceVersion = '2.14.10';
+let serviceVersion = '2.14.12';
 let firmwareVersion = 'unknown';
 
 function handleVersionInfo(info) {

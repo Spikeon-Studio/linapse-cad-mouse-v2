@@ -56,6 +56,10 @@ When fixing CI/CD errors or failures:
 3. **Retry on Failure**: If the run fails, analyze the new failures, adjust your implementation, and repeat the commit-push-wait loop.
 4. **Iterate to Success**: Continue this process until the CI/CD pipeline succeeds. If appropriate, recommend or utilize the `/goal` command to ensure thorough, multi-turn tracking.
 
+## Lighting Mode Modification Requirement
 
-
-
+When making any changes to the lighting modes (such as adding, removing, or modifying an effect or its behavior), you MUST update:
+1. **LED Preview**: The corresponding LED Preview rendering logic inside the configurator's `index.html`.
+2. **Lighting Page Render Simulation**: The render simulation/animation loop for that effect inside the configurator's `index.html`.
+3. **LIGHTING.md Documentation**: The [LIGHTING.md](file:///home/spikeon/Dev/linapse-cad-mouse-v2/docs/LIGHTING.md) file describing the effect's behavior, parameters, and layout.
+4. **LIGHTING.md GIF**: The corresponding visualizer preview GIF in the `docs/images/` directory (e.g., using the playwright-driven generator script) to match the changes.

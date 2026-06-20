@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.14.12] - 2026-06-20
+
+### Added
+- **Agent Rules**: Added a workspace rule to `AGENTS.md` requiring that when changes are made to lighting modes, corresponding LED previews, configurator simulations, documentation (LIGHTING.md), and visualizer GIFs must be updated.
+
+## [2.14.11] - 2026-06-20
+
+### Changed
+- **Equalizer Effect**: Smooth HSV/thermal gradient (Blue-Cyan-Green-Yellow-Orange-Red) for the frequency band intensity color interpolation.
+
 ## [2.14.10] - 2026-06-20
 
 ### Changed
