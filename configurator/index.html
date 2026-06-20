@@ -3144,9 +3144,16 @@ function applyMotion(v, ignoreInversion = false) {
 
   benchy.position.x = Math.max(-xBound, Math.min(xBound, benchy.position.x + dx));
   benchy.position.y = Math.max(-yBound, Math.min(yBound, benchy.position.y - dy));
-  benchy.rotation.x += drx;
-  benchy.rotation.y += dry;
-  benchy.rotation.z += drz;
+  
+  // Rotate in world/camera space using quaternions to prevent coordinate system coupling
+  const qx = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), drx);
+  const qy = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), dry);
+  const qz = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), drz);
+
+  benchy.quaternion.premultiply(qx);
+  benchy.quaternion.premultiply(qy);
+  benchy.quaternion.premultiply(qz);
+
   requestRender();
 }
 
@@ -4181,7 +4188,7 @@ function handleFlashMessage(msg) {
   }
 }
 
-let serviceVersion = '2.14.15';
+let serviceVersion = '2.14.16';
 let firmwareVersion = 'unknown';
 
 function handleVersionInfo(info) {

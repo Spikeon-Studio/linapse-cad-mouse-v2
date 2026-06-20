@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.14.16] - 2026-06-20
+
+### Fixed
+- **3D Viewport Motion**: Redesigned the 3D Benchy's rotation logic to use world-space quaternions instead of euler angles. This resolves cross-axis coupling (e.g. pitch inputs tilting the boat forward/backward relative to the screen no matter the twist/roll) and corrects Ry axis rotation response.
+
 ## [2.14.15] - 2026-06-20
 
 ### Added
