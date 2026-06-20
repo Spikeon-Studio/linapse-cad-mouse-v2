@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.14.15] - 2026-06-20
+
+### Added
+- **Interactive Sensitivity Calibration Wizard**: Added to the features list in README.md and documented in USAGE.md.
+
+### Changed
+- **Documentation Screenshots**: Regenerated all configurator and sensitivity screenshots in the documentation with fresh captures.
+
 ## [2.14.14] - 2026-06-20
 
 ### Fixed

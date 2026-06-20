@@ -113,6 +113,8 @@ The **LED Preview** ring is a live mock of what the device will show before you 
 
 ## Sensitivity — motion tuning
 
+![Sensitivity tab](images/configurator-sensitivity.png)
+
 Tune the 6DoF motion filter against a live 3D **Benchy** test model. **Changes apply live** — drag the puck and feel the difference immediately. The viewport prompt reads **MOVE PUCK TO TEST**.
 
 The Sensitivity panel is organized into three sub-tabs:
@@ -124,9 +126,15 @@ Configure filter settings and dead zones:
 - **Curve (Exponent)**: Input-to-output response shaping from `1 – 5` (default `3`). Low values give linear 1:1 response, high values make small movements gentle and large movements aggressive.
 
 ### Axes (Directional Sensitivity & Calibration Wizard)
+
+![Sensitivity Axes & Calibration Wizard](images/configurator-sensitivity-axes.png)
+
 Manage sensitivity individually for all 12 direction vectors:
 - **Max Sensitivity**: Sliders and inputs accept values up to `20.0` (previously `5.0`) to accommodate pucks with tighter spring deflection or user preferences.
 - **Interactive Calibration Wizard**: Click **Run Calibration Wizard** at the top of the Axes tab to start a guided, step-by-step setup:
+
+  ![Calibration Wizard Overlay](images/configurator-sensitivity-wizard.png)
+
   1. The wizard overlays on top of the Benchy canvas.
   2. For each of the 6 physical axes (X, Y, Z, Rx, Ry, Rz), you will deflect the puck to your comfortable limits for 3 seconds.
   3. Telemetry is measured unscaled (using a temporary `1.0` sensitivity baseline).
