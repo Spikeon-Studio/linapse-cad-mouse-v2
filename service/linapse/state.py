@@ -2,7 +2,7 @@ import asyncio
 import threading
 
 # Version information
-service_version = "2.14.13"
+service_version = "2.14.14"
 firmware_version = "unknown"
 
 # Shared state variables
@@ -35,6 +35,8 @@ async def broadcast(msg: str):
             _ws_locks[ws] = lock
         try:
             if ws not in ws_clients:
+                continue
+            if lock.locked():
                 continue
             async with lock:
                 if ws not in ws_clients:

@@ -79,13 +79,14 @@ def equalizer_watcher(actions_ref):
                     state.broadcast_from_thread(f"EQ:{eq_ws_str}")
                     if state.loop and state.serial_queue:
                         state.loop.call_soon_threadsafe(state.serial_queue.put_nowait, f"eq {eq_str}")
-                time.sleep(0.02)
+                time.sleep(0.04)
             except Exception:
                 time.sleep(1.0)
         return
 
     proc = None
     smoothed_levels = [0.0] * 8
+    last_update_time = 0.0
     
     while True:
         try:
@@ -149,13 +150,16 @@ def equalizer_watcher(actions_ref):
                     smoothed_levels[b] = smoothed_levels[b] * 0.65 + val * 0.35
                     temp[b] = int(smoothed_levels[b])
                 
-                eq_str = " ".join(map(str, temp))
-                eq_ws_str = ":".join(map(str, temp))
-                
-                state.last_eq_levels = list(temp)
-                state.broadcast_from_thread(f"EQ:{eq_ws_str}")
-                if state.loop and state.serial_queue:
-                    state.loop.call_soon_threadsafe(state.serial_queue.put_nowait, f"eq {eq_str}")
+                now = time.time()
+                if now - last_update_time >= 0.04:
+                    last_update_time = now
+                    eq_str = " ".join(map(str, temp))
+                    eq_ws_str = ":".join(map(str, temp))
+                    
+                    state.last_eq_levels = list(temp)
+                    state.broadcast_from_thread(f"EQ:{eq_ws_str}")
+                    if state.loop and state.serial_queue:
+                        state.loop.call_soon_threadsafe(state.serial_queue.put_nowait, f"eq {eq_str}")
                     
         except Exception as e:
             print(f"[eq] error in watcher loop: {e}")

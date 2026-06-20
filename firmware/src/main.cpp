@@ -202,34 +202,28 @@ void handleSerial() {
       else if (serialBuf.startsWith("config ")) handleConfigCommand(serialBuf.substring(7));
       else if (serialBuf.startsWith("sens "))   handleSensCommand(serialBuf.substring(5));
       else if (serialBuf.startsWith("debug "))  handleDebugCommand(serialBuf.substring(6));
-      else if (serialBuf == "version")          { Serial.println("version=2.14.13"); }
+      else if (serialBuf == "version")          { Serial.println("version=2.14.14"); }
       else if (serialBuf.startsWith("service_hid ")) {
-        int val = serialBuf.substring(12).toInt();
+        int val = atoi(serialBuf.c_str() + 12);
         g_serviceHidMode = (val != 0);
         g_lastServicePacketMs = millis();
         Serial.println("OK");
       }
       else if (serialBuf.startsWith("hid_report ")) {
         g_lastServicePacketMs = millis();
-        String args = serialBuf.substring(11);
+        const char* p = serialBuf.c_str() + 11;
         float motion[6] = {0};
         int parsed = 0;
-        int startIdx = 0;
         for (int i = 0; i < 6; i++) {
-          int commaIdx = args.indexOf(',', startIdx);
-          if (commaIdx == -1 && i < 5) {
-            break;
-          }
-          String valStr;
-          if (commaIdx == -1) {
-            valStr = args.substring(startIdx);
-          } else {
-            valStr = args.substring(startIdx, commaIdx);
-            startIdx = commaIdx + 1;
-          }
-          valStr.trim();
-          motion[i] = valStr.toFloat();
+          while (*p == ' ') p++;
+          if (*p == '\0') break;
+          char* next;
+          float val = strtof(p, &next);
+          if (p == next) break;
+          motion[i] = val;
           parsed++;
+          p = next;
+          while (*p == ' ' || *p == ',') p++;
         }
         if (parsed == 6) {
           hidController.sendAxesReport(motion);
@@ -239,7 +233,7 @@ void handleSerial() {
         }
       }
       else if (serialBuf.startsWith("volume ")) {
-        int val = serialBuf.substring(7).toInt();
+        int val = atoi(serialBuf.c_str() + 7);
         if (val >= 0 && val <= 100) {
           g_currentVolume = val;
           Serial.println("OK");
@@ -248,22 +242,23 @@ void handleSerial() {
         }
       }
       else if (serialBuf.startsWith("eq ")) {
-        int start = 3;
+        const char* p = serialBuf.c_str() + 3;
         bool ok = true;
         int temp[8] = {0};
         for (int i = 0; i < 8; i++) {
-          int spaceIdx = serialBuf.indexOf(' ', start);
-          if (spaceIdx == -1) {
-            if (i == 7) {
-              temp[i] = serialBuf.substring(start).toInt();
-            } else {
-              ok = false;
-              break;
-            }
-          } else {
-            temp[i] = serialBuf.substring(start, spaceIdx).toInt();
-            start = spaceIdx + 1;
+          while (*p == ' ') p++;
+          if (*p == '\0') {
+            ok = false;
+            break;
           }
+          char* next;
+          long val = strtol(p, &next, 10);
+          if (p == next) {
+            ok = false;
+            break;
+          }
+          temp[i] = (int)val;
+          p = next;
         }
         if (ok) {
           bool valid = true;

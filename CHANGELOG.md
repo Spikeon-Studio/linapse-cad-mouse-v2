@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.14.14] - 2026-06-20
+
+### Fixed
+- **Mouse Disconnection**: Fixed mouse disconnection loops and high memory/CPU usage by rate-limiting EQ visualizer updates to 25Hz and dropping backlog websocket frames.
+- **Microcontroller Optimization**: Optimized firmware serial parsing for `eq`, `hid_report`, `volume`, and `service_hid` commands to be zero-allocation (pointer-based), avoiding RP2040 heap fragmentation and crashes under high-frequency transmission.
+
 ## [2.14.13] - 2026-06-20
 
 ### Fixed
