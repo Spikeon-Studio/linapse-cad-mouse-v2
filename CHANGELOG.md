@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.14.10] - 2026-06-20
+
+### Changed
+- **Equalizer Effect**: Redesigned the EQ effect from a 2-channel visualization (Bass/Treble) mapped across 4 LEDs each to an 8-band FFT spectrum visualizer where each of the 8 LEDs displays the intensity of a single frequency band using color interpolation (blue at low, orange at mid, red at clip).
+
 ## [2.14.9] - 2026-06-20
 
 ### Fixed

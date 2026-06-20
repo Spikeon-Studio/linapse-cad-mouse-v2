@@ -39,7 +39,8 @@ async def ws_handler(websocket, actions_ref=None):
             elif message == "volume_get":
                 await websocket.send(f"VOLUME:{state.last_system_volume}")
             elif message == "eq_get":
-                await websocket.send(f"EQ:{state.last_bass_level}:{state.last_treble_level}")
+                eq_str = ":".join(map(str, state.last_eq_levels))
+                await websocket.send(f"EQ:{eq_str}")
             elif message == "version_get":
                 await websocket.send(f"VERSION_INFO:{{\"service\":\"{state.service_version}\",\"firmware\":\"{state.firmware_version}\"}}")
             elif message == "flash":

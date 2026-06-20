@@ -20,8 +20,7 @@ EffectEngine        effectEngine;
 // Define global variables required by the linker
 bool g_debugAxes = false;
 int g_currentVolume = 50;
-int g_bassLevel = 0;
-int g_trebleLevel = 0;
+int g_eqLevels[8] = {0};
 bool g_serviceHidMode = false;
 unsigned long g_lastServicePacketMs = 0;
 
@@ -423,21 +422,40 @@ void test_effect_volume(void) {
 void test_effect_equalizer(void) {
     effectEngine.configure(LedEffect::Equalizer, 0x00FF00, 255);
 
-    // 50% Bass (active: 3, 2) & 75% Treble (active: 4, 5, 6)
-    g_bassLevel = 50;
-    g_trebleLevel = 75;
+    // Set 8 eq levels
+    g_eqLevels[0] = 100;
+    g_eqLevels[1] = 50;
+    g_eqLevels[2] = 0;
+    g_eqLevels[3] = 100;
+    g_eqLevels[4] = 0;
+    g_eqLevels[5] = 50;
+    g_eqLevels[6] = 100;
+    g_eqLevels[7] = 0;
     effectEngine.update(100);
 
-    // Bass: active L_bass=0,1 -> physical 3, 2
-    TEST_ASSERT_EQUAL_HEX32(0x00FF00, ledController.getPixelColor(3));
-    TEST_ASSERT_EQUAL_HEX32(0x00FF00, ledController.getPixelColor(2));
-    TEST_ASSERT_EQUAL_HEX32(0x000000, ledController.getPixelColor(1));
-    TEST_ASSERT_EQUAL_HEX32(0x000000, ledController.getPixelColor(0));
+    TEST_ASSERT_EQUAL_HEX32(0xFF0000, ledController.getPixelColor(0));
+    
+    uint32_t c1 = ledController.getPixelColor(1);
+    uint8_t r1 = (c1 >> 16) & 0xFF;
+    uint8_t g1 = (c1 >> 8) & 0xFF;
+    uint8_t b1 = c1 & 0xFF;
+    TEST_ASSERT(r1 > 0);
+    TEST_ASSERT(g1 > 0);
+    TEST_ASSERT_EQUAL_UINT8(0, b1);
 
-    // Treble: active L_treble=0,1,2 -> physical 4, 5, 6
-    TEST_ASSERT_EQUAL_HEX32(0x00FF00, ledController.getPixelColor(4));
-    TEST_ASSERT_EQUAL_HEX32(0x00FF00, ledController.getPixelColor(5));
-    TEST_ASSERT_EQUAL_HEX32(0x00FF00, ledController.getPixelColor(6));
+    TEST_ASSERT_EQUAL_HEX32(0x000000, ledController.getPixelColor(2));
+    TEST_ASSERT_EQUAL_HEX32(0xFF0000, ledController.getPixelColor(3));
+    TEST_ASSERT_EQUAL_HEX32(0x000000, ledController.getPixelColor(4));
+
+    uint32_t c5 = ledController.getPixelColor(5);
+    uint8_t r5 = (c5 >> 16) & 0xFF;
+    uint8_t g5 = (c5 >> 8) & 0xFF;
+    uint8_t b5 = c5 & 0xFF;
+    TEST_ASSERT(r5 > 0);
+    TEST_ASSERT(g5 > 0);
+    TEST_ASSERT_EQUAL_UINT8(0, b5);
+
+    TEST_ASSERT_EQUAL_HEX32(0xFF0000, ledController.getPixelColor(6));
     TEST_ASSERT_EQUAL_HEX32(0x000000, ledController.getPixelColor(7));
 }
 

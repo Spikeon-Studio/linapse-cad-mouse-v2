@@ -89,11 +89,15 @@ Displays the host operating system's current playback volume (0% to 100%) on LED
 ---
 
 ### 8. Equalizer
-Translates host system audio levels into a two-channel stereo visualizer on the LED ring.
+Translates host system audio frequencies into an 8-band spectrum visualizer on the LED ring.
 - **LED Channel Layout**:
-  - **Bass (Left Channel)**: Represented on LEDs 1 to 4 (bottom-left to top-left).
-  - **Treble (Right Channel)**: Represented on LEDs 8 to 5 (bottom-right to top-right).
-- **Host Syncing**: `linapse-service` captures playback from the default monitor output on Linux (`parec` + IIR filters), computes low-frequency and high-frequency energy levels (0 to 100), and sends them over serial (command: `eq <bass> <treble>\n`).
+  - Each of the 8 LEDs represents a single frequency band, ranging from lowest frequencies (LED 0) to highest frequencies (LED 7).
+  - The intensity of each band controls the color and brightness percentage of its corresponding LED.
+- **Color Interpolation**:
+  - **Low intensity**: Blue.
+  - **Mid intensity**: Orange.
+  - **Clip/High intensity (100%)**: Red.
+- **Host Syncing**: `linapse-service` captures playback from the default monitor output on Linux (`parec`), computes a 256-point FFT, maps frequencies to 8 log-spaced bands, and pushes updates over serial (command: `eq <v0> <v1> <v2> <v3> <v4> <v5> <v6> <v7>\n`).
 - **Configurability**: Respects the configured max brightness.
 
 ![Equalizer Effect](images/led-effect-equalizer.gif)

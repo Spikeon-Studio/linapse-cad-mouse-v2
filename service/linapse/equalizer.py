@@ -5,36 +5,52 @@ import struct
 import math
 from . import state
 
-class AudioFilter:
-    def __init__(self):
-        self.lp_state = 0.0
-        self.hp_state = 0.0
-        self.hp_prev_x = 0.0
+def fft(x):
+    N = len(x)
+    if N <= 1:
+        return x
+    even = fft(x[0::2])
+    odd = fft(x[1::2])
+    
+    T = []
+    for k in range(N // 2):
+        angle = -2.0 * math.pi * k / N
+        c = math.cos(angle)
+        s = math.sin(angle)
+        ok_r, ok_i = odd[k]
+        t_r = ok_r * c - ok_i * s
+        t_i = ok_r * s + ok_i * c
+        T.append((t_r, t_i))
+    
+    res = [None] * N
+    for k in range(N // 2):
+        ev_r, ev_i = even[k]
+        t_r, t_i = T[k]
+        res[k] = (ev_r + t_r, ev_i + t_i)
+        res[k + N // 2] = (ev_r - t_r, ev_i - t_i)
+    return res
 
-    def process(self, samples):
-        bass_sum = 0.0
-        treble_sum = 0.0
-        
-        lp = self.lp_state
-        hp = self.hp_state
-        prev_x = self.hp_prev_x
-        
-        for x in samples:
-            # Lowpass (Bass, cutoff ~200Hz at 22050Hz sample rate)
-            lp = lp + 0.057 * (x - lp)
-            bass_sum += abs(lp)
-            
-            # Highpass (Treble, cutoff ~4000Hz at 22050Hz sample rate)
-            hp = 0.46 * (hp + x - prev_x)
-            prev_x = x
-            treble_sum += abs(hp)
-            
-        self.lp_state = lp
-        self.hp_state = hp
-        self.hp_prev_x = prev_x
-        
-        n = len(samples) or 1
-        return bass_sum / n, treble_sum / n
+bands_bins = [
+    (1, 1),      # Band 0: ~86Hz
+    (2, 2),      # Band 1: ~172Hz
+    (3, 4),      # Band 2: ~258Hz - ~344Hz
+    (5, 8),      # Band 3: ~430Hz - ~689Hz
+    (9, 15),     # Band 4: ~775Hz - ~1292Hz
+    (16, 26),    # Band 5: ~1378Hz - ~2239Hz
+    (27, 46),    # Band 6: ~2325Hz - ~3962Hz
+    (47, 120)    # Band 7: ~4048Hz - ~10336Hz
+]
+
+bands_scales = [
+    1.0 / 12000.0,
+    1.0 / 8000.0,
+    1.0 / 6000.0,
+    1.0 / 4000.0,
+    1.0 / 3000.0,
+    1.0 / 2000.0,
+    1.0 / 1200.0,
+    1.0 / 600.0
+]
 
 def equalizer_watcher(actions_ref):
     # Only run audio capture on Linux
@@ -52,21 +68,24 @@ def equalizer_watcher(actions_ref):
                             active = True
                 
                 if active and not state.flashing_active:
-                    phase += 0.03
-                    bass = int(50 + 50 * math.sin(phase))
-                    treble = int(50 + 50 * math.cos(phase * 1.5))
-                    state.last_bass_level = bass
-                    state.last_treble_level = treble
-                    state.broadcast_from_thread(f"EQ:{bass}:{treble}")
+                    phase += 0.05
+                    temp = [0] * 8
+                    for i in range(8):
+                        temp[i] = int(50 + 50 * math.sin(phase + i * 0.5))
+                    eq_str = " ".join(map(str, temp))
+                    eq_ws_str = ":".join(map(str, temp))
+                    
+                    state.last_eq_levels = list(temp)
+                    state.broadcast_from_thread(f"EQ:{eq_ws_str}")
                     if state.loop and state.serial_queue:
-                        state.loop.call_soon_threadsafe(state.serial_queue.put_nowait, f"eq {bass} {treble}")
-                time.sleep(0.015)
+                        state.loop.call_soon_threadsafe(state.serial_queue.put_nowait, f"eq {eq_str}")
+                time.sleep(0.02)
             except Exception:
                 time.sleep(1.0)
         return
 
     proc = None
-    audio_filter = AudioFilter()
+    smoothed_levels = [0.0] * 8
     
     while True:
         try:
@@ -109,27 +128,34 @@ def equalizer_watcher(actions_ref):
                 continue
                 
             num_samples = len(data) // 2
-            if num_samples > 0:
-                samples = struct.unpack(f"<{num_samples}h", data[:num_samples*2])
-                bass_avg, treble_avg = audio_filter.process(samples)
+            if num_samples >= 256:
+                samples = struct.unpack(f"<256h", data[:512])
+                complex_samples = [(float(s), 0.0) for s in samples]
+                spectrum = fft(complex_samples)
                 
-                if bass_avg < 150.0:
-                    bass_level = 0
-                else:
-                    x_bass = max(0.0, min(1.0, (bass_avg - 150.0) / 4850.0))
-                    bass_level = int(10 + 90 * (x_bass ** 0.4))
-
-                if treble_avg < 100.0:
-                    treble_level = 0
-                else:
-                    x_treb = max(0.0, min(1.0, (treble_avg - 100.0) / 2400.0))
-                    treble_level = int(10 + 90 * (x_treb ** 0.4))
+                temp = [0] * 8
+                for b in range(8):
+                    start, end = bands_bins[b]
+                    mag_sum = 0.0
+                    for k in range(start, end + 1):
+                        r, i = spectrum[k]
+                        mag_sum += math.sqrt(r * r + i * i)
+                    avg_mag = mag_sum / (end - start + 1)
+                    
+                    scale = bands_scales[b]
+                    x = max(0.0, min(1.0, avg_mag * scale))
+                    val = int(100 * (x ** 0.5))
+                    
+                    smoothed_levels[b] = smoothed_levels[b] * 0.65 + val * 0.35
+                    temp[b] = int(smoothed_levels[b])
                 
-                state.last_bass_level = bass_level
-                state.last_treble_level = treble_level
-                state.broadcast_from_thread(f"EQ:{bass_level}:{treble_level}")
+                eq_str = " ".join(map(str, temp))
+                eq_ws_str = ":".join(map(str, temp))
+                
+                state.last_eq_levels = list(temp)
+                state.broadcast_from_thread(f"EQ:{eq_ws_str}")
                 if state.loop and state.serial_queue:
-                    state.loop.call_soon_threadsafe(state.serial_queue.put_nowait, f"eq {bass_level} {treble_level}")
+                    state.loop.call_soon_threadsafe(state.serial_queue.put_nowait, f"eq {eq_str}")
                     
         except Exception as e:
             print(f"[eq] error in watcher loop: {e}")

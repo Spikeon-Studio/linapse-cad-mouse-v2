@@ -154,52 +154,43 @@ void EffectEngine::doVolume() {
 }
 
 void EffectEngine::doEqualizer() {
-  extern int g_bassLevel;
-  extern int g_trebleLevel;
+  extern int g_eqLevels[8];
   
-  float bass = (float)g_bassLevel;
-  if (bass < 0.0f) bass = 0.0f;
-  if (bass > 100.0f) bass = 100.0f;
-
-  float treble = (float)g_trebleLevel;
-  if (treble < 0.0f) treble = 0.0f;
-  if (treble > 100.0f) treble = 100.0f;
-
-  float bass_active = (bass / 100.0f) * 4.0f;
-  float treble_active = (treble / 100.0f) * 4.0f;
-
   ledController.effectBegin();
 
-  // Bass: physical pixels 3, 2, 1, 0 (logical L_bass = 0..3)
-  for (int L = 0; L < 4; L++) {
-    float factor = 0.0f;
-    if (bass_active >= (float)(L + 1)) {
-      factor = 1.0f;
-    } else if (bass_active > (float)L) {
-      factor = bass_active - (float)L;
-    } else {
-      factor = 0.0f;
-    }
-    int P = 3 - L;
-    ledController.effectPixel(P, scaledColor(factor));
-  }
+  for (int i = 0; i < 8; i++) {
+    float val = (float)g_eqLevels[i] / 100.0f;
+    if (val < 0.0f) val = 0.0f;
+    if (val > 1.0f) val = 1.0f;
 
-  // Treble: physical pixels 4, 5, 6, 7 (logical L_treble = 0..3)
-  for (int L = 0; L < 4; L++) {
-    float factor = 0.0f;
-    if (treble_active >= (float)(L + 1)) {
-      factor = 1.0f;
-    } else if (treble_active > (float)L) {
-      factor = treble_active - (float)L;
+    float r = 0.0f, g = 0.0f, b = 0.0f;
+    if (val <= 0.5f) {
+      float t = val / 0.5f;
+      r = t * 255.0f;
+      g = t * 128.0f;
+      b = (1.0f - t) * 255.0f;
     } else {
-      factor = 0.0f;
+      float t = (val - 0.5f) / 0.5f;
+      r = 255.0f;
+      g = (1.0f - t) * 128.0f;
+      b = 0.0f;
     }
-    int P = 4 + L;
-    ledController.effectPixel(P, scaledColor(factor));
+
+    float scale = val * (brightness_ / 255.0f);
+    auto ch = [scale](float v, float gamma) -> uint8_t {
+      return (uint8_t)(powf(v / 255.0f, gamma) * scale * 255.0f + 0.5f);
+    };
+
+    uint32_t col = ((uint32_t)ch(r, 1.8f) << 16)
+                 | ((uint32_t)ch(g, 2.2f) << 8)
+                 |  (uint32_t)ch(b, 2.2f);
+
+    ledController.effectPixel(i, col);
   }
 
   ledController.effectCommit();
 }
+
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 

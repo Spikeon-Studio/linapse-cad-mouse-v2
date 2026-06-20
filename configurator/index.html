@@ -2673,9 +2673,22 @@ function connectWS() {
     }
     if (msg.startsWith('EQ:')) {
       const parts = msg.slice(3).split(':').map(Number);
-      if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
-        systemBass = parts[0];
-        systemTreble = parts[1];
+      if (parts.length === 8) {
+        let allValid = true;
+        for (let i = 0; i < 8; i++) {
+          if (isNaN(parts[i])) {
+            allValid = false;
+            break;
+          }
+        }
+        if (allValid) {
+          systemEqLevels = parts;
+          lastEqUpdateMs = Date.now();
+        }
+      } else if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+        const bass = parts[0];
+        const treble = parts[1];
+        systemEqLevels = [bass, bass, bass, bass, treble, treble, treble, treble];
         lastEqUpdateMs = Date.now();
       }
       return;
@@ -2893,8 +2906,7 @@ let reactiveActive = false;
 let reactivePrevTs = null;
 
 let systemVolume = 50;
-let systemBass = 0;
-let systemTreble = 0;
+let systemEqLevels = [0, 0, 0, 0, 0, 0, 0, 0];
 let lastVolumeUpdateMs = 0;
 let lastEqUpdateMs = 0;
 
@@ -3825,37 +3837,32 @@ function animateLedPreview() {
         alpha = bright * factor;
         ringAlpha = bright * (volVal / 100.0);
       } else if (currentEffect === 'equalizer') {
-        let bassVal = systemBass;
-        let trebleVal = systemTreble;
+        let val = systemEqLevels[i];
         if (Date.now() - lastEqUpdateMs > 2000) {
-          bassVal = 50 + 50 * Math.sin(ledPhase * Math.PI * 0.7);
-          trebleVal = 50 + 50 * Math.cos(ledPhase * Math.PI * 1.1);
+          val = 50 + 50 * Math.sin(ledPhase * Math.PI * 0.7 + i * 0.5);
         }
-        const bass_active = (bassVal / 100.0) * 4.0;
-        const treble_active = (trebleVal / 100.0) * 4.0;
-        let factor = 0.0;
-        
-        if (i === 5 || i === 6 || i === 7 || i === 0) { // Bass (LEDs 1-4)
-          const L = (i - 5 + 8) % 8;
-          if (bass_active >= (L + 1)) {
-            factor = 1.0;
-          } else if (bass_active > L) {
-            factor = bass_active - L;
-          } else {
-            factor = 0.0;
-          }
-        } else { // Treble (LEDs 8-5: i = 4, 3, 2, 1)
-          const L = 4 - i;
-          if (treble_active >= (L + 1)) {
-            factor = 1.0;
-          } else if (treble_active > L) {
-            factor = treble_active - L;
-          } else {
-            factor = 0.0;
-          }
+        let factor = val / 100.0;
+        if (factor < 0.0) factor = 0.0;
+        if (factor > 1.0) factor = 1.0;
+
+        let ledR = 0, ledG = 0, ledB = 0;
+        if (factor <= 0.5) {
+          let t = factor / 0.5;
+          ledR = Math.round(t * 255);
+          ledG = Math.round(t * 128);
+          ledB = Math.round((1 - t) * 255);
+        } else {
+          let t = (factor - 0.5) / 0.5;
+          ledR = 255;
+          ledG = Math.round((1 - t) * 128);
+          ledB = 0;
         }
+
         alpha = bright * factor;
-        ringAlpha = bright * ((bassVal + trebleVal) / 200.0);
+        const col = `rgba(${ledR},${ledG},${ledB},${alpha})`;
+        dot.style.background = col;
+        setSourceColor(i, col, alpha);
+        return;
       }
       const col = `rgba(${r},${g},${b},${alpha})`;
       dot.style.background = col;
@@ -4177,7 +4184,7 @@ function handleFlashMessage(msg) {
   }
 }
 
-let serviceVersion = '2.14.9';
+let serviceVersion = '2.14.10';
 let firmwareVersion = 'unknown';
 
 function handleVersionInfo(info) {

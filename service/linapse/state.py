@@ -2,7 +2,7 @@ import asyncio
 import threading
 
 # Version information
-service_version = "2.14.9"
+service_version = "2.14.10"
 firmware_version = "unknown"
 
 # Shared state variables
@@ -17,8 +17,8 @@ config_lock = threading.Lock()
 flashing_active = False
 last_volume_change_time = 0.0
 last_system_volume = 50
-last_bass_level = 0
-last_treble_level = 0
+last_eq_levels = [0] * 8
+
 _ws_locks = {}
 
 async def broadcast(msg: str):

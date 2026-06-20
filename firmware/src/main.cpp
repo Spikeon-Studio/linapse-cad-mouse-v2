@@ -27,8 +27,7 @@ EffectEngine       effectEngine;
 
 bool g_debugAxes = false;  // accessed by IdleState
 int g_currentVolume = 50;  // accessed by EffectEngine
-int g_bassLevel = 0;       // accessed by EffectEngine
-int g_trebleLevel = 0;     // accessed by EffectEngine
+int g_eqLevels[8] = {0};   // accessed by EffectEngine
 bool g_serviceHidMode = false;
 unsigned long g_lastServicePacketMs = 0;
 
@@ -203,7 +202,7 @@ void handleSerial() {
       else if (serialBuf.startsWith("config ")) handleConfigCommand(serialBuf.substring(7));
       else if (serialBuf.startsWith("sens "))   handleSensCommand(serialBuf.substring(5));
       else if (serialBuf.startsWith("debug "))  handleDebugCommand(serialBuf.substring(6));
-      else if (serialBuf == "version")          { Serial.println("version=2.14.9"); }
+      else if (serialBuf == "version")          { Serial.println("version=2.14.10"); }
       else if (serialBuf.startsWith("service_hid ")) {
         int val = serialBuf.substring(12).toInt();
         g_serviceHidMode = (val != 0);
@@ -249,19 +248,41 @@ void handleSerial() {
         }
       }
       else if (serialBuf.startsWith("eq ")) {
-        int spaceIdx = serialBuf.indexOf(' ', 3);
-        if (spaceIdx != -1) {
-          int bass = serialBuf.substring(3, spaceIdx).toInt();
-          int treble = serialBuf.substring(spaceIdx + 1).toInt();
-          if (bass >= 0 && bass <= 100 && treble >= 0 && treble <= 100) {
-            g_bassLevel = bass;
-            g_trebleLevel = treble;
+        int start = 3;
+        bool ok = true;
+        int temp[8] = {0};
+        for (int i = 0; i < 8; i++) {
+          int spaceIdx = serialBuf.indexOf(' ', start);
+          if (spaceIdx == -1) {
+            if (i == 7) {
+              temp[i] = serialBuf.substring(start).toInt();
+            } else {
+              ok = false;
+              break;
+            }
+          } else {
+            temp[i] = serialBuf.substring(start, spaceIdx).toInt();
+            start = spaceIdx + 1;
+          }
+        }
+        if (ok) {
+          bool valid = true;
+          for (int i = 0; i < 8; i++) {
+            if (temp[i] < 0 || temp[i] > 100) {
+              valid = false;
+              break;
+            }
+          }
+          if (valid) {
+            for (int i = 0; i < 8; i++) {
+              g_eqLevels[i] = temp[i];
+            }
             Serial.println("OK");
           } else {
-            Serial.println("ERR eq 0-100 0-100");
+            Serial.println("ERR eq bounds 0-100");
           }
         } else {
-          Serial.println("ERR eq <bass> <treble>");
+          Serial.println("ERR eq <8 levels>");
         }
       }
       serialBuf = "";
