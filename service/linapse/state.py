@@ -36,8 +36,6 @@ async def broadcast(msg: str):
         try:
             if ws not in ws_clients:
                 continue
-            if lock.locked():
-                continue
             async with lock:
                 if ws not in ws_clients:
                     continue
