@@ -91,12 +91,13 @@ def load_actions():
             actions = {
                 "button_override": False,
                 "lock_translation_rotate": True,
+                "lock_translation_rotate_threshold": 5.0,
                 "sensitivity": {
                     "x_pos": 1.0, "x_neg": 1.0, "y_pos": 1.0, "y_neg": 1.0, "z_pos": 1.0, "z_neg": 1.0,
                     "rx_pos": 1.0, "rx_neg": 1.0, "ry_pos": 1.0, "ry_neg": 1.0, "rz_pos": 1.0, "rz_neg": 1.0
                 },
                 "inversion": {
-                    "x": False, "y": False, "z": False, "rx": True, "ry": False, "rz": True
+                    "x": False, "y": False, "z": False, "rx": True, "ry": True, "rz": True
                 },
                 "modes": {
                     "Default": {

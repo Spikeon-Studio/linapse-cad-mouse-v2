@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.16.2] - 2026-06-20
+
+### Added
+- **Configurable Translation Lock Threshold**: Added a slider/input under the configurator's general motion tab to customize the threshold of what is considered "rotation" for locking translation, preventing minor physical wobble/crosstalk from prematurely locking translation.
+- **Inverted default roll**: Changed default axis inversion of roll (`ry`) to True (inverted) to match user expectations in OnShape.
+
 ## [2.16.1] - 2026-06-20
 
 ### Fixed

@@ -197,7 +197,8 @@ def serial_thread(actions_ref):
                             if "PYTEST_CURRENT_TEST" in os.environ and not (actions_ref[0] and actions_ref[0].get("lock_translation_rotate") is True):
                                 lock_trans = False
 
-                            if lock_trans and (abs(rx) > 1e-5 or abs(ry) > 1e-5 or abs(rz) > 1e-5):
+                            lock_thresh = actions_ref[0].get("lock_translation_rotate_threshold", 5.0) if actions_ref[0] else 5.0
+                            if lock_trans and (abs(rx) > lock_thresh or abs(ry) > lock_thresh or abs(rz) > lock_thresh):
                                 x = 0.0
                                 y = 0.0
                                 z = 0.0

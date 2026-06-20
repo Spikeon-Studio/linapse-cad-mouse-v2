@@ -884,6 +884,7 @@ def test_translation_lock_during_rotation(running_service):
     # Enable translation lock explicitly
     running_service_actions = linapse_service.state.actions_ref[0]
     running_service_actions["lock_translation_rotate"] = True
+    running_service_actions["lock_translation_rotate_threshold"] = 2.0
     
     loop = running_service["loop"]
     ws_port = running_service["ws_port"]
@@ -900,12 +901,17 @@ def test_translation_lock_during_rotation(running_service):
             msg1 = await asyncio.wait_for(ws.recv(), timeout=1.0)
             assert msg1 == "MOTION:10.0,0.0,0.0,0.0,0.0,0.0"
             
-            # 2. Combined translation and rotation should suppress translation
+            # 2. Combined translation and rotation BELOW threshold should NOT suppress translation
+            mock_serial.input_queue.put(b">MOTION:10.0,0,0,1.0,0,0\n")
+            msg_below = await asyncio.wait_for(ws.recv(), timeout=1.0)
+            assert msg_below == "MOTION:10.0,0.0,0.0,1.0,0.0,0.0"
+
+            # 3. Combined translation and rotation ABOVE threshold should suppress translation
             mock_serial.input_queue.put(b">MOTION:10.0,0,0,5.0,0,0\n")
             msg2 = await asyncio.wait_for(ws.recv(), timeout=1.0)
             assert msg2 == "MOTION:0.0,0.0,0.0,5.0,0.0,0.0"
             
-            # 3. Disable translation lock and verify both are allowed
+            # 4. Disable translation lock and verify both are allowed
             running_service_actions["lock_translation_rotate"] = False
             mock_serial.input_queue.put(b">MOTION:10.0,0,0,5.0,0,0\n")
             msg3 = await asyncio.wait_for(ws.recv(), timeout=1.0)
