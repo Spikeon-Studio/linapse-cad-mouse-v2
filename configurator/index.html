@@ -3451,7 +3451,7 @@ const wizardStepData = [
     instruction: "Tilt puck fully LEFT.",
     details: "Tilt the puck left to your comfortable limit, then let go.",
     axisIndex: 4,
-    isPositive: false,
+    isPositive: true,
     key: 'ry_pos',
     dirLabel: 'Tilt Left'
   },
@@ -3460,7 +3460,7 @@ const wizardStepData = [
     instruction: "Tilt puck fully RIGHT.",
     details: "Tilt the puck right to your comfortable limit, then let go.",
     axisIndex: 4,
-    isPositive: true,
+    isPositive: false,
     key: 'ry_neg',
     dirLabel: 'Tilt Right'
   },
@@ -4177,7 +4177,7 @@ function handleFlashMessage(msg) {
   }
 }
 
-let serviceVersion = '2.14.7';
+let serviceVersion = '2.14.8';
 let firmwareVersion = 'unknown';
 
 function handleVersionInfo(info) {
