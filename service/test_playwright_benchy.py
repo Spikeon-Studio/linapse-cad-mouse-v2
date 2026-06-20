@@ -716,8 +716,8 @@ def test_benchy_sensitivity_and_dead_zones(tmp_path):
                 ("rx_neg", "#sensRxNegVal", ">MOTION:0,0,0,20.0,0,0\n", 3, 1),
                 ("ry_pos", "#sensRyPosVal", ">MOTION:0,0,0,0,-20.0,0\n", 4, -1),
                 ("ry_neg", "#sensRyNegVal", ">MOTION:0,0,0,0,20.0,0\n", 4, 1),
-                ("rz_pos", "#sensRzPosVal", ">MOTION:0,0,0,0,0,20.0\n", 5, 1),
-                ("rz_neg", "#sensRzNegVal", ">MOTION:0,0,0,0,0,-20.0\n", 5, -1),
+                ("rz_pos", "#sensRzPosVal", ">MOTION:0,0,0,0,0,-20.0\n", 5, -1),
+                ("rz_neg", "#sensRzNegVal", ">MOTION:0,0,0,0,0,20.0\n", 5, 1),
             ]
 
             for param, val_id, raw_packet, axis_idx, sign in all_sens_tests:

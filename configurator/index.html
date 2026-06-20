@@ -3469,7 +3469,7 @@ const wizardStepData = [
     instruction: "Twist puck fully LEFT.",
     details: "Twist the puck counter-clockwise to your comfortable limit, then let go.",
     axisIndex: 5,
-    isPositive: true,
+    isPositive: false,
     key: 'rz_pos',
     dirLabel: 'Twist Left'
   },
@@ -3478,7 +3478,7 @@ const wizardStepData = [
     instruction: "Twist puck fully RIGHT.",
     details: "Twist the puck clockwise to your comfortable limit, then let go.",
     axisIndex: 5,
-    isPositive: false,
+    isPositive: true,
     key: 'rz_neg',
     dirLabel: 'Twist Right'
   },
@@ -3507,7 +3507,7 @@ function startCalibrationWizard() {
 
 function cancelCalibrationWizard() {
   if (wizardTimer) {
-    clearInterval(wizardTimer);
+    clearTimeout(wizardTimer);
     wizardTimer = null;
   }
   if (wizardOriginalSensitivities) {
@@ -3521,6 +3521,10 @@ function cancelCalibrationWizard() {
 }
 
 function setWizardStep(stepIdx) {
+  if (wizardTimer) {
+    clearTimeout(wizardTimer);
+    wizardTimer = null;
+  }
   wizardStep = stepIdx;
   const step = wizardStepData[stepIdx];
   
@@ -3592,6 +3596,10 @@ function setWizardStep(stepIdx) {
 }
 
 function resetWizardStep() {
+  if (wizardTimer) {
+    clearTimeout(wizardTimer);
+    wizardTimer = null;
+  }
   const step = wizardStepData[wizardStep];
   if (!step) return;
   step.peakValue = 0.0;
@@ -3696,9 +3704,16 @@ function handleWizardMotion(vals) {
         <strong>Peak Captured!</strong><br>
         Comfort Peak: <strong>${step.peakValue.toFixed(1)}</strong><br>
         Calculated Sensitivity: <strong>${sens}</strong><br><br>
-        Press Next to continue, or Reset Step to try again.
+        Auto-advancing in 1.5s...
       `;
       document.getElementById('wizardNextBtn').style.display = 'inline-block';
+      
+      const currentStepIdx = wizardStep;
+      wizardTimer = setTimeout(() => {
+        if (wizardStep === currentStepIdx && step.peakCaptured) {
+          nextCalibrationWizardStep();
+        }
+      }, 1500);
     }
   }
 }
@@ -4162,7 +4177,7 @@ function handleFlashMessage(msg) {
   }
 }
 
-let serviceVersion = '2.14.6';
+let serviceVersion = '2.14.7';
 let firmwareVersion = 'unknown';
 
 function handleVersionInfo(info) {

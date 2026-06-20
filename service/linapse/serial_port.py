@@ -183,7 +183,7 @@ def serial_thread(actions_ref):
                             z = z * sens.get("z_pos" if z <= 0 else "z_neg", 1.0)
                             rx = rx * sens.get("rx_pos" if rx <= 0 else "rx_neg", 1.0)
                             ry = ry * sens.get("ry_pos" if ry <= 0 else "ry_neg", 1.0)
-                            rz = rz * sens.get("rz_pos" if rz >= 0 else "rz_neg", 1.0)
+                            rz = rz * sens.get("rz_pos" if rz <= 0 else "rz_neg", 1.0)
 
 
                             if current_mode not in ("Browser", "Media"):
