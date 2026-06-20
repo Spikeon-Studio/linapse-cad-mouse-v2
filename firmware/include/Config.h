@@ -42,8 +42,8 @@ const float SENSITIVITY_EXP = 3.0;
 // Final axis output range
 const float AXIS_LIMIT = 350.0;
 
-// Total EEPROM bytes (LedConfig=0-15, SensConfig=16-39)
-constexpr int EEPROM_SIZE = 40;
+// Total EEPROM bytes (LedConfig=0-15, SensConfig=16-63)
+constexpr int EEPROM_SIZE = 64;
 
 // RGB LEDs
 const int LED_COUNT = 8;

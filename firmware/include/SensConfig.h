@@ -14,6 +14,8 @@ class SensConfig {
   float kalmanQ;        // Kalman process noise (higher = more responsive)
   float kalmanR;        // Kalman measurement noise (higher = smoother)
   float sensitivityExp; // power curve exponent (1=linear, 3=cubic)
+  float tapThreshold;   // tap detection velocity threshold
+  bool  invertTapZ;     // whether Z axis tap detection is inverted
 
   void load();
   void save();

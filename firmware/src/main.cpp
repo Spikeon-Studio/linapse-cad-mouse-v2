@@ -114,15 +114,18 @@ void handleLedCommand(const String& args) {
 
 void handleConfigCommand(const String& args) {
   if (args == "get") {
-    char buf[200];
+    char buf[256];
     snprintf(buf, sizeof(buf),
              "{\"brightness\":%d,\"color\":\"%06lX\",\"effect\":\"%s\","
-             "\"dead_t\":%.2f,\"dead_r\":%.2f,\"kalman_q\":%.3f,\"kalman_r\":%.3f,\"exp\":%.2f}\n",
+             "\"dead_t\":%.2f,\"dead_r\":%.2f,\"kalman_q\":%.3f,\"kalman_r\":%.3f,\"exp\":%.2f,"
+             "\"tap_sens\":%.2f,\"invert_tap_z\":%d}\n",
              ledConfig.brightness, (unsigned long)ledConfig.idleColor,
              effectName(ledConfig.effect),
              sensConfig.deadT, sensConfig.deadR,
              sensConfig.kalmanQ, sensConfig.kalmanR,
-             sensConfig.sensitivityExp);
+             sensConfig.sensitivityExp,
+             sensConfig.tapThreshold,
+             sensConfig.invertTapZ ? 1 : 0);
     Serial.print(buf);
     return;
   }
@@ -137,12 +140,15 @@ void handleConfigCommand(const String& args) {
 
 void handleSensCommand(const String& args) {
   if (args == "get") {
-    char buf[128];
+    char buf[180];
     snprintf(buf, sizeof(buf),
-             "{\"dead_t\":%.2f,\"dead_r\":%.2f,\"kalman_q\":%.3f,\"kalman_r\":%.3f,\"exp\":%.2f}\n",
+             "{\"dead_t\":%.2f,\"dead_r\":%.2f,\"kalman_q\":%.3f,\"kalman_r\":%.3f,\"exp\":%.2f,"
+             "\"tap_sens\":%.2f,\"invert_tap_z\":%d}\n",
              sensConfig.deadT, sensConfig.deadR,
              sensConfig.kalmanQ, sensConfig.kalmanR,
-             sensConfig.sensitivityExp);
+             sensConfig.sensitivityExp,
+             sensConfig.tapThreshold,
+             sensConfig.invertTapZ ? 1 : 0);
     Serial.print(buf);
     return;
   }
@@ -163,7 +169,9 @@ void handleSensCommand(const String& args) {
     else if (param == "kalman_q") sensConfig.kalmanQ = val;
     else if (param == "kalman_r") sensConfig.kalmanR = val;
     else if (param == "exp")      sensConfig.sensitivityExp = val;
-    else { Serial.println("ERR unknown param: dead_t|dead_r|kalman_q|kalman_r|exp"); return; }
+    else if (param == "tap_sens")     sensConfig.tapThreshold = val;
+    else if (param == "invert_tap_z") sensConfig.invertTapZ = (val > 0.5f);
+    else { Serial.println("ERR unknown param: dead_t|dead_r|kalman_q|kalman_r|exp|tap_sens|invert_tap_z"); return; }
     sensConfig.save();
     Serial.println("OK");
     return;
@@ -186,7 +194,7 @@ void handleSerial() {
       else if (serialBuf.startsWith("config ")) handleConfigCommand(serialBuf.substring(7));
       else if (serialBuf.startsWith("sens "))   handleSensCommand(serialBuf.substring(5));
       else if (serialBuf.startsWith("debug "))  handleDebugCommand(serialBuf.substring(6));
-      else if (serialBuf == "version")          { Serial.println("version=2.11.4"); }
+      else if (serialBuf == "version")          { Serial.println("version=2.12.0"); }
       else if (serialBuf.startsWith("service_hid ")) {
         int val = serialBuf.substring(12).toInt();
         g_serviceHidMode = (val != 0);

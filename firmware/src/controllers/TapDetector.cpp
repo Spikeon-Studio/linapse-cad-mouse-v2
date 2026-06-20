@@ -1,6 +1,7 @@
 #include "controllers/TapDetector.h"
 #include "controllers/MotionController.h"
 #include "Config.h"
+#include "SensConfig.h"
 #include <math.h>
 
 void TapDetector::reset() {
@@ -24,6 +25,10 @@ void TapDetector::update(const float raw[9], const float* baseline, unsigned lon
   float axes[6];
   MotionController::geometricDecomp(raw, baseline, axes);
 
+  if (sensConfig.invertTapZ) {
+    axes[2] = -axes[2];
+  }
+
   if (!prevValid_) {
     for (int i = 0; i < 6; i++) prevAxes_[i] = axes[i];
     prevValid_ = true;
@@ -38,7 +43,7 @@ void TapDetector::update(const float raw[9], const float* baseline, unsigned lon
         float vel = fabsf(axes[i] - prevAxes_[i]);
         if (vel > maxVel) maxVel = vel;
       }
-      if (maxVel >= Config::TAP_VELOCITY_THRESHOLD) {
+      if (maxVel >= sensConfig.tapThreshold) {
         TapDir dir = dirFromAxes(axes, prevAxes_);
         // Suppress opposite-direction spring rebound (e.g. NegX tap → PosX rebound)
         if (lastConfirmedDir_ != TapDir::None &&

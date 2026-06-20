@@ -592,6 +592,7 @@ def test_benchy_sensitivity_and_dead_zones(tmp_path):
                 time.sleep(0.1)
 
             assert initialized, "benchyScene failed to initialize within 5 seconds"
+            page.click("text=Axes")
 
             # Helper to get current coordinates
             def get_current():
@@ -641,6 +642,7 @@ def test_benchy_sensitivity_and_dead_zones(tmp_path):
             # Refresh page
             page.reload()
             page.click("text=Sensitivity")
+            page.click("text=Axes")
             time.sleep(0.5) # Wait for page and scene to load
             
             # Verify persisted value in UI
@@ -671,6 +673,7 @@ def test_benchy_sensitivity_and_dead_zones(tmp_path):
             # Refresh page
             page.reload()
             page.click("text=Sensitivity")
+            page.click("text=Axes")
             time.sleep(0.5)
             
             # Verify persisted value in UI
@@ -729,9 +732,9 @@ def test_benchy_sensitivity_and_dead_zones(tmp_path):
                 time.sleep(0.1)
                 
                 # Verify daemon output was scaled correctly
-                assert len(mock_serial.writes) > 0, f"No hid_report written to serial port for {param}"
-                last_report = mock_serial.writes[-1].decode().strip()
-                assert last_report.startswith("hid_report"), f"Expected hid_report command, got {last_report}"
+                hid_reports = [w for w in mock_serial.writes if w.decode().strip().startswith("hid_report")]
+                assert len(hid_reports) > 0, f"No hid_report written to serial port for {param}"
+                last_report = hid_reports[-1].decode().strip()
                 
                 # Parse the float values
                 vals = [float(v) for v in last_report[11:].split(",")]
@@ -742,6 +745,8 @@ def test_benchy_sensitivity_and_dead_zones(tmp_path):
                 page.fill(val_id, "1.0")
                 page.locator(val_id).evaluate("el => el.dispatchEvent(new Event('change'))")
                 time.sleep(0.1)
+
+            page.click("text=General")
 
             # --- Part 3: Invert settings verification ---
             
@@ -765,8 +770,9 @@ def test_benchy_sensitivity_and_dead_zones(tmp_path):
                 time.sleep(0.1)
                 
                 # Verify report has inverted sign
-                assert len(mock_serial.writes) > 0
-                last_report = mock_serial.writes[-1].decode().strip()
+                hid_reports = [w for w in mock_serial.writes if w.decode().strip().startswith("hid_report")]
+                assert len(hid_reports) > 0
+                last_report = hid_reports[-1].decode().strip()
                 vals = [float(v) for v in last_report[11:].split(",")]
                 expected_val = -normal_val # Sign flipped
                 assert abs(vals[axis_idx] - expected_val) < 0.1, f"Inversion of {name} failed: expected {expected_val}, got {vals[axis_idx]}"

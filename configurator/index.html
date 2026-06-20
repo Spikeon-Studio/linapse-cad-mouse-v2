@@ -360,6 +360,30 @@ body {
 
 .side-panel.open { transform: translateX(0); }
 
+.sens-tabs {
+  display: flex;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.sens-tab {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text3);
+  padding: 10px 16px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+  margin-bottom: -1px;
+  flex: 1;
+  text-align: center;
+}
+.sens-tab:hover { color: var(--text2); }
+.sens-tab.active { color: var(--green); border-bottom-color: var(--green); }
+
 .panel-header {
   padding: 18px 20px 14px;
   border-bottom: 1px solid var(--border);
@@ -1025,10 +1049,18 @@ input[type=range]::-webkit-slider-thumb {
         <div class="panel-title" style="font-size:15px;letter-spacing:2px">Sensitivity</div>
         <div class="panel-sub">Changes apply live</div>
       </div>
+      <!-- Sensitivity Sub-tabs -->
+      <div class="sens-tabs">
+        <div class="sens-tab active" onclick="switchSensTab('general', this)">General</div>
+        <div class="sens-tab" onclick="switchSensTab('axes', this)">Axes</div>
+        <div class="sens-tab" onclick="switchSensTab('tap', this)">Tap</div>
+      </div>
       <div class="panel-body" style="flex:1;overflow-y:auto">
 
-        <div class="field-group">
-          <div class="field-label" style="color:var(--green);letter-spacing:2px;font-size:10px;font-family:'Barlow Condensed',sans-serif">DEAD ZONES</div>
+        <!-- GENERAL TAB SECTION -->
+        <div id="sens-section-general" class="sens-section">
+          <div class="field-group">
+            <div class="field-label" style="color:var(--green);letter-spacing:2px;font-size:10px;font-family:'Barlow Condensed',sans-serif">DEAD ZONES</div>
           
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
             <span class="field-label" style="margin: 0;">Translation</span>
@@ -1117,8 +1149,12 @@ input[type=range]::-webkit-slider-thumb {
           </div>
         </div>
 
-        <div class="field-group">
-          <div class="field-label" style="color:var(--green);letter-spacing:2px;font-size:10px;font-family:'Barlow Condensed',sans-serif">DIRECTIONAL SENSITIVITY (TRANSLATION)</div>
+        </div><!-- /sens-section-general -->
+
+        <!-- AXES TAB SECTION -->
+        <div id="sens-section-axes" class="sens-section" style="display:none">
+          <div class="field-group">
+            <div class="field-label" style="color:var(--green);letter-spacing:2px;font-size:10px;font-family:'Barlow Condensed',sans-serif">DIRECTIONAL SENSITIVITY (TRANSLATION)</div>
           
           <div style="margin-top: 8px;">
             <div class="field-label">X Axis (Right / Left)</div>
@@ -1281,6 +1317,35 @@ input[type=range]::-webkit-slider-thumb {
             </div>
           </div>
 
+        </div><!-- /sens-section-axes -->
+
+        <!-- TAP TAB SECTION -->
+        <div id="sens-section-tap" class="sens-section" style="display:none">
+          <div class="field-group">
+            <div class="field-label" style="color:var(--green);letter-spacing:2px;font-size:10px;font-family:'Barlow Condensed',sans-serif">TAP SENSITIVITY</div>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+              <span class="field-label" style="margin: 0;">Velocity Threshold</span>
+              <input type="number" id="sensTapVal" min="0.5" max="15.0" step="0.1" value="3.0"
+                     style="width: 48px; background: var(--border2); border: 1px solid var(--border); color: var(--text); font-size: 10px; text-align: right; padding: 1px 3px; border-radius: 3px; font-family: inherit;"
+                     oninput="onSensTextChange('tap_sens','sensTap','sensTapVal')"
+                     onchange="onSensTextBlur('tap_sens','sensTap','sensTapVal')">
+            </div>
+            <input type="range" id="sensTap" min="0.5" max="15.0" step="0.1" value="3.0" oninput="onSensChange('tap_sens','sensTap','sensTapVal')">
+            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-top:2px">
+              <span>More Sensitive (0.5)</span><span>Less Sensitive (15.0)</span>
+            </div>
+
+            <div style="margin-top: 16px;">
+              <div class="toggle-row" style="padding: 4px 0; border: none; margin-bottom: 0;">
+                <span class="toggle-label" style="font-size: 10px; color: var(--text3); margin: 0; text-transform: uppercase; letter-spacing: 1px; font-family: 'Barlow Condensed', sans-serif;">Invert Tap Z Axis</span>
+                <div class="toggle" id="sensInvertTapZ" onclick="toggleTapZInversion()"></div>
+              </div>
+              <div style="font-size:10px;color:var(--text3);margin-top:4px;line-height:1.3;">
+                Enable if downward taps do not register (e.g. after replacing puck spring or magnet inversion).
+              </div>
+            </div>
+          </div>
         </div>
 
         <button class="btn-apply" onclick="sensReset()">Reset to Defaults</button>
@@ -1775,7 +1840,11 @@ function switchTab(name, el) {
   closePanel();
   if (name === 'lighting')     requestAnimationFrame(() => requestAnimationFrame(fitLighting));
   if (name === 'customize')    requestAnimationFrame(() => requestAnimationFrame(fitDiagram));
-  if (name === 'sensitivity')  setTimeout(initBenchy, 0);
+  if (name === 'sensitivity') {
+    setTimeout(initBenchy, 0);
+    const firstTab = document.querySelector('.sens-tab');
+    if (firstTab) switchSensTab('general', firstTab);
+  }
 }
 
 // ── Panel ─────────────────────────────────────────────────────────────────────
@@ -2624,6 +2693,7 @@ function applyDeviceConfig(cfg) {
     ['kalman_q', 'sensKalQ',  'sensKalQVal',  3],
     ['kalman_r', 'sensKalR',  'sensKalRVal',  1],
     ['exp',      'sensExp',   'sensExpVal',   1],
+    ['tap_sens', 'sensTap',   'sensTapVal',   1],
   ];
   for (const [key, sliderId, valId, dec] of sensMap) {
     if (cfg[key] !== undefined) {
@@ -2634,6 +2704,12 @@ function applyDeviceConfig(cfg) {
       } else {
         valEl.textContent = parseFloat(cfg[key]).toFixed(dec);
       }
+    }
+  }
+  if (cfg.invert_tap_z !== undefined) {
+    const el = document.getElementById('sensInvertTapZ');
+    if (el) {
+      el.classList.toggle('on', !!cfg.invert_tap_z);
     }
   }
   animateLedPreview();
@@ -3112,6 +3188,26 @@ function syncActionsUI() {
   }
 }
 
+function switchSensTab(sectionName, el) {
+  document.querySelectorAll('.sens-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.sens-section').forEach(sec => {
+    sec.style.display = 'none';
+  });
+  const activeSec = document.getElementById('sens-section-' + sectionName);
+  if (activeSec) {
+    activeSec.style.display = 'block';
+  }
+}
+
+function toggleTapZInversion() {
+  const el = document.getElementById('sensInvertTapZ');
+  const isCurrentlyOn = el.classList.contains('on');
+  const newVal = isCurrentlyOn ? 0 : 1;
+  el.classList.toggle('on');
+  sendCmd(`sens set invert_tap_z ${newVal}`);
+}
+
 function sensReset() {
   sendCmd('sens reset');
   sendCmd('sens get');
@@ -3580,7 +3676,7 @@ function handleFlashMessage(msg) {
   }
 }
 
-let serviceVersion = '2.11.4';
+let serviceVersion = '2.12.0';
 let firmwareVersion = 'unknown';
 
 function handleVersionInfo(info) {

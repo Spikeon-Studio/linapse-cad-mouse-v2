@@ -93,9 +93,24 @@ def serial_thread(actions_ref):
                     except Exception as e:
                         print(f"[serial] failed to write initial LED/HID commands: {e}")
                         
+            last_invert_z = None
             while True:
                 if state.flashing_active:
                     break
+                
+                # Sync tap Z inversion with actions config Z inversion
+                actions = actions_ref[0]
+                if actions:
+                    inv = actions.get("inversion", {})
+                    current_invert_z = bool(inv.get("z", False))
+                    if last_invert_z is None or current_invert_z != last_invert_z:
+                        last_invert_z = current_invert_z
+                        val = 1 if current_invert_z else 0
+                        try:
+                            ser.write(f"sens set invert_tap_z {val}\n".encode())
+                        except Exception as e:
+                            print(f"[serial] failed to write invert_tap_z command: {e}")
+
                 line = ser.readline().decode(errors="replace").strip()
                 if not line:
                     try:
