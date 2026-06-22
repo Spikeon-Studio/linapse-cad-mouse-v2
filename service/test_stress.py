@@ -305,6 +305,8 @@ from pathlib import Path
 import importlib.util
 from importlib.machinery import SourceFileLoader
 
+os.environ["LINAPSE_SKIP_BROWSER_BRIDGE"] = "1"
+
 service_path = Path({str(service_path)!r})
 
 # Subclass PosixPath to intercept spnav.sock
@@ -393,6 +395,8 @@ import time
 from pathlib import Path
 import importlib.util
 from importlib.machinery import SourceFileLoader
+
+os.environ["LINAPSE_SKIP_BROWSER_BRIDGE"] = "1"
 
 service_path = Path({str(service_path)!r})
 

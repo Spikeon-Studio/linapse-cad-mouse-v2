@@ -14,3 +14,4 @@ extension/node_modules/
 extension/dist/
 service/linapse_inst_test_*/
 service/linapse_adv_test_*/
+service/.installer_test_tmp/

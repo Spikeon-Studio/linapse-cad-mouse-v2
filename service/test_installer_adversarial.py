@@ -6,10 +6,12 @@ import tempfile
 import unittest
 from pathlib import Path
 
+INSTALLER_TMP_ROOT = Path(__file__).resolve().parent / ".installer_test_tmp"
+
 class TestInstallerAdversarial(unittest.TestCase):
     def setUp(self):
-        # Create clean temp root
-        self.test_root = Path(tempfile.mkdtemp(prefix="linapse_adv_test_"))
+        INSTALLER_TMP_ROOT.mkdir(exist_ok=True)
+        self.test_root = Path(tempfile.mkdtemp(prefix="linapse_adv_test_", dir=INSTALLER_TMP_ROOT))
         self.mock_bin = self.test_root / "bin"
         self.mock_home = self.test_root / "home"
         self.mock_bin.mkdir()
@@ -57,9 +59,12 @@ exit 0
         self.write_mock_bin("curl", """#!/bin/bash
 exit 0
 """)
+        self.write_mock_bin("ydotool", """#!/bin/bash
+exit 0
+""")
         import sys
         self.write_mock_bin("python3", f"""#!/bin/bash
-if [[ "$*" == *"-c import websockets"* ]]; then
+if [[ "$1" == "-c" && "$2" == import* ]]; then
     exit 0
 fi
 exec {sys.executable} "$@"
@@ -81,10 +86,11 @@ exec {sys.executable} "$@"
         if extra_env:
             env.update(extra_env)
 
-        repo_dir = Path(__file__).resolve().parents[1]
+        service_dir = Path(__file__).resolve().parent
         result = subprocess.run(
-            ["/bin/bash", str(repo_dir / "setup.sh"), "--yes"],
+            ["/bin/bash", str(service_dir / "install.sh")],
             env=env,
+            cwd=service_dir,
             capture_output=True,
             text=True
         )

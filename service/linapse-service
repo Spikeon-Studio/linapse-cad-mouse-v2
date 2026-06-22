@@ -251,7 +251,11 @@ async def main():
     asyncio.create_task(serial_writer())
 
     browser_bridge_task = None
-    if sys.platform not in ("win32", "darwin") and "PYTEST_CURRENT_TEST" not in os.environ:
+    if (
+        sys.platform not in ("win32", "darwin")
+        and "PYTEST_CURRENT_TEST" not in os.environ
+        and os.environ.get("LINAPSE_SKIP_BROWSER_BRIDGE") != "1"
+    ):
         from linapse import browser_bridge
         browser_bridge_task = asyncio.create_task(browser_bridge.serve())
 

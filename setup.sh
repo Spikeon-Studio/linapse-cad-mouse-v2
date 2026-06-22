@@ -118,8 +118,8 @@ sed -e "s|__CONFIGURATOR_DIR__|$CONFIGURATOR_DIR|g" \
     -e "s|__PORT__|$PORT|g" \
     "$REPO_DIR/service/systemd/linapse-configurator.service" \
     > "$SYSTEMD_USER/linapse-configurator.service"
-systemctl --user daemon-reload
-systemctl --user enable --now linapse-configurator
+systemctl --user daemon-reload 2>/dev/null || true
+systemctl --user enable --now linapse-configurator 2>/dev/null || info "Could not start linapse-configurator (no user systemd session)."
 info "Serving $CONFIGURATOR_DIR at http://localhost:$PORT"
 
 cat <<EOF

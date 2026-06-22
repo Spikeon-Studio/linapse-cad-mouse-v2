@@ -1,5 +1,10 @@
+import os
 import sys
 import pytest
+
+def pytest_configure(config):
+    # Keep the browser bridge off during the whole pytest session (including subprocess stress tests).
+    os.environ["LINAPSE_SKIP_BROWSER_BRIDGE"] = "1"
 
 def pytest_runtest_setup(item):
     if sys.platform in ("win32", "darwin"):

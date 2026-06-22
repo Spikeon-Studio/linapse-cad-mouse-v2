@@ -5,12 +5,15 @@ import tempfile
 import unittest
 from pathlib import Path
 
+INSTALLER_TMP_ROOT = Path(__file__).resolve().parent / ".installer_test_tmp"
+
 # Mock installer test suite
 
 class TestInstallerMock(unittest.TestCase):
     def setUp(self):
-        # Create a clean temp directory for this test run
-        self.test_root = Path(tempfile.mkdtemp(prefix="linapse_inst_test_"))
+        # Use a workspace temp dir: Docker CI often mounts /tmp noexec, which breaks mock scripts.
+        INSTALLER_TMP_ROOT.mkdir(exist_ok=True)
+        self.test_root = Path(tempfile.mkdtemp(prefix="linapse_inst_test_", dir=INSTALLER_TMP_ROOT))
         self.mock_bin = self.test_root / "bin"
         self.mock_home = self.test_root / "home"
         self.mock_bin.mkdir()
@@ -91,9 +94,13 @@ exit 0
 echo "CURL: $*" >> {log_path}
 exit 0
 """)
+        self.write_mock_bin("ydotool", """#!/bin/bash
+echo "YDOTOOL: $*" >> {log_path}
+exit 0
+""")
         import sys
         self.write_mock_bin("python3", f"""#!/bin/bash
-if [[ "$*" == *"-c import websockets"* ]]; then
+if [[ "$1" == "-c" && "$2" == import* ]]; then
     exit 0
 fi
 exec {sys.executable} "$@"
@@ -120,19 +127,18 @@ exec {sys.executable} "$@"
         if self.log_file.exists():
             self.log_file.unlink()
 
-        # Run setup.sh
-        repo_dir = Path(__file__).resolve().parents[1]
-        
-        # We run it with --yes to auto-accept ydotool installation prompts
+        # Run service/install.sh (what we actually ship; setup.sh also wraps this).
+        service_dir = Path(__file__).resolve().parent
         result = subprocess.run(
-            ["/bin/bash", str(repo_dir / "setup.sh"), "--yes"],
+            ["/bin/bash", str(service_dir / "install.sh")],
             env=env,
+            cwd=service_dir,
             capture_output=True,
             text=True
         )
         
         # Verify success exit code
-        self.assertEqual(result.returncode, 0, f"setup.sh failed with stdout:\n{result.stdout}\nstderr:\n{result.stderr}")
+        self.assertEqual(result.returncode, 0, f"install.sh failed with stdout:\n{result.stdout}\nstderr:\n{result.stderr}")
 
         # Read command log
         commands = []
@@ -211,7 +217,7 @@ exec {sys.executable} "$@"
         self.assertTrue(os.access(local_bin_proxy, os.X_OK), "linapse-ws-proxy should be executable")
 
         systemd_user_dir = self.mock_home / ".config" / "systemd" / "user"
-        for svc in ["ydotoold.service", "linapse-service.service", "linapse-configurator.service"]:
+        for svc in ["ydotoold.service", "linapse-service.service"]:
             self.assertTrue((systemd_user_dir / svc).exists(), f"systemd user service {svc} should exist")
 
         # Verify environment.d configuration

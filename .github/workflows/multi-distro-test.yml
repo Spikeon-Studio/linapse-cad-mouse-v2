@@ -75,8 +75,8 @@ jobs:
       - name: Run pytest suite inside container
         id: run_tests
         run: |
-          docker exec -e XDG_RUNTIME_DIR=/run/user/0 -e DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/0/bus \
-            systemd-container sh -c "cd /workspace && pytest service/ --junitxml=pytest_${{ matrix.distro }}_results.xml --tb=short > pytest_${{ matrix.distro }}_output.log 2>&1; status=\$?; cat pytest_${{ matrix.distro }}_output.log; chmod 666 pytest_${{ matrix.distro }}_results.xml pytest_${{ matrix.distro }}_output.log || true; exit \$status"
+          docker exec -e XDG_RUNTIME_DIR=/run/user/0 -e DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/0/bus -e LINAPSE_SKIP_BROWSER_BRIDGE=1 \
+            systemd-container sh -c "cd /workspace && systemctl --user stop linapse-service linapse-configurator ydotoold 2>/dev/null || true; pytest service/ --junitxml=pytest_${{ matrix.distro }}_results.xml --tb=short > pytest_${{ matrix.distro }}_output.log 2>&1; status=\$?; cat pytest_${{ matrix.distro }}_output.log; chmod 666 pytest_${{ matrix.distro }}_results.xml pytest_${{ matrix.distro }}_output.log || true; exit \$status"
 
       - name: Publish Test Report
         uses: dorny/test-reporter@v1
@@ -191,9 +191,10 @@ jobs:
       - name: Run tests on Windows
         id: run_tests
         shell: bash
+        env:
+          LINAPSE_SKIP_BROWSER_BRIDGE: "1"
         run: |
           pytest service/ --junitxml=pytest_windows_results.xml --tb=short 2>&1 | tee pytest_windows_output.log
-
       - name: Publish Test Report
         uses: dorny/test-reporter@v1
         if: always() && steps.run_tests.outcome != 'skipped'
@@ -285,6 +286,8 @@ jobs:
 
       - name: Run tests on macOS
         id: run_tests
+        env:
+          LINAPSE_SKIP_BROWSER_BRIDGE: "1"
         run: |
           pytest service/ --junitxml=pytest_macos_results.xml
 
