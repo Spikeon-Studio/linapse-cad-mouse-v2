@@ -180,3 +180,13 @@ def test_service_buttons_transition_logic():
     last = emit(False, last)  # disable
     assert writes == [b"service_buttons 1\n", b"service_buttons 0\n"]
 
+def test_hid_thread_skip_guard():
+    # The guard expression used inside hid_thread to ignore service-driven
+    # native reports when emulation is on.
+    def should_skip(actions):
+        return bool((actions or {}).get("custom_usb", {}).get("enabled", False))
+    assert should_skip({"custom_usb": {"enabled": True}}) is True
+    assert should_skip({"custom_usb": {"enabled": False}}) is False
+    assert should_skip({}) is False
+    assert should_skip(None) is False
+

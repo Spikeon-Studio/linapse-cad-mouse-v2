@@ -169,6 +169,12 @@ def hid_thread(actions_ref):
                     bits = data[1] & 0x03
                     if bits == prev_bits:
                         continue
+                    # In HID emulation mode the serial BUTTON path is the sole
+                    # button source; ignore reports here (they are service-driven
+                    # native echoes and would double-dispatch).
+                    if bool((actions_ref[0] or {}).get("custom_usb", {}).get("enabled", False)):
+                        prev_bits = bits
+                        continue
                     for btn in range(2):
                         mask = 1 << btn
                         was = bool(prev_bits & mask)
