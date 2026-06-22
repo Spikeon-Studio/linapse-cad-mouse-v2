@@ -9,7 +9,7 @@ from pathlib import Path
 class TestInstallerAdversarial(unittest.TestCase):
     def setUp(self):
         # Create clean temp root
-        self.test_root = Path(tempfile.mkdtemp(prefix="linapse_adv_test_", dir=Path(__file__).parent))
+        self.test_root = Path(tempfile.mkdtemp(prefix="linapse_adv_test_"))
         self.mock_bin = self.test_root / "bin"
         self.mock_home = self.test_root / "home"
         self.mock_bin.mkdir()

@@ -12,3 +12,5 @@ node_modules/
 dist/
 extension/node_modules/
 extension/dist/
+service/linapse_inst_test_*/
+service/linapse_adv_test_*/
