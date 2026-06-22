@@ -52,6 +52,16 @@ def find_serial(actions_ref=None):
             vid = getattr(p, "vid", None)
             if vid in (0x2E8A, 0x239A):
                 return p.device
+
+        # Fallback third pass: match other common serial chips / Arduinos (CH340, CP210x, FTDI, Teensy, SparkFun, Arduino)
+        for p in ports:
+            vid = getattr(p, "vid", None)
+            if vid in (0x1A86, 0x10C4, 0x0403, 0x16C0, 0x1B4F, 0x2341, 0x9025):
+                return p.device
+
+        # Fallback fourth pass: if exactly one serial port exists, use it
+        if len(ports) == 1:
+            return ports[0].device
     except Exception as e:
         print(f"[serial] error listing comports: {e}")
 

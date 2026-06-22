@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.16.8] - 2026-06-22
+
+### Fixed
+- **Serial Auto-Discovery Fallbacks**: Added third and fourth fallback passes in `serial_port.py` to match common serial chip/Arduino VIDs (CH340, CP210x, FTDI, Teensy, SparkFun, Arduino) and default to the single available port if exactly one COM port exists, improving out-of-the-box serial detection on Windows.
+
 ## [2.16.7] - 2026-06-22
 
 ### Fixed
