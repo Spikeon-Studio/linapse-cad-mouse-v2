@@ -111,7 +111,7 @@ def find_serial(actions_ref=None):
     return m[0] if m else None
 
 def serial_thread(actions_ref):
-    global _rx_scroll_accumulator, _rz_scrub_accumulator, _rx_volume_accumulator
+    global _rx_scroll_accumulator, _rz_scrub_accumulator, _rx_volume_accumulator, _hid_button_bits
     while True:
         state.firmware_version = "unknown"
         if state.flashing_active:
@@ -128,6 +128,7 @@ def serial_thread(actions_ref):
         try:
             ser = serial.Serial(port, SERIAL_BAUD, timeout=1.0)
             state.ser_holder[0] = ser
+            _hid_button_bits = 0  # clear any stale native button state on (re)connect
             print(f"[serial] connected to {port}")
             time.sleep(0.1)
             
