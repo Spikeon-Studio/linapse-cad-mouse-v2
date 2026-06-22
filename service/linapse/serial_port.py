@@ -3,6 +3,7 @@ import math
 import serial
 import serial.tools.list_ports
 import struct
+import sys
 import time
 from . import state
 from .config import get_active_mode_config
@@ -198,12 +199,14 @@ def serial_thread(actions_ref):
                         try:
                             btn = int(btn_str)
                             val = int(state_str)
-                            import sys
-                            if sys.platform in ("win32", "darwin"):
-                                if val == 1:
-                                    _on_press(btn, actions_ref[0])
-                                else:
-                                    _on_release(btn, actions_ref[0])
+                            if not route_button(btn, val, actions_ref[0], ser):
+                                # Legacy path: serial buttons drive custom actions
+                                # only on Windows/macOS when emulation is off.
+                                if sys.platform in ("win32", "darwin"):
+                                    if val == 1:
+                                        _on_press(btn, actions_ref[0])
+                                    else:
+                                        _on_release(btn, actions_ref[0])
                         except Exception as e:
                             print(f"[serial] button parse error: {e}")
                 elif line.startswith(">MOTION:"):
