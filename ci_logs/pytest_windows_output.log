@@ -1,57 +1,41 @@
 ============================= test session starts =============================
 platform win32 -- Python 3.11.9, pytest-9.1.1, pluggy-1.6.0
 rootdir: D:\a\linapse-cad-mouse-v2\linapse-cad-mouse-v2
-collected 58 items
+plugins: anyio-4.14.0
+collected 72 items
 
-service\test_cross_platform.py .....                                     [  8%]
-service\test_installer_adversarial.py ssss                               [ 15%]
-service\test_installer_config.py ..                                      [ 18%]
-service\test_installer_mock.py ss                                        [ 22%]
-service\test_linapse_socket.py ssss                                      [ 29%]
-service\test_linapse_socket_stress.py sssss                              [ 37%]
-service\test_m1_adversarial_bugfix.py ss                                 [ 41%]
+service\test_browser_bridge.py ..F                                       [  4%]
+service\test_browser_extension.py ....                                   [  9%]
+service\test_cross_platform.py .....                                     [ 16%]
+service\test_installer_adversarial.py ssss                               [ 22%]
+service\test_installer_config.py ..                                      [ 25%]
+service\test_installer_mock.py ss                                        [ 27%]
+service\test_linapse_socket.py ssss                                      [ 33%]
+service\test_linapse_socket_stress.py sssss                              [ 40%]
+service\test_m1_adversarial_bugfix.py ss                                 [ 43%]
 service\test_m3_adversarial.py ssss                                      [ 48%]
-service\test_m3_challenger_verification.py sss                           [ 53%]
-service\test_m5_adversarial.py ssss                                      [ 60%]
-service\test_multi_click.py FFF                                          [ 65%]
-service\test_playwright_benchy.py ..                                     [ 68%]
-service\test_signal_integration.py ssssssss                              [ 82%]
-service\test_signal_integration_stress.py sss                            [ 87%]
-service\test_stress.py ssssss                                            [ 98%]
-service\test_userscript_headers.py .                                     [100%]
+service\test_m3_challenger_verification.py sss                           [ 52%]
+service\test_m5_adversarial.py ssss                                      [ 58%]
+service\test_multi_click.py ...                                          [ 62%]
+service\test_playwright_benchy.py ..                                     [ 65%]
+service\test_serial_buttons.py .......                                   [ 75%]
+service\test_signal_integration.py sssssssss                             [ 87%]
+service\test_signal_integration_stress.py sss                            [ 91%]
+service\test_stress.py ssssss                                            [100%]
 
 ================================== FAILURES ===================================
-_________________________ test_multi_click_detection __________________________
-service\test_multi_click.py:73: in test_multi_click_detection
-    assert len(ydotool_calls) == 1
-E   assert 0 == 1
-E    +  where 0 = len([])
----------------------------- Captured stdout call -----------------------------
-[dispatch] action: key obj: {'action': 'key', 'value': 'ctrl+c'}
-[pynput] error emulating key combo 'ctrl+c': ctrl_key
-_________________________ test_legacy_button_fallback _________________________
-service\test_multi_click.py:111: in test_legacy_button_fallback
-    assert len(ydotool_calls) == 1
-E   assert 0 == 1
-E    +  where 0 = len([])
----------------------------- Captured stdout call -----------------------------
-[dispatch] action: key obj: {'action': 'key', 'value': 'ctrl+z'}
-[pynput] error emulating key combo 'ctrl+z': ctrl_key
-_________________________ test_media_action_dispatch __________________________
-service\test_multi_click.py:140: in test_media_action_dispatch
-    assert len(ydotool_calls) == 1
-E   assert 0 == 1
-E    +  where 0 = len([])
----------------------------- Captured stdout call -----------------------------
-[dispatch] action: media obj: {'action': 'media', 'command': 'play'}
-[dispatch] action: key obj: {'action': 'key', 'value': 'play'}
-[pynput] warning: unknown key name 'play' in combo 'play'
+____________________ test_controller_ignores_button_events ____________________
+service\test_browser_bridge.py:26: in test_controller_ignores_button_events
+    source = (SERVICE / "spacenav_ws" / "controller.py").read_text()
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\hostedtoolcache\windows\Python\3.11.9\x64\Lib\pathlib.py:1059: in read_text
+    return f.read()
+           ^^^^^^^^
+C:\hostedtoolcache\windows\Python\3.11.9\x64\Lib\encodings\cp1252.py:23: in decode
+    return codecs.charmap_decode(input,self.errors,decoding_table)[0]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   UnicodeDecodeError: 'charmap' codec can't decode byte 0x90 in position 802: character maps to <undefined>
 - generated xml file: D:\a\linapse-cad-mouse-v2\linapse-cad-mouse-v2\pytest_windows_results.xml -
 =========================== short test summary info ===========================
-FAILED service/test_multi_click.py::test_multi_click_detection - assert 0 == 1
- +  where 0 = len([])
-FAILED service/test_multi_click.py::test_legacy_button_fallback - assert 0 == 1
- +  where 0 = len([])
-FAILED service/test_multi_click.py::test_media_action_dispatch - assert 0 == 1
- +  where 0 = len([])
-============= 3 failed, 10 passed, 45 skipped in 68.77s (0:01:08) =============
+FAILED service/test_browser_bridge.py::test_controller_ignores_button_events - UnicodeDecodeError: 'charmap' codec can't decode byte 0x90 in position 802: character maps to <undefined>
+============= 1 failed, 25 passed, 46 skipped in 73.55s (0:01:13) =============
