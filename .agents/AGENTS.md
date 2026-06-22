@@ -12,8 +12,13 @@ Every time you make any change to the codebase, you MUST:
    - **MINOR** (`x.Y.z`): Increment for backwards-compatible new features or functional additions.
    - **MAJOR** (`X.y.z`): Increment for breaking API changes, hardware protocol updates, or massive structural refactors.
 3. **Write the new version** back to the [VERSION](file:///home/spikeon/Dev/linapse-cad-mouse-v2/VERSION) file.
-4. Update any other files that track version metadata (such as browser userscript headers or configuration files) to match the new version.
-5. If changes are made to the device firmware (under the `firmware/` directory), you MUST update the firmware version returned by the serial command inside [main.cpp](file:///home/spikeon/Dev/linapse-cad-mouse-v2/firmware/src/main.cpp) to match the new version.
+4. **Run `python3 scripts/sync_version.py`** from the repo root. This single command propagates the version in `VERSION` to all embedded version strings across the codebase. Do NOT manually edit the following files — the script handles them:
+   - `firmware/src/main.cpp` — `Serial.println("version=X.Y.Z")`
+   - `service/linapse/state.py` — `service_version = "X.Y.Z"`
+   - `installer.iss` — `AppVersion=X.Y.Z`
+   - `configurator/package.json` — `"version": "X.Y.Z"`
+   - `service/linapse-browser-connector.user.js` — `// @version X.Y.Z`
+   - `CHANGELOG.md` is intentionally NOT touched by the script — update it manually with release notes.
 
 ## Changelog Updates
 
@@ -43,6 +48,27 @@ env -u GITHUB_TOKEN -u GH_TOKEN git push
 Whenever a new feature is added to the codebase, you MUST:
 1. **Write or update documentation** under the `docs/` folder explaining the new feature, its architecture, integration details, and usage.
 2. **Update the main README.md** (and other relevant readmes, e.g. `service/README.md`) to call out the new capability and link to the detailed documentation.
+
+## Firmware Build and Test (PlatformIO)
+
+PlatformIO (`pio`) is installed but NOT on `$PATH`. Always invoke it with the full path:
+```bash
+~/.platformio/penv/bin/pio
+```
+
+To run native firmware unit tests (no hardware required):
+```bash
+~/.platformio/penv/bin/pio test -e native
+```
+
+To build for the device:
+```bash
+~/.platformio/penv/bin/pio run
+```
+
+## CI Workflow Step Name Constraint
+
+`service/test_installer_config.py::TestInstallerConfig::test_workflow_yaml_valid` asserts that specific step names exist in `.github/workflows/multi-distro-test.yml`. If you add, rename, or remove CI steps, you MUST update this test or it will fail. Read the test before touching the workflow file.
 
 ## Playwright Integration Testing
 
