@@ -38,4 +38,4 @@ E   UnicodeDecodeError: 'charmap' codec can't decode byte 0x90 in position 802: 
 - generated xml file: D:\a\linapse-cad-mouse-v2\linapse-cad-mouse-v2\pytest_windows_results.xml -
 =========================== short test summary info ===========================
 FAILED service/test_browser_bridge.py::test_controller_ignores_button_events - UnicodeDecodeError: 'charmap' codec can't decode byte 0x90 in position 802: character maps to <undefined>
-============= 1 failed, 25 passed, 46 skipped in 73.55s (0:01:13) =============
+============= 1 failed, 25 passed, 46 skipped in 64.99s (0:01:04) =============
