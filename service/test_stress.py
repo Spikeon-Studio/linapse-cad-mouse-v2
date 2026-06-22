@@ -293,6 +293,7 @@ class TestAdversarialStress(unittest.TestCase):
             os.unlink(test_sock)
 
         free_port = get_free_port()
+        service_path = Path(__file__).parent / "linapse-service"
 
         # Code to execute the service in a subprocess
         code = f"""
@@ -304,7 +305,7 @@ from pathlib import Path
 import importlib.util
 from importlib.machinery import SourceFileLoader
 
-service_path = Path("service/linapse-service")
+service_path = Path({str(service_path)!r})
 
 # Subclass PosixPath to intercept spnav.sock
 PosixPath = type(Path())
@@ -381,6 +382,7 @@ except KeyboardInterrupt:
             os.unlink(test_sock)
 
         free_port = get_free_port()
+        service_path = Path(__file__).parent / "linapse-service"
 
         # Code to execute the service in a subprocess
         code = f"""
@@ -392,7 +394,7 @@ from pathlib import Path
 import importlib.util
 from importlib.machinery import SourceFileLoader
 
-service_path = Path("service/linapse-service")
+service_path = Path({str(service_path)!r})
 
 # Subclass PosixPath to intercept spnav.sock
 PosixPath = type(Path())

@@ -10,6 +10,8 @@ from importlib.machinery import SourceFileLoader
 import importlib.util
 from unittest.mock import MagicMock
 
+import linapse.emulation as emulation
+
 # Load the service module
 if "linapse_service" in sys.modules:
     linapse_service = sys.modules["linapse_service"]
@@ -24,21 +26,21 @@ else:
 # Mock ydotool calls
 ydotool_calls = []
 
-def mock_popen(args, *args_etc, **kwargs):
-    if isinstance(args, list) and args[0] == "ydotool":
-        ydotool_calls.append(args)
-        proc = MagicMock()
-        proc.poll.return_value = 0
-        proc.wait.return_value = 0
-        return proc
-    return MagicMock()
+def mock_ydotool(*args):
+    flat_args = []
+    for arg in args:
+        if isinstance(arg, str):
+            flat_args.extend(arg.split())
+        else:
+            flat_args.append(arg)
+    ydotool_calls.append(["ydotool"] + flat_args)
 
 @pytest.fixture(autouse=True)
 def setup_mocks(monkeypatch):
     global ydotool_calls
     ydotool_calls.clear()
-    monkeypatch.setattr("subprocess.Popen", mock_popen)
-    monkeypatch.setattr("sys.platform", "linux")
+    monkeypatch.setattr(emulation, "ydotool", mock_ydotool)
+    monkeypatch.setattr(emulation.sys, "platform", "linux")
     # Mock loop and broadcast
     monkeypatch.setattr(linapse_service, "_loop", asyncio.new_event_loop())
     monkeypatch.setattr(linapse_service, "_broadcast_from_thread", MagicMock())
