@@ -7,7 +7,7 @@ def pytest_runtest_setup(item):
         cross_platform_files = {
             "test_cross_platform.py",
             "test_installer_config.py",
-            "test_userscript_headers.py",
+            "test_browser_extension.py",
             "test_playwright_benchy.py",
             "test_multi_click.py",
             "test_serial_buttons.py"

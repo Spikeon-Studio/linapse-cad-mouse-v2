@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "Linapse Browser Connector",
+  "version": "0.0.0",
+  "description": "Connects OnShape and SketchUp Web to the Linapse CAD Mouse spacenav bridge.",
+  "homepage_url": "https://github.com/spikeon/linapse-cad-mouse-v2",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAky1DRy9mPTB2o9gUEfDhyYA+L5vLjJzJ4Cx5xiIB4MJ2AkGEdCHX2HYkEotzxZz7LrbLpGi4c2QZRqYMebdn/Xgu3yHUkO6u/+OkZJGqMjPxq9B5OGRYWZ8vLgX69pcHJ4rM+snGWZdP1ooBrM5ZhJoE+Zisvnp8fmvnn5MrGLwu2uTF2E9mOTOT6eT+GsjP7tr8NOEE259d+gVzRP96Ub2J54TeS1QQHywkxuEHr+xj4pfhhHX4rLHvRjxDX6BK6oBd3a0BQTD0UF6f+5w27yZODyesXCpMHOqKtFqoXJ3Cfs8E17Y6sXiOUgNuiAM98KiRfgdI8APMm6kJWzX3eQIDAQAB",
+  "content_scripts": [
+    {
+      "matches": [
+        "https://cad.onshape.com/*",
+        "https://*.sketchup.com/*",
+        "https://sketchup.com/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_start",
+      "world": "MAIN"
+    }
+  ]
+}

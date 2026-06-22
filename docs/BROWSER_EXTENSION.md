@@ -1,0 +1,428 @@
+# Linapse Browser Connector
+
+Official browser extension for connecting OnShape and SketchUp Web to the Linapse CAD Mouse `spacenav-ws` bridge.
+
+This replaces the old Tampermonkey userscript workflow with a first-party extension published to the Chrome Web Store, Microsoft Edge Add-ons, and Firefox Add-ons.
+
+## What it does
+
+OnShape and SketchUp Web only enable 3Dconnexion integration when `navigator.platform` is `Win32`. The extension injects a tiny content script at `document_start` in the page context to spoof that value, allowing the web app to connect to the local WebSocket bridge on port 8181.
+
+## Supported browsers
+
+| Browser | Install method |
+|---------|----------------|
+| Chrome | [Chrome Web Store](https://chromewebstore.google.com/detail/linapse-browser-connector/lfoionfoolheehmebamjhfdompgckkhj) or managed policy |
+| Edge | [Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/linapse-browser-connector/lfoionfoolheehmebamjhfdompgckkhj) or managed policy |
+| Firefox | [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/linapse-browser-connector/) or managed policy |
+| Safari | Build locally with `extension/scripts/build-safari.sh` (requires macOS + Xcode) |
+
+Extension IDs are pinned in [`extension-id.json`](extension-id.json) so enterprise policy installs stay stable across releases.
+
+## Build locally
+
+```bash
+cd extension
+npm install
+npm run build
+```
+
+Artifacts land in `extension/dist/`:
+
+- `linapse-browser-connector-chrome-<version>.zip`
+- `linapse-browser-connector-firefox-<version>.zip`
+- Unpacked folders under `dist/chrome/` and `dist/firefox/`
+
+## Installer integration
+
+Linux (`service/install.sh`, `setup.sh`) and Windows (`LinapseServiceSetup.exe`) run helper scripts that:
+
+1. Open the official store pages for one-click install, or
+2. With admin rights / `LINAPSE_INSTALL_BROWSER_POLICY=1`, write managed browser policies to force-install the published extension.
+
+Linux helper:
+
+```bash
+./extension/scripts/install-linux.sh
+sudo LINAPSE_INSTALL_BROWSER_POLICY=1 ./extension/scripts/install-linux.sh
+```
+
+Windows helper:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File extension/scripts/install-windows.ps1
+powershell -ExecutionPolicy Bypass -File extension/scripts/install-windows.ps1 -UsePolicy
+```
+
+## CI/CD: Chrome Web Store publish credentials
+
+The GitHub Actions workflow publishes to the Chrome Web Store on every push to `main`/`master` after tests pass. You only need to set this up once.
+
+Use the **same Google account** for every step below (Cloud Console, OAuth Playground, Chrome Web Store Developer Dashboard, and GitHub secrets).
+
+---
+
+### Part A — Create a Google Cloud project
+
+1. Open **https://console.cloud.google.com/** in Chrome.
+2. If prompted, sign in with the Google account you want to own the extension.
+3. Look at the **top bar**. Next to the Google Cloud logo you will see a **project dropdown** (it may say **Select a project** or show an existing project name).
+4. Click that **project dropdown**.
+5. In the panel that opens, click **NEW PROJECT** (top right of the panel).
+6. In **Project name**, type: `linapse-browser-connector`
+7. Leave **Location** as **No organization** (unless you use Google Workspace and want an org).
+8. Click **CREATE**.
+9. Wait ~10 seconds for the project to be created.
+10. Click the **project dropdown** in the top bar again.
+11. Click **linapse-browser-connector** to select it.
+12. Confirm the top bar now shows **linapse-browser-connector**.
+
+---
+
+### Part B — Enable the Chrome Web Store API
+
+1. With project **linapse-browser-connector** selected, click the **☰ hamburger menu** (top left).
+2. Hover **APIs & Services**.
+3. Click **Library**.
+4. In the **Search for APIs & Services** box at the top, type: `Chrome Web Store`
+5. Click **Chrome Web Store API** in the results (publisher: Google).
+6. Click the blue **ENABLE** button.
+7. Wait until the page shows **API enabled** (the button changes to **MANAGE**).
+
+Direct link (after selecting the project): https://console.cloud.google.com/apis/library/chromewebstore.googleapis.com
+
+---
+
+### Part C — Configure the OAuth consent screen
+
+1. Click **☰** → **APIs & Services** → **OAuth consent screen**.
+2. Under **User Type**, click **External**.
+3. Click **CREATE**.
+4. On **App information**:
+   - **App name:** `Linapse Browser Connector CI`
+   - **User support email:** pick your email from the dropdown
+   - **App logo:** skip (optional)
+   - **App domain:** skip (optional)
+   - **Authorized domains:** skip (optional)
+   - **Developer contact information:** enter your email
+5. Click **SAVE AND CONTINUE**.
+6. On **Scopes**, click **SAVE AND CONTINUE** (do not add scopes here — you will add the scope in OAuth Playground later).
+7. On **Test users**, click **+ ADD USERS**.
+8. Type the **same Google account email** you are using for all of this.
+9. Click **ADD**.
+10. Click **SAVE AND CONTINUE**.
+11. On **Summary**, click **BACK TO DASHBOARD**.
+
+Direct link: https://console.cloud.google.com/apis/credentials/consent
+
+---
+
+### Part D — Create OAuth Client ID and Client Secret
+
+> **Important:** If you will use **OAuth Playground** (Part E), you must create a **Web application** client and add the Playground redirect URI below. A **Desktop app** client causes `Error 400: redirect_uri_mismatch` in OAuth Playground.
+
+1. Click **☰** → **APIs & Services** → **Credentials**.
+2. Click **+ CREATE CREDENTIALS** (top of page).
+3. Click **OAuth client ID**.
+4. If you see “Configure consent screen” instead, go back to Part C and finish it first.
+5. On **Create OAuth client ID**:
+   - **Application type:** click the dropdown and choose **Web application**
+   - **Name:** `Linapse CI Publish`
+6. Under **Authorized redirect URIs**, click **+ ADD URI**.
+7. Paste this **exactly** (no trailing slash):
+   ```
+   https://developers.google.com/oauthplayground
+   ```
+8. Click **CREATE**.
+9. A popup titled **OAuth client created** appears.
+10. Click the **copy icon** next to **Your Client ID**. Paste it into a local notes file — label it `CHROME_CLIENT_ID`. It ends in `.apps.googleusercontent.com`.
+11. Click the **copy icon** next to **Your Client Secret**. Paste into the same notes file — label it `CHROME_CLIENT_SECRET`.
+12. Click **OK** to close the popup.
+13. Keep your notes file open — you will need both values again in a minute.
+
+**Already created a Desktop app client and got `redirect_uri_mismatch`?** See [Fix redirect_uri_mismatch](#fix-redirect_uri_mismatch) below — do not reuse the Desktop client for OAuth Playground.
+
+Direct link: https://console.cloud.google.com/apis/credentials
+
+---
+
+### Part E — Generate a Refresh Token (OAuth Playground)
+
+1. Open **https://developers.google.com/oauthplayground** in a new tab.
+2. Click the **⚙ gear icon** in the top-right corner of the page.
+3. Check the box **Use your own OAuth credentials**.
+4. In **OAuth Client ID**, paste your `CHROME_CLIENT_ID`.
+5. In **OAuth Client secret**, paste your `CHROME_CLIENT_SECRET`.
+6. Click **Close** (bottom of the gear panel).
+7. Scroll down to **Step 1 Select & authorize APIs**.
+8. In the left list, scroll until you find **Chrome Web Store API v2** (or search the filter box for `chromewebstore`).
+9. Click the checkbox next to:
+   ```
+   https://www.googleapis.com/auth/chromewebstore
+   ```
+10. Click the blue **Authorize APIs** button.
+11. A Google sign-in popup/tab opens. Pick the **same Google account** as Parts A–D.
+12. If you see **Google hasn’t verified this app**:
+    - Click **Advanced**
+    - Click **Go to Linapse Browser Connector CI (unsafe)** (wording may vary)
+13. Click **Continue** / **Allow** to grant access.
+14. You are returned to OAuth Playground. **Step 1** should now show an **Authorization code**.
+15. Click the blue **Exchange authorization code for tokens** button (Step 2).
+16. In the response on the right, find **Refresh token**.
+17. Copy the entire refresh token (starts with `1//`). Paste into your notes file — label it `CHROME_REFRESH_TOKEN`.
+18. Do **not** share this file or commit it to git.
+
+---
+
+### Part F — Register as a Chrome Web Store developer (one-time $5)
+
+1. Open **https://chrome.google.com/webstore/devconsole** in Chrome.
+2. Sign in with the **same Google account**.
+3. If this is your first time:
+   - Click **Register** / **Pay registration fee** (or similar)
+   - Complete the **$5 one-time developer registration** with a credit card
+   - Accept the developer agreement
+   - Click through until you reach the **Developer Dashboard**
+4. You should now see the dashboard with a **New item** button (wording may be **Add new item**).
+
+---
+
+### Part G — Build the extension zip on your machine
+
+Run this in a terminal from the repo root:
+
+```bash
+cd extension
+npm install
+npm run build
+```
+
+You should now have a file like:
+
+```
+extension/dist/linapse-browser-connector-chrome-2.18.0.zip
+```
+
+(The version number matches `VERSION` in the repo root.)
+
+---
+
+### Part H — First manual upload to Chrome Web Store
+
+Google requires the **first upload** to be done in the Developer Dashboard. After that, CI can upload updates.
+
+1. Go to **https://chrome.google.com/webstore/devconsole**
+2. Click **New item** (or **Add new item**).
+3. Click **Choose file** / **Upload new package** / drag-and-drop zone.
+4. Select `extension/dist/linapse-browser-connector-chrome-<version>.zip` from your machine.
+5. Click **Upload** / wait for upload to finish.
+6. After upload, Chrome shows the extension’s **Item ID** (32 lowercase letters, e.g. `lfoionfoolheehmebamjhfdompgckkhj`).
+7. **Verify the Item ID is exactly:** `lfoionfoolheehmebamjhfdompgckkhj`
+   - If it does **not** match, stop — the manifest `key` in the repo pins this ID; contact a maintainer before continuing.
+8. Fill in the **Store listing** tab:
+   - **Detailed description:** explain that it connects OnShape / SketchUp Web to the local Linapse spacenav bridge
+   - **Category:** Productivity (or Developer Tools)
+   - **Language:** English
+   - Upload at least one **screenshot** (1280×800 or 640×400)
+   - **Icon:** already in the zip (128×128)
+9. Fill in the **Privacy** tab:
+   - **Single purpose:** enable 3D mouse in browser CAD apps
+   - **Permission justifications:** content script only runs on OnShape and SketchUp domains; no data collected
+   - **Privacy policy URL:** `https://github.com/spikeon/linapse-cad-mouse-v2` (or your fork’s URL)
+10. Fill in **Distribution**:
+    - **Visibility:** Public (or Unlisted while testing)
+    - **Regions:** all regions you want
+11. Click **Submit for review** (top right).
+12. Wait for Google review (usually 1–3 business days). CI uploads will still work while in review, but users cannot install until approved.
+
+Copy the Item ID into your notes file — label it `CHROME_EXTENSION_ID`:
+
+```
+lfoionfoolheehmebamjhfdompgckkhj
+```
+
+---
+
+### Part I — Add GitHub repository secrets
+
+Do this in the **GitHub repo** that runs CI (e.g. `spikeon/linapse-cad-mouse-v2`).
+
+1. Open **https://github.com/spikeon/linapse-cad-mouse-v2** (replace with your fork if different).
+2. Click the **Settings** tab (top of the repo — you must be a repo admin).
+3. In the **left sidebar**, scroll to **Security**.
+4. Click **Secrets and variables**.
+5. Click **Actions**.
+6. You will see **Repository secrets**. Click **New repository secret**.
+
+Create **four secrets**, one at a time. For each secret:
+
+- Click **New repository secret**
+- Type the **Name** exactly as shown (case-sensitive)
+- Paste the **Secret** value from your notes file
+- Click **Add secret**
+
+| Click **Name** (exactly) | Paste this value |
+|--------------------------|------------------|
+| `CHROME_CLIENT_ID` | From Part D — ends in `.apps.googleusercontent.com` |
+| `CHROME_CLIENT_SECRET` | From Part D — the client secret string |
+| `CHROME_REFRESH_TOKEN` | From Part E — starts with `1//` |
+| `CHROME_EXTENSION_ID` | `lfoionfoolheehmebamjhfdompgckkhj` |
+
+After all four exist, the **Repository secrets** list should show:
+
+- `CHROME_CLIENT_ID`
+- `CHROME_CLIENT_SECRET`
+- `CHROME_EXTENSION_ID`
+- `CHROME_REFRESH_TOKEN`
+
+**Where these go in the repo:** nowhere on disk. GitHub Actions injects them as environment variables in the `publish-browser-extension` job. Never commit them to `.env`, code, or the repo.
+
+---
+
+### Part J — Verify CI publish works
+
+1. Make any small commit on `main` (or merge a PR to `main`).
+2. Open the repo on GitHub.
+3. Click the **Actions** tab.
+4. Click the latest **Multi-Distro CI/CD** workflow run.
+5. In the left job list, click **publish-browser-extension**.
+6. Expand **Publish to Chrome Web Store**.
+7. Success looks like:
+   ```
+   Uploading .../linapse-browser-connector-chrome-....zip to Chrome Web Store ...
+   Upload complete. Publishing ...
+   Chrome Web Store publish complete.
+   ```
+8. If secrets are missing, you will see:
+   ```
+   Chrome Web Store secrets are not configured.
+   See docs/BROWSER_EXTENSION.md for setup instructions.
+   ```
+   → Go back to Part I and add the missing secrets.
+
+9. Confirm in Developer Dashboard:
+   - Open **https://chrome.google.com/webstore/devconsole**
+   - Click your **Linapse Browser Connector** item
+   - Check **Package** / **Version** shows the new version number from `VERSION`
+
+---
+
+### Troubleshooting
+
+#### Fix redirect_uri_mismatch
+
+You see: **Access blocked: This app's request is invalid** with **Error 400: redirect_uri_mismatch**.
+
+That means your OAuth client does not allow OAuth Playground's redirect URL. Fix it like this:
+
+**Option A — Edit your existing OAuth client (if it is Web application)**
+
+1. Open **https://console.cloud.google.com/apis/credentials**
+2. Confirm top bar project is **linapse-browser-connector**
+3. Under **OAuth 2.0 Client IDs**, click the name of your client (e.g. **Linapse CI Publish**)
+4. Scroll to **Authorized redirect URIs**
+5. Click **+ ADD URI**
+6. Paste exactly:
+   ```
+   https://developers.google.com/oauthplayground
+   ```
+7. Click **SAVE** (bottom)
+8. Wait 1–2 minutes for Google to propagate the change
+9. Go back to **https://developers.google.com/oauthplayground**
+10. Click **⚙ gear** → confirm **Use your own OAuth credentials** is checked
+11. Re-paste **Client ID** and **Client secret** → **Close**
+12. Click **Authorize APIs** again
+
+**Option B — You created a Desktop app client (most common cause)**
+
+Desktop app clients **cannot** be used with OAuth Playground. Create a new one:
+
+1. Open **https://console.cloud.google.com/apis/credentials**
+2. Click **+ CREATE CREDENTIALS** → **OAuth client ID**
+3. **Application type:** **Web application**
+4. **Name:** `Linapse CI Playground`
+5. **Authorized redirect URIs** → **+ ADD URI** → paste:
+   ```
+   https://developers.google.com/oauthplayground
+   ```
+6. Click **CREATE**
+7. Copy the new **Client ID** and **Client Secret** into your notes file (replace the old ones)
+8. Retry Part E from step 1 using the **new** credentials
+
+**Option C — Skip OAuth Playground entirely**
+
+Run in a terminal:
+
+```bash
+npx chrome-webstore-upload-keys
+```
+
+1. Paste **Client ID** when prompted (Desktop or Web client both work here)
+2. Paste **Client Secret** when prompted
+3. Browser opens → sign in → click **Allow**
+4. Terminal prints a **refresh token** — save it as `CHROME_REFRESH_TOKEN`
+
+**OAuth Playground: “redirect_uri_mismatch”** — see [Fix redirect_uri_mismatch](#fix-redirect_uri_mismatch) above.
+
+**OAuth Playground: “Access blocked: app has not completed verification”**
+
+- Go back to Part C → **OAuth consent screen** → **Test users** → add your email.
+
+**CI publish fails with 401 / 403**
+
+- Regenerate the refresh token (Part E) — refresh tokens can be revoked if you rotate the client secret.
+- Confirm the Google account that owns the refresh token is the same account that owns the Developer Dashboard item.
+
+**CI publish fails with 404 on extension ID**
+
+- Complete Part H first (manual first upload).
+- Confirm `CHROME_EXTENSION_ID` matches the Item ID in the Developer Dashboard.
+
+**Easier refresh token alternative (optional)**
+
+Instead of Part E (OAuth Playground), you can run:
+
+```bash
+npx chrome-webstore-upload-keys
+```
+
+It will prompt for Client ID and Secret, open a browser, and print a refresh token. Paste that as `CHROME_REFRESH_TOKEN` in Part I.
+
+---
+
+### Firefox and Edge (manual first publish)
+
+CI currently auto-publishes **Chrome only**. For the other stores:
+
+**Firefox AMO**
+
+1. Create a [Firefox Add-ons developer account](https://addons.mozilla.org/developers/).
+2. Upload `linapse-browser-connector-firefox-<version>.zip`.
+3. The extension ID is pinned in `manifest.firefox.json` as `linapse-browser-connector@cadmouse.mk2`.
+4. Optional CI secrets for future automation: `FIREFOX_JWT_ISSUER`, `FIREFOX_JWT_SECRET`.
+
+**Microsoft Edge Add-ons**
+
+1. Register at [Partner Center](https://partner.microsoft.com/dashboard/microsoftedge/public/login).
+2. Submit the same Chrome zip (Edge accepts Chromium MV3 packages).
+3. Update `edge_addons_url` in `extension-id.json` with the final listing URL after approval.
+
+### Safari
+
+Safari distribution requires Apple code signing:
+
+```bash
+./extension/scripts/build-safari.sh
+```
+
+Open the generated Xcode project, sign with your Apple Developer team, and distribute via the Mac App Store or direct notarized download.
+
+## Security notes
+
+- The extension only runs on OnShape and SketchUp domains.
+- It does not request host permissions beyond those sites.
+- It does not collect or transmit data; it only overrides `navigator.platform` locally in the page context.
+
+## Legacy userscript
+
+The old Tampermonkey userscript workflow is deprecated. Use this extension instead.

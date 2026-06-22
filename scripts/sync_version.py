@@ -55,11 +55,11 @@ patch(
     rf'\g<1>{VERSION}\g<2>',
 )
 
-# service/linapse-browser-connector.user.js: // @version      X.Y.Z
+# extension/package.json: "version": "X.Y.Z"
 patch(
-    ROOT / "service/linapse-browser-connector.user.js",
-    r'(// @version\s+)\S+',
-    rf'\g<1>{VERSION}',
+    ROOT / "extension/package.json",
+    r'("version"\s*:\s*")[^"]+(")',
+    rf'\g<1>{VERSION}\g<2>',
 )
 
 print("done")

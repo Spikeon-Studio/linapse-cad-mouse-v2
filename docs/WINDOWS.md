@@ -13,7 +13,7 @@ Windows does not use UNIX sockets or `udev` rules. Instead:
 - **Motion Telemetry** is sent from the CAD Mouse MK2 over the USB Serial interface (COM port) to `linapse-service.exe`.
 - **Physical Buttons** are sent over USB Serial to `linapse-service.exe`, just like Cap-Tap gestures, so they can be custom-mapped. When HID Emulation is enabled, a button left as **Native HID Button** is echoed back to the device's hardware to emit the real USB HID button press, so drivers like 3DxWare pick it up; any other mapping runs the custom action instead.
 - **Cap-Tap Gestures** are detected by the firmware, sent over USB Serial, and simulated on the host OS by the service using the `pynput` library.
-- **Browser CAD Applications** (such as OnShape or SketchUp Web) connect via a WebSocket connection (`ws://localhost:13000`) and a Tampermonkey userscript.
+- **Browser CAD Applications** (such as OnShape or SketchUp Web) connect via the `spacenav-ws` WebSocket bridge and the official Linapse Browser Connector extension.
 
 ---
 
@@ -49,12 +49,11 @@ If you prefer to run the daemon manually from source:
 
 ## Browser CAD Connector Setup (OnShape & SketchUp Web)
 
-Browser-based CAD tools sandbox network connections. To bridge the CAD Mouse MK2 to OnShape or SketchUp Web, install the browser userscript connector:
+Browser-based CAD tools sandbox network connections. Install the official **Linapse Browser Connector** extension:
 
-1. Install the [Tampermonkey](https://www.tampermonkey.net/) browser extension for Chrome, Edge, or Firefox.
-2. Download or open [linapse-browser-connector.user.js](https://github.com/spikeon/linapse-cad-mouse-v2/raw/main/service/linapse-browser-connector.user.js) in your browser.
-3. Tampermonkey should automatically prompt you to install the script. Click **Install**.
-4. Open or refresh OnShape (`https://cad.onshape.com`) or SketchUp Web. The device will be recognized immediately, allowing 6DoF camera motion.
+1. Run the Windows installer — it opens the Chrome, Edge, and Firefox store pages at the end, or install manually from **[docs/BROWSER_EXTENSION.md](BROWSER_EXTENSION.md)**.
+2. Click **Add** / **Install** in your browser.
+3. Open or refresh OnShape (`https://cad.onshape.com`) or SketchUp Web. The device will be recognized immediately, allowing 6DoF camera motion.
 
 ---
 

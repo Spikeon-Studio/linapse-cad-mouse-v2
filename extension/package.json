@@ -1,0 +1,16 @@
+{
+  "name": "linapse-browser-connector",
+  "version": "2.18.0",
+  "private": true,
+  "description": "Official Linapse browser connector for OnShape and SketchUp Web",
+  "license": "GPL-3.0",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "publish:chrome": "node scripts/publish-chrome.mjs"
+  },
+  "devDependencies": {
+    "archiver": "^7.0.1",
+    "chrome-webstore-upload": "^3.2.0",
+    "sharp": "^0.33.5"
+  }
+}

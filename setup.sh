@@ -6,7 +6,7 @@
 #   2. (optional) flash the firmware            --flash
 #   3. install the host integration             service/install.sh
 #   4. install + enable the configurator service
-#   5. print the OnShape userscript steps
+#   5. install the browser extension
 #
 # Usage:
 #   ./setup.sh                 # packages + host + configurator
@@ -140,14 +140,12 @@ systemctl --user daemon-reload
 systemctl --user enable --now linapse-configurator
 info "Serving $CONFIGURATOR_DIR at http://localhost:$PORT"
 
-# ── 5. Userscript ──────────────────────────────────────────────────────────────
-section "5. Browser userscript (manual)"
-cat <<EOF
+# ── 5. Browser extension ───────────────────────────────────────────────────────
+section "5. Browser extension"
+chmod +x "$REPO_DIR/extension/scripts/install-linux.sh"
+"$REPO_DIR/extension/scripts/install-linux.sh" || true
 
-  Tampermonkey can't be scripted, so finish these by hand:
-    1. Install the Tampermonkey browser extension.
-    2. Drag service/linapse-browser-connector.user.js onto the Tampermonkey dashboard.
-    3. Open https://cad.onshape.com or SketchUp Web and move the mouse — the viewport should respond.
+cat <<EOF
 
 ######## Done
 

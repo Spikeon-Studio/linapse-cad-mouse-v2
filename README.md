@@ -40,7 +40,7 @@
 
 ## What it does
 
-- **6DoF motion in OnShape, SketchUp Web, and Native apps.** Motion coordinates are decoded in firmware and sent via USB serial to `linapse-service`. On Linux, the service processes the motion and exposes it through a user-space UNIX socket, eliminating the need for system-wide `spacenavd`, allowing native apps (Blender, FreeCAD, OrcaSlicer, etc.) to connect directly. On Windows and macOS, the service translates 6DoF motion and injects it as standard OS mouse/keyboard inputs via the `pynput` library. On all platforms, a WebSocket bridge plus a Tampermonkey userscript carry motion into browser apps (OnShape, SketchUp Web).
+- **6DoF motion in OnShape, SketchUp Web, and Native apps.** Motion coordinates are decoded in firmware and sent via USB serial to `linapse-service`. On Linux, the service processes the motion and exposes it through a user-space UNIX socket, eliminating the need for system-wide `spacenavd`, allowing native apps (Blender, FreeCAD, OrcaSlicer, etc.) to connect directly. On Windows and macOS, the service translates 6DoF motion and injects it as standard OS mouse/keyboard inputs via the `pynput` library. On all platforms, a WebSocket bridge plus the official Linapse Browser Connector extension carry motion into browser apps (OnShape, SketchUp Web).
 - **Physical buttons, taps, and gestures.** The host service maps physical button clicks (including single click, double click, and multi-click actions), button chords, and cap-tap gestures to keystrokes, mouse events, custom shell commands, macros, or profile/mode switches.
 - **Configurable modes & input suppression.** In specialized modes like **Browser** and **Media**, standard 6DoF translation/rotation reports are suppressed. Browser Mode maps the puck's pitch rotation to web page scrolling and physical buttons to browser tab navigation. Media Mode maps puck pitch to system volume control, puck twist to scrubbing, and buttons to track navigation.
 - **Addressable RGB lighting.** SK6812 LEDs with multiple effects (solid, breathing, motion-reactive, swirls) configured live per-mode.
@@ -101,7 +101,7 @@ Compile and flash the firmware directly from the configurator. Automatically det
         (reads spnav.sock)                      │         • live 3D Benchy viewport
                                                 ▼
                                         Web Apps (OnShape, SketchUp)
-                                        (Tampermonkey userscript)
+                                        Linapse Browser Connector
 ```
 
 How the data flows:
@@ -118,10 +118,11 @@ How the data flows:
 |------|------------|
 | [`setup.sh`](setup.sh) | Top-level installer — packages, firmware (`--flash`), host integration, and configurator service. |
 | [`firmware/`](firmware/) | RP2040 firmware (PlatformIO). Motion decode, filtering, tap detection, LED engine, USB HID + serial protocol. See [firmware/README.md](firmware/README.md) and [firmware/LED_COLOR_CONFIG.md](firmware/LED_COLOR_CONFIG.md). |
-| [`service/`](service/) | Cross-platform host-side daemon and integration: `install.sh` (Linux), `linapse-service` (core service running on Linux, Windows, macOS), udev rules/systemd (Linux), userscripts, calibration tools. See [service/README.md](service/README.md). |
+| [`service/`](service/) | Cross-platform host-side daemon and integration: `install.sh` (Linux), `linapse-service`, udev rules/systemd (Linux), calibration tools. See [service/README.md](service/README.md). |
+| [`extension/`](extension/) | Official **Linapse Browser Connector** for Chrome, Edge, Firefox, and Safari. See [docs/BROWSER_EXTENSION.md](docs/BROWSER_EXTENSION.md). |
 | [`docs/INTEGRATIONS.md`](docs/INTEGRATIONS.md) | Application integrations guide — how to setup, configure and verify all 14 supported and unsupported applications. |
 | [`docs/LIGHTING.md`](docs/LIGHTING.md) | LED lighting guide — detailed breakdown of the 7 available lighting effects (solid, breathing, reactive, dot swirl, gradient, rainbow, volume) with animated GIF demonstrations. |
-| [`docs/WINDOWS.md`](docs/WINDOWS.md) | Windows quick start & install guide — detailed setup instructions, including the pre-compiled installer, running from source, userscripts, and configuration differences. |
+| [`docs/WINDOWS.md`](docs/WINDOWS.md) | Windows quick start & install guide — pre-compiled installer, browser extension, and configuration differences. |
 | [`docs/MACOS.md`](docs/MACOS.md) | macOS quick start & install guide — detailed setup instructions, including the pre-compiled package, system permissions, running from source, and configuration differences. |
 | [`configurator/`](configurator/) | Linapse Electron configurator — an Electron app (Three.js 3D viewport) that talks to `linapse-service` over WebSocket. |
 | [`platformio.ini`](platformio.ini) | Firmware build configuration. |
@@ -149,7 +150,7 @@ Pre-compiled service packages and installers are automatically generated via CI/
 - **Windows**: Download and run the `LinapseServiceSetup.exe` installer. It sets up `linapse-service` as a background startup daemon.
 - **macOS**: Download and run the `linapse-service.pkg` installer package. It configures a `launchd` service at `/Library/LaunchAgents` to run the daemon on startup.
 
-It still leaves two inherently hands-on steps to you: flashing the firmware (the RP2040 must be physically put into BOOTSEL mode — `--flash` walks you through it) and installing the Tampermonkey userscript (browser extensions can't be scripted). The manual breakdown below documents each piece if you'd rather run them yourself.
+It still leaves one inherently hands-on step: flashing the firmware (the RP2040 must be physically put into BOOTSEL mode — `--flash` walks you through it). The installer opens your browser's extension store pages for the Linapse Browser Connector automatically.
 
 ### 1. Flash the firmware
 
@@ -174,7 +175,7 @@ chmod +x install.sh
 
 This installs `linapse-service`, enables the systemd user services (`ydotoold`, `spacenav-ws`, `linapse-service`), writes udev rules, and patches `spacenav-ws`. Full details, prerequisites, and troubleshooting are in **[service/README.md](service/README.md)**.
 
-Then install the Tampermonkey userscript ([`service/linapse-browser-connector.user.js`](service/linapse-browser-connector.user.js)) and open OnShape or SketchUp Web. For setup instructions for native applications (Blender, FreeCAD, Maya, etc.) and game engines (Unreal, Unity), see **[docs/INTEGRATIONS.md](docs/INTEGRATIONS.md)**.
+Then install the [Linapse Browser Connector](docs/BROWSER_EXTENSION.md) browser extension and open OnShape or SketchUp Web. For setup instructions for native applications (Blender, FreeCAD, Maya, etc.) and game engines (Unreal, Unity), see **[docs/INTEGRATIONS.md](docs/INTEGRATIONS.md)**.
 
 ### 3. Open the configurator
 

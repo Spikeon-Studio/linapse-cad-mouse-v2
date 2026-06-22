@@ -10,3 +10,5 @@ __pycache__/
 .agents/
 node_modules/
 dist/
+extension/node_modules/
+extension/dist/

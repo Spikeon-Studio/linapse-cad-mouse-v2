@@ -78,9 +78,8 @@ Web applications run in sandboxed browsers and cannot read the UNIX socket. They
 
 ### Setup Steps
 1. Make sure `spacenav-ws` is running: `systemctl --user status spacenav-ws`.
-2. Install the **Tampermonkey** extension in your browser.
-3. Install the userscript `service/linapse-browser-connector.user.js` (by dragging it onto the Tampermonkey dashboard).
-   - This script spoofs `navigator.platform` to `'Win32'` and matches `cad.onshape.com` and `*.sketchup.com`.
+2. Install the **Linapse Browser Connector** extension from your browser's store. See **[docs/BROWSER_EXTENSION.md](BROWSER_EXTENSION.md)** for links and enterprise install options.
+   - The extension spoofs `navigator.platform` to `'Win32'` on `cad.onshape.com` and `*.sketchup.com`.
 
 #### OnShape
 - Open any document on `https://cad.onshape.com`. Motion should work instantly.

@@ -107,7 +107,7 @@ jobs:
           path: results/${{ matrix.distro }}
 
   update-badges:
-    needs: [test, build-windows, build-macos]
+    needs: [test, build-windows, build-macos, build-browser-extension]
     if: always()
     runs-on: ubuntu-latest
     permissions:
@@ -225,6 +225,13 @@ jobs:
           npm run pack
           cd ..
         shell: bash
+
+      - name: Build browser extension (Windows artifact)
+        run: |
+          cd extension
+          npm install
+          npm run build
+          cd ..
 
       - name: Compile Inno Setup Installer
         shell: powershell
@@ -360,8 +367,105 @@ jobs:
           name: status-macos
           path: results/macos
 
+  build-browser-extension:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Sync version strings from VERSION file
+        run: python3 scripts/sync_version.py
+
+      - name: Build browser extension packages
+        run: |
+          cd extension
+          npm install
+          npm run build
+
+      - name: Upload browser extension artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: linapse-browser-extension
+          path: |
+            extension/dist/*.zip
+            extension/dist/chrome/**
+
+      - name: Save job status
+        if: always()
+        run: |
+          mkdir -p results
+          echo "${{ job.status }}" > results/browser-extension
+
+      - name: Upload status artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: status-browser-extension
+          path: results/browser-extension
+
+  publish-browser-extension:
+    needs: [build-browser-extension, test]
+    runs-on: ubuntu-latest
+    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') && github.event_name == 'push'
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Download browser extension artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: linapse-browser-extension
+          path: extension/dist
+
+      - name: Install extension publish dependencies
+        run: |
+          cd extension
+          npm install
+
+      - name: Publish to Chrome Web Store
+        env:
+          CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
+          CHROME_CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
+          CHROME_REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
+          CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
+        run: |
+          if [ -z "$CHROME_CLIENT_ID" ] || [ -z "$CHROME_CLIENT_SECRET" ] || [ -z "$CHROME_REFRESH_TOKEN" ]; then
+            echo "Chrome Web Store secrets are not configured."
+            echo "See docs/BROWSER_EXTENSION.md for setup instructions."
+            exit 0
+          fi
+          cd extension
+          npm run publish:chrome
+
+      - name: Save publish job status
+        if: always()
+        run: |
+          mkdir -p results
+          echo "${{ job.status }}" > results/browser-extension-publish
+
+      - name: Upload publish status artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: status-browser-extension-publish
+          path: results/browser-extension-publish
+
   release:
-    needs: [test, build-windows, build-macos]
+    needs: [test, build-windows, build-macos, build-browser-extension]
     runs-on: ubuntu-latest
     if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') && github.event_name == 'push'
     permissions:
@@ -389,6 +493,12 @@ jobs:
           name: linapse-service-pkg
           path: .
 
+      - name: Download browser extension packages
+        uses: actions/download-artifact@v4
+        with:
+          name: linapse-browser-extension
+          path: extension-release
+
       - name: Create or Update Release
         uses: softprops/action-gh-release@v2
         with:
@@ -399,6 +509,7 @@ jobs:
           files: |
             LinapseServiceSetup.exe
             linapse-service.pkg
+            extension-release/*.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

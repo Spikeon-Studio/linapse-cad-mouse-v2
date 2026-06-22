@@ -135,15 +135,21 @@ else
 fi
 
 
+# ── Browser extension ─────────────────────────────────────────────────────────
+section "Installing Linapse Browser Connector browser extension"
+
+chmod +x "$SCRIPT_DIR/../extension/scripts/install-linux.sh"
+"$SCRIPT_DIR/../extension/scripts/install-linux.sh" || info "Browser extension setup printed above."
+
+
 # ── Done ─────────────────────────────────────────────────────────────────────
 section "Done!"
 cat <<'EOF'
 
 Next steps:
-  1. Install the Tampermonkey browser extension.
-  2. Drag service/linapse-browser-connector.user.js onto the Tampermonkey dashboard to install the userscript.
-  3. Visit https://cad.onshape.com or SketchUp Web and open any document.
-  4. Move the CAD Mouse — the viewport should respond.
+  1. Install the Linapse Browser Connector from your browser's extension store (links above).
+  2. Visit https://cad.onshape.com or SketchUp Web and open any document.
+  3. Move the CAD Mouse — the viewport should respond.
 
 If the mouse was already plugged in before installing, unplug and replug it.
 For detailed setup guides for 14 apps (Blender, FreeCAD, Unreal, Unity, etc.), see docs/INTEGRATIONS.md.

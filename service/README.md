@@ -17,7 +17,7 @@ linapse-service    — bridges serial/HID inputs, translates buttons/taps via yd
     │
     └─► spacenav-ws — WebSocket bridge to browser apps (port 8181)
             ▲
-        Tampermonkey browser userscript (platform spoofing)
+        Linapse Browser Connector (official extension)
             ▲
         Browser Apps (OnShape, SketchUp Web)
 ```
@@ -29,7 +29,7 @@ linapse-service    — bridges serial/HID inputs, translates buttons/taps via yd
 | `ydotool` | Arch: `sudo pacman -S ydotool` |
 | `uv` | `curl -LsSf https://astral.sh/uv/install.sh \| sh` |
 | `python3` | Usually pre-installed |
-| Tampermonkey | Browser extension (Chrome/Firefox) |
+| Browser | Install the [Linapse Browser Connector](../docs/BROWSER_EXTENSION.md) (Chrome, Edge, Firefox, Safari) |
 
 ## Firmware
 
@@ -53,11 +53,13 @@ The installer:
 - Installs udev rules so services restart automatically on plug/unplug
 - Patches `spacenav-ws` to disable its built-in button-snap behaviour
 
-After the installer finishes, install the Tampermonkey userscript:
+After the installer finishes, install the Linapse Browser Connector browser extension:
 
-1. Install [Tampermonkey](https://www.tampermonkey.net/) in your browser
-2. Drag `service/linapse-browser-connector.user.js` onto the Tampermonkey dashboard
-3. Open OnShape or SketchUp Web and open any document — motion should work immediately
+1. The installer opens the official Chrome, Edge, and Firefox store pages automatically.
+2. Click **Add** / **Install** in your browser.
+3. Open OnShape or SketchUp Web and open any document — motion should work immediately.
+
+See **[docs/BROWSER_EXTENSION.md](../docs/BROWSER_EXTENSION.md)** for store links, enterprise policy install, and Safari build instructions.
 
 For detailed setup, configuration, and verification guides for all 14 supported/experimental applications (including Blender, FreeCAD, Unreal Engine, Unity, etc.), see **[docs/INTEGRATIONS.md](../docs/INTEGRATIONS.md)**.
 
@@ -78,7 +80,7 @@ systemctl --user restart linapse-service
 ## Troubleshooting
 
 **Motion not working in Browser (OnShape / SketchUp)**
-- Check the Tampermonkey userscript is active on the page
+- Check the Linapse Browser Connector extension is enabled
 - Refresh the browser tab after any service restart
 - Check spacenav-ws is running: `systemctl --user status spacenav-ws`
 - Check linapse-service is running: `systemctl --user status linapse-service`
