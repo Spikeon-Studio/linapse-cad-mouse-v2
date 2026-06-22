@@ -6,6 +6,7 @@
 #include "SensConfig.h"
 #include "StateMachine.h"
 #include "Controllers.h"
+#include "HidSerialCommand.h"
 
 // Define the external instances required by the linker
 InputController     inputController;
@@ -34,6 +35,10 @@ void setUp(void) {
     inputController.setLeftClick(false);
     inputController.setRightClick(false);
     inputController.setActivity(false);
+    g_serviceHidMode = false;
+    g_serviceButtonMode = false;
+    g_lastServicePacketMs = 0;
+    hidController.lastSentButtons_ = 0;
 }
 
 void tearDown(void) {}
@@ -590,6 +595,62 @@ void test_config_layout_boundaries(void) {
     TEST_ASSERT_TRUE(sensConfigEnd <= Config::EEPROM_SIZE);
 }
 
+// ── HID serial command handler tests ─────────────────────────────────────────
+
+void test_service_buttons_enables_and_clears() {
+    hidController.lastSentButtons_ = 3;  // pretend a bit is stuck
+    bool handled = handleHidSerialCommand(String("service_buttons 1"), hidController);
+    TEST_ASSERT_TRUE(handled);
+    TEST_ASSERT_TRUE(g_serviceButtonMode);
+    TEST_ASSERT_EQUAL_UINT16(0, hidController.lastSentButtons_);  // cleared on entry
+}
+
+void test_service_buttons_disables() {
+    g_serviceButtonMode = true;
+    bool handled = handleHidSerialCommand(String("service_buttons 0"), hidController);
+    TEST_ASSERT_TRUE(handled);
+    TEST_ASSERT_FALSE(g_serviceButtonMode);
+}
+
+void test_hid_button_drives_report() {
+    bool handled = handleHidSerialCommand(String("hid_button 3"), hidController);
+    TEST_ASSERT_TRUE(handled);
+    TEST_ASSERT_EQUAL_UINT16(3, hidController.lastSentButtons_);
+
+    handleHidSerialCommand(String("hid_button 2"), hidController);
+    TEST_ASSERT_EQUAL_UINT16(2, hidController.lastSentButtons_);
+}
+
+void test_hid_button_masks_to_two_bits() {
+    handleHidSerialCommand(String("hid_button 255"), hidController);
+    TEST_ASSERT_EQUAL_UINT16(3, hidController.lastSentButtons_);
+}
+
+void test_hid_button_bad_arg_does_not_change_report() {
+    hidController.lastSentButtons_ = 1;
+    bool handled = handleHidSerialCommand(String("hid_button x"), hidController);
+    TEST_ASSERT_TRUE(handled);  // recognized command, just bad arg
+    TEST_ASSERT_EQUAL_UINT16(1, hidController.lastSentButtons_);
+}
+
+void test_service_hid_still_handled_after_extraction() {
+    bool handled = handleHidSerialCommand(String("service_hid 1"), hidController);
+    TEST_ASSERT_TRUE(handled);
+    TEST_ASSERT_TRUE(g_serviceHidMode);
+}
+
+void test_non_hid_command_not_handled() {
+    bool handled = handleHidSerialCommand(String("led brightness 5"), hidController);
+    TEST_ASSERT_FALSE(handled);
+}
+
+void test_hid_report_drives_axes() {
+    bool handled = handleHidSerialCommand(String("hid_report 1,2,3,4,5,6"), hidController);
+    TEST_ASSERT_TRUE(handled);
+    TEST_ASSERT_FLOAT_WITHIN(1e-4f, 1.0f, hidController.lastSentMotion_[0]);
+    TEST_ASSERT_FLOAT_WITHIN(1e-4f, 6.0f, hidController.lastSentMotion_[5]);
+}
+
 // ── Main Entry Point ─────────────────────────────────────────────────────────
 
 #ifdef ARDUINO
@@ -625,6 +686,16 @@ void setup() {
     // Config Management
     RUN_TEST(test_config_management);
     RUN_TEST(test_config_layout_boundaries);
+
+    // HID serial command handler
+    RUN_TEST(test_service_buttons_enables_and_clears);
+    RUN_TEST(test_service_buttons_disables);
+    RUN_TEST(test_hid_button_drives_report);
+    RUN_TEST(test_hid_button_masks_to_two_bits);
+    RUN_TEST(test_hid_button_bad_arg_does_not_change_report);
+    RUN_TEST(test_service_hid_still_handled_after_extraction);
+    RUN_TEST(test_non_hid_command_not_handled);
+    RUN_TEST(test_hid_report_drives_axes);
 
     UNITY_END();
 }
@@ -664,6 +735,16 @@ int main(int argc, char **argv) {
     // Config Management
     RUN_TEST(test_config_management);
     RUN_TEST(test_config_layout_boundaries);
+
+    // HID serial command handler
+    RUN_TEST(test_service_buttons_enables_and_clears);
+    RUN_TEST(test_service_buttons_disables);
+    RUN_TEST(test_hid_button_drives_report);
+    RUN_TEST(test_hid_button_masks_to_two_bits);
+    RUN_TEST(test_hid_button_bad_arg_does_not_change_report);
+    RUN_TEST(test_service_hid_still_handled_after_extraction);
+    RUN_TEST(test_non_hid_command_not_handled);
+    RUN_TEST(test_hid_report_drives_axes);
 
     return UNITY_END();
 }
