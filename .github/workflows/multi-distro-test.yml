@@ -658,9 +658,10 @@ jobs:
           [linapse-ppa]
           fqdn = ppa.launchpad.net
           method = ftp
-          incoming = ~${PPA_OWNER}/ubuntu/linapse-cad-mouse/
+          incoming = ~${PPA_OWNER}/ubuntu/linapse-cad-mouse
           login = anonymous
           allow_unsigned_uploads = 0
+          passive_ftp = 1
           EOF
 
           # Build and upload source package for supported Ubuntu releases
