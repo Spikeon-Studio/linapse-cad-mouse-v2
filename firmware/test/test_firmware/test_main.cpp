@@ -141,6 +141,40 @@ void test_motion_controller_sensitivity_curve(void) {
     TEST_ASSERT_FLOAT_WITHIN(1.0f, 43.75f, out[0]);
 }
 
+void test_motion_controller_spherical_mode(void) {
+    motionController.reset();
+    sensConfig.reset();
+
+    // Set inputs: TX = 12.0, TY = 12.0 (individually < 16.0 deadzone, but combined magnitude = 16.97 > 16.0)
+    // Gains: GAIN_T[0] = 28.0, SIGN_AXIS[0] = -1; GAIN_T[1] = 28.0, SIGN_AXIS[1] = +1
+    // Raw inputs to produce TX = 12.0, TY = 12.0:
+    // tx = -12.0 / 28.0
+    // ty = 12.0 / 28.0
+    float valX = -12.0f / 28.0f;
+    float valY = 12.0f / 28.0f;
+    float raw[9] = { valX, valY, 0, valX, valY, 0, valX, valY, 0 };
+    float baseline[9] = {0};
+    float out[6] = {0};
+
+    // First run with sphericalMode = false (default)
+    for (int i = 0; i < 50; ++i) {
+        motionController.compute(raw, baseline, 0.01f, out);
+    }
+    // Expected: both TX and TY are below per-axis deadzone, so output is 0.0
+    TEST_ASSERT_EQUAL_FLOAT(0.0f, out[0]);
+    TEST_ASSERT_EQUAL_FLOAT(0.0f, out[1]);
+
+    // Now run with sphericalMode = true
+    sensConfig.sphericalMode = true;
+    motionController.reset();
+    for (int i = 0; i < 50; ++i) {
+        motionController.compute(raw, baseline, 0.01f, out);
+    }
+    // Expected: combined magnitude is above deadzone, so output is non-zero
+    TEST_ASSERT_TRUE(out[0] != 0.0f);
+    TEST_ASSERT_TRUE(out[1] != 0.0f);
+}
+
 // ── TapDetector Tests ────────────────────────────────────────────────────────
 
 void simulateTap(TapDetector& detector, TapDir expectedDir, int axisIndex, float directionSign, unsigned long& timeMs) {
@@ -662,6 +696,7 @@ void setup() {
     RUN_TEST(test_motion_controller_kalman_convergence);
     RUN_TEST(test_motion_controller_deadzones);
     RUN_TEST(test_motion_controller_sensitivity_curve);
+    RUN_TEST(test_motion_controller_spherical_mode);
     RUN_TEST(test_motion_controller_flipped_magnets);
 
     // TapDetector
@@ -710,6 +745,7 @@ int main(int argc, char **argv) {
     RUN_TEST(test_motion_controller_kalman_convergence);
     RUN_TEST(test_motion_controller_deadzones);
     RUN_TEST(test_motion_controller_sensitivity_curve);
+    RUN_TEST(test_motion_controller_spherical_mode);
     RUN_TEST(test_motion_controller_flipped_magnets);
 
     // TapDetector

@@ -1270,6 +1270,19 @@ input[type=range]::-webkit-slider-thumb {
         </div>
 
         <div class="field-group">
+          <div class="field-label" style="color:var(--green);letter-spacing:2px;font-size:10px;font-family:'Barlow Condensed',sans-serif">SPHERICAL MODE</div>
+          <div style="margin-top: 8px;">
+            <div class="toggle-row" style="padding: 4px 0; border: none; margin-bottom: 0;">
+              <span class="toggle-label" style="font-size: 10px; color: var(--text3); margin: 0; text-transform: uppercase; letter-spacing: 1px; font-family: 'Barlow Condensed', sans-serif;">Enable Spherical Processing</span>
+              <div class="toggle" id="sensSpherical" onclick="toggleSphericalMode()"></div>
+            </div>
+            <div style="font-size:10px;color:var(--text3);margin-top:4px;line-height:1.3;">
+              Process translations and rotations as 3D vectors. Enables smooth diagonal movements and circular deadzones.
+            </div>
+          </div>
+        </div>
+
+        <div class="field-group">
           <div class="field-label" style="color:var(--green);letter-spacing:2px;font-size:10px;font-family:'Barlow Condensed',sans-serif">AXIS INVERSIONS</div>
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; margin-top: 8px;">
             <div class="toggle-row" style="padding: 4px 0; border: none; margin-bottom: 0;">
@@ -2963,6 +2976,12 @@ function applyDeviceConfig(cfg) {
       }
     }
   }
+  if (cfg.spherical !== undefined) {
+    const el = document.getElementById('sensSpherical');
+    if (el) {
+      el.classList.toggle('on', !!cfg.spherical);
+    }
+  }
   if (cfg.invert_tap_z !== undefined) {
     const el = document.getElementById('sensInvertTapZ');
     if (el) {
@@ -3538,6 +3557,14 @@ function switchSensTab(sectionName, el) {
   if (activeSec) {
     activeSec.style.display = 'block';
   }
+}
+
+function toggleSphericalMode() {
+  const el = document.getElementById('sensSpherical');
+  const isCurrentlyOn = el.classList.contains('on');
+  const newVal = isCurrentlyOn ? 0 : 1;
+  el.classList.toggle('on');
+  sendCmd(`sens set spherical ${newVal}`);
 }
 
 function toggleTapZInversion() {

@@ -955,3 +955,32 @@ def test_device_cmd_kalman_r(benchy_env):
 
 def test_device_cmd_exp_curve(benchy_env):
     verify_device_cmd(benchy_env, "#sensExpVal", "4.5", b"sens set exp 4.50\n")
+
+
+def test_device_cmd_spherical(benchy_env):
+    page, mock_serial, temp_actions_path, tmp_path = benchy_env
+    reset_test_state(page, mock_serial, temp_actions_path, target_tab="General")
+
+    mock_serial.writes.clear()
+    page.click("#sensSpherical")
+    time.sleep(0.2)
+
+    found = False
+    for w in mock_serial.writes:
+        if b"sens set spherical 1" in w:
+            found = True
+            break
+    assert found, f"Command to enable spherical mode not written. Writes: {mock_serial.writes}"
+
+    # Click again to turn off
+    mock_serial.writes.clear()
+    page.click("#sensSpherical")
+    time.sleep(0.2)
+
+    found = False
+    for w in mock_serial.writes:
+        if b"sens set spherical 0" in w:
+            found = True
+            break
+    assert found, f"Command to disable spherical mode not written. Writes: {mock_serial.writes}"
+

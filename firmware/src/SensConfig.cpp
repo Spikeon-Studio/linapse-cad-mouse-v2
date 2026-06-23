@@ -5,7 +5,7 @@
 SensConfig sensConfig;
 
 namespace {
-constexpr uint32_t kMagic      = 0xCAD30001;
+constexpr uint32_t kMagic      = 0xCAD30002;
 constexpr int      kBase       = 16;  // LedConfig occupies bytes 0-15
 constexpr int      kAddrMagic  = kBase + 0;
 constexpr int      kAddrDeadT  = kBase + 4;
@@ -15,6 +15,7 @@ constexpr int      kAddrKalR   = kBase + 16;
 constexpr int      kAddrSExp   = kBase + 20;
 constexpr int      kAddrTapSens = kBase + 24;
 constexpr int      kAddrInvTapZ = kBase + 28;
+constexpr int      kAddrSpherical = kBase + 29;
 }
 
 void SensConfig::load() {
@@ -29,6 +30,7 @@ void SensConfig::load() {
   EEPROM.get(kAddrSExp,  sensitivityExp);
   EEPROM.get(kAddrTapSens, tapThreshold);
   EEPROM.get(kAddrInvTapZ, invertTapZ);
+  EEPROM.get(kAddrSpherical, sphericalMode);
 }
 
 void SensConfig::save() {
@@ -42,6 +44,7 @@ void SensConfig::save() {
   EEPROM.put(kAddrSExp,  sensitivityExp);
   EEPROM.put(kAddrTapSens, tapThreshold);
   EEPROM.put(kAddrInvTapZ, invertTapZ);
+  EEPROM.put(kAddrSpherical, sphericalMode);
   EEPROM.commit();
 }
 
@@ -53,4 +56,5 @@ void SensConfig::reset() {
   sensitivityExp = Config::SENSITIVITY_EXP;
   tapThreshold   = Config::TAP_VELOCITY_THRESHOLD;
   invertTapZ     = false;
+  sphericalMode  = false;
 }

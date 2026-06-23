@@ -16,6 +16,7 @@ class SensConfig {
   float sensitivityExp; // power curve exponent (1=linear, 3=cubic)
   float tapThreshold;   // tap detection velocity threshold
   bool  invertTapZ;     // whether Z axis tap detection is inverted
+  bool  sphericalMode;   // whether spherical vector processing is active
 
   void load();
   void save();

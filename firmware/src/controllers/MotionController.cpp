@@ -165,22 +165,82 @@ void MotionController::compute(const float raw[9], const float* baseline, float 
 
   // Kalman filter, sensitivity curve, dead zones, and clamp.
   motionActive_ = false;
-  for (int i = 0; i < 6; i++) {
-    const float dead = axisBaseDead(i);
-
-    if (fabs(y[i]) < dead) {
-      // Below dead zone: decay Kalman estimate toward zero gradually.
-      // Preserve covariance so the filter doesn't jitter at the boundary.
-      kalmanX_[i] *= 0.8f;
-      kalmanP_[i] = fmin(kalmanP_[i] + sensConfig.kalmanQ * 0.1f, 1.0f);
+  if (sensConfig.sphericalMode) {
+    // Translation (0..2)
+    const float magT = sqrtf(y[0]*y[0] + y[1]*y[1] + y[2]*y[2]);
+    const float deadT = sensConfig.deadT;
+    if (magT < deadT) {
+      for (int i = 0; i < 3; i++) {
+        kalmanX_[i] *= 0.8f;
+        kalmanP_[i] = fmin(kalmanP_[i] + sensConfig.kalmanQ * 0.1f, 1.0f);
+      }
     } else {
-      kalmanStep(i, y[i]);
+      for (int i = 0; i < 3; i++) {
+        kalmanStep(i, y[i]);
+      }
+    }
+    const float filteredMagT = sqrtf(kalmanX_[0]*kalmanX_[0] + kalmanX_[1]*kalmanX_[1] + kalmanX_[2]*kalmanX_[2]);
+    const float outMagT = sensitivityCurve(filteredMagT, deadT, Config::AXIS_LIMIT);
+    if (filteredMagT > 0.0f) {
+      const float scale = outMagT / filteredMagT;
+      out[0] = kalmanX_[0] * scale;
+      out[1] = kalmanX_[1] * scale;
+      out[2] = kalmanX_[2] * scale;
+    } else {
+      out[0] = 0.0f;
+      out[1] = 0.0f;
+      out[2] = 0.0f;
     }
 
-    // Apply sensitivity curve to filtered output
-    out[i] = sensitivityCurve(kalmanX_[i], dead, Config::AXIS_LIMIT);
-    if (out[i] != 0.0f) {
-      motionActive_ = true;
+    // Rotation (3..5)
+    const float magR = sqrtf(y[3]*y[3] + y[4]*y[4] + y[5]*y[5]);
+    const float deadR = sensConfig.deadR;
+    if (magR < deadR) {
+      for (int i = 3; i < 6; i++) {
+        kalmanX_[i] *= 0.8f;
+        kalmanP_[i] = fmin(kalmanP_[i] + sensConfig.kalmanQ * 0.1f, 1.0f);
+      }
+    } else {
+      for (int i = 3; i < 6; i++) {
+        kalmanStep(i, y[i]);
+      }
+    }
+    const float filteredMagR = sqrtf(kalmanX_[3]*kalmanX_[3] + kalmanX_[4]*kalmanX_[4] + kalmanX_[5]*kalmanX_[5]);
+    const float outMagR = sensitivityCurve(filteredMagR, deadR, Config::AXIS_LIMIT);
+    if (filteredMagR > 0.0f) {
+      const float scale = outMagR / filteredMagR;
+      out[3] = kalmanX_[3] * scale;
+      out[4] = kalmanX_[4] * scale;
+      out[5] = kalmanX_[5] * scale;
+    } else {
+      out[3] = 0.0f;
+      out[4] = 0.0f;
+      out[5] = 0.0f;
+    }
+
+    for (int i = 0; i < 6; i++) {
+      if (out[i] != 0.0f) {
+        motionActive_ = true;
+      }
+    }
+  } else {
+    for (int i = 0; i < 6; i++) {
+      const float dead = axisBaseDead(i);
+
+      if (fabs(y[i]) < dead) {
+        // Below dead zone: decay Kalman estimate toward zero gradually.
+        // Preserve covariance so the filter doesn't jitter at the boundary.
+        kalmanX_[i] *= 0.8f;
+        kalmanP_[i] = fmin(kalmanP_[i] + sensConfig.kalmanQ * 0.1f, 1.0f);
+      } else {
+        kalmanStep(i, y[i]);
+      }
+
+      // Apply sensitivity curve to filtered output
+      out[i] = sensitivityCurve(kalmanX_[i], dead, Config::AXIS_LIMIT);
+      if (out[i] != 0.0f) {
+        motionActive_ = true;
+      }
     }
   }
 }

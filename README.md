@@ -68,7 +68,7 @@ Drive the SK6812 ring — solid, breathing, motion-reactive, swirl, gradient, ra
 ### Motion Tab
 ![Motion Tab](docs/images/configurator-sensitivity.gif)
 
-Tune dead zones, the Kalman filter, and the response curve against a live 3D Benchy you push with the puck. Also includes an **Interactive Motion Calibration Wizard** to guide you through deflecting the puck to comfort limits, automatically calculating and setting optimal directional sensitivities (up to 20.0).
+Tune dead zones, the Kalman filter, the response curve, and **Spherical Mode** (isotropic vector-based processing) against a live 3D Benchy you push with the puck. Also includes an **Interactive Motion Calibration Wizard** to guide you through deflecting the puck to comfort limits, automatically calculating and setting optimal directional sensitivities (up to 20.0).
 
 ### Firmware Tab
 ![Firmware Tab](docs/images/configurator-firmware.png)
