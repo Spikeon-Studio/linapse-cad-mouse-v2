@@ -277,7 +277,7 @@ def serial_thread(actions_ref):
                             ry = ry * sens.get("ry_pos" if ry >= 0 else "ry_neg", 1.0)
                             rz = rz * sens.get("rz_pos" if rz <= 0 else "rz_neg", 1.0)
                             dominant_mode = actions_ref[0].get("dominant_mode", True) if actions_ref[0] else True
-                            if dominant_mode:
+                            if dominant_mode and current_mode not in ("Browser", "Media", "Mouse"):
                                 bias = actions_ref[0].get("dominant_mode_bias", 4.8) if actions_ref[0] else 4.8
                                 trans_mag = math.sqrt(x*x + y*y + z*z)
                                 rot_mag = math.sqrt(rx*rx + ry*ry + rz*rz) * bias
@@ -347,8 +347,20 @@ def serial_thread(actions_ref):
 
                             elif current_mode == "Mouse":
                                 global _mouse_x_accumulator, _mouse_y_accumulator, _mouse_scroll_accumulator
-                                _mouse_x_accumulator -= ry
-                                _mouse_y_accumulator += rx
+                                
+                                # Use symmetric sensitivity (average of positive and negative) for mouse cursor comfort
+                                ry_sens = 0.5 * (sens.get("ry_pos", 1.0) + sens.get("ry_neg", 1.0))
+                                rx_sens = 0.5 * (sens.get("rx_pos", 1.0) + sens.get("rx_neg", 1.0))
+                                
+                                # Re-calculate using raw coordinates to avoid asymmetric scaling
+                                raw_ry = -raw_coords[4] if inv.get("ry", False) else raw_coords[4]
+                                raw_rx = -raw_coords[3] if inv.get("rx", False) else raw_coords[3]
+                                
+                                ry_val = raw_ry * ry_sens
+                                rx_val = raw_rx * rx_sens
+                                
+                                _mouse_x_accumulator -= ry_val * 0.25
+                                _mouse_y_accumulator += rx_val * 0.25
                                 ix = int(_mouse_x_accumulator)
                                 iy = int(_mouse_y_accumulator)
                                 _mouse_x_accumulator -= ix

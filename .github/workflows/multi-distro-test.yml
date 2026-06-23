@@ -613,8 +613,11 @@ jobs:
             # Create orig source tarball
             tar -czf ../linapse-cad-mouse_${VERSION}.orig.tar.gz --exclude=.git --exclude=debian .
             
-            # Build source package (ignore missing build dependencies on CI runner, exclude VCS files)
-            debuild -S -sa -d -i -I
+            # Extract key ID dynamically from imported secret key
+            KEY_ID=$(gpg --list-secret-keys --with-colons | grep "^sec" | cut -d: -f5 | head -n 1)
+
+            # Build source package (ignore missing build dependencies on CI runner, exclude VCS files, sign with key)
+            debuild -S -sa -d -i -I -k"$KEY_ID"
             
             # Upload
             dput linapse-ppa ../linapse-cad-mouse_${VERSION}*_source.changes

@@ -1,5 +1,5 @@
 Name:           linapse-cad-mouse
-Version:        2.21.5
+Version:        2.21.6
 Release:        1%{?dist}
 Summary:        CAD Mouse MK2 Linapse driver service and configurator
 
@@ -137,5 +137,8 @@ install -Dm644 service/udev/99-spacemouse.rules %{buildroot}%{_udevrulesdir}/99-
 %{_udevrulesdir}/99-spacemouse.rules
 
 %changelog
+* Tue Jun 23 2026 spikeon <spikeon@example.com> - 2.21.6-1
+- Update version to 2.21.6
+
 * Tue Jun 23 2026 spikeon <spikeon@example.com> - 2.21.5-1
 - Initial Fedora packaging release

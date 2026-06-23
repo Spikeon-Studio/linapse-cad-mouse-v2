@@ -58,6 +58,9 @@ async def ws_handler(websocket, actions_ref=None):
             elif message == "software_update_start":
                 from . import updater
                 asyncio.create_task(asyncio.to_thread(updater.download_and_install_update))
+            elif message == "software_update_run_installer":
+                from . import updater
+                asyncio.create_task(asyncio.to_thread(updater.run_downloaded_installer))
             elif message == "flash":
                 if state.flashing_active:
                     await websocket.send("FLASH:error:Flash already in progress.")

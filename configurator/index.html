@@ -4499,6 +4499,18 @@ function handleSoftwareUpdateMessage(msg) {
       text.textContent = 'Update Ready! Restarting...';
       text.style.display = 'inline';
     }
+  } else if (msg === 'SOFTWARE_UPDATE:manual_linux' || msg.startsWith('SOFTWARE_UPDATE:manual_linux:')) {
+    let path = 'Downloads folder';
+    if (msg.startsWith('SOFTWARE_UPDATE:manual_linux:')) {
+      path = msg.slice(29);
+    }
+    showToast('Update Downloaded', 'Downloaded to ' + path, 'info');
+    if (btnStart) btnStart.style.display = 'none';
+    if (progressContainer) progressContainer.style.display = 'none';
+    if (text) {
+      text.innerHTML = `Update downloaded. <button id="btnSwUpdateRun" onclick="runSoftwareUpdateInstaller()" style="background: var(--green); color: #000; border: none; border-radius: 4px; padding: 2px 8px; font-weight: 700; font-size: 10px; cursor: pointer; text-transform: uppercase; font-family: 'Rajdhani'; margin-left: 10px;">Run Installer</button>`;
+      text.style.display = 'inline';
+    }
   } else if (msg.startsWith('SOFTWARE_UPDATE:failed:')) {
     const reason = msg.slice(23);
     showToast('Update Failed', reason, 'error');
@@ -4520,6 +4532,14 @@ function startSoftwareUpdate() {
   document.getElementById('swUpdateProgressContainer').style.display = 'block';
   document.getElementById('swUpdateText').textContent = 'Downloading Software Update...';
   sendCmd('software_update_start');
+}
+
+function runSoftwareUpdateInstaller() {
+  const btnRun = document.getElementById('btnSwUpdateRun');
+  if (btnRun) btnRun.style.display = 'none';
+  const text = document.getElementById('swUpdateText');
+  if (text) text.textContent = 'Launching installer...';
+  sendCmd('software_update_run_installer');
 }
 
 function toggleAutoUpdateFw() {

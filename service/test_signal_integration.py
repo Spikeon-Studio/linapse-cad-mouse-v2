@@ -1100,14 +1100,14 @@ def test_mouse_mode_and_double_chord_switch(running_service):
     
     # Send pure rotation (ry=8.0, rx=4.0)
     # rx = 4.0 (tilt forward), ry = 8.0 (tilt right)
-    # Tilt is inverted, so:
-    # dx = -ry = -8
-    # dy = +rx = 4
+    # Tilt is inverted and scaled by 0.25 (1/4th sensitivity):
+    # dx = -ry * 0.25 = -2
+    # dy = +rx * 0.25 = 1
     mock_serial.input_queue.put(b">MOTION:0,0,0,4.0,8.0,0\n")
     time.sleep(0.05)
     
     assert len(ydotool_calls) == 1
-    assert ydotool_calls[0] == ["ydotool", "mousemove", "--", "-8", "4"]
+    assert ydotool_calls[0] == ["ydotool", "mousemove", "--", "-2", "1"]
     ydotool_calls.clear()
 
     # Send Z axis spin / twist (rz=160.0, scroll down)
@@ -1124,5 +1124,14 @@ def test_mouse_mode_and_double_chord_switch(running_service):
 
     assert len(ydotool_calls) == 1
     assert ydotool_calls[0] == ["ydotool", "mousemove", "-w", "--", "0", "-1"]
+    ydotool_calls.clear()
+
+    # Send mixed translation and rotation with large translation.
+    # Dominant mode should be bypassed in Mouse mode, so rx/ry still move the mouse.
+    mock_serial.input_queue.put(b">MOTION:100.0,100.0,100.0,4.0,8.0,0\n")
+    time.sleep(0.05)
+
+    assert len(ydotool_calls) == 1
+    assert ydotool_calls[0] == ["ydotool", "mousemove", "--", "-2", "1"]
     ydotool_calls.clear()
 

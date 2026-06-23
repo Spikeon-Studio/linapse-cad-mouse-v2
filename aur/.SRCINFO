@@ -1,6 +1,6 @@
 pkgbase = linapse-cad-mouse
 	pkgdesc = CAD Mouse MK2 Linapse driver service and configurator
-	pkgver = 2.21.5
+	pkgver = 2.21.6
 	pkgrel = 1
 	url = https://github.com/spikeon/linapse-cad-mouse-v2
 	arch = any
@@ -15,7 +15,7 @@ pkgbase = linapse-cad-mouse
 	depends = python-scipy
 	depends = ydotool
 	depends = electron
-	source = linapse-cad-mouse-2.21.5.tar.gz::https://github.com/spikeon/linapse-cad-mouse-v2/archive/refs/tags/v2.21.5.tar.gz
+	source = linapse-cad-mouse-2.21.6.tar.gz::https://github.com/spikeon/linapse-cad-mouse-v2/archive/refs/tags/v2.21.6.tar.gz
 	source = linapse-configurator
 	source = linapse-configurator.desktop
 	sha256sums = SKIP

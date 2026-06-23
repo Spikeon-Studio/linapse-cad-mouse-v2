@@ -1,6 +1,6 @@
 # Maintainer: spikeon <your-email@example.com>
 pkgname=linapse-cad-mouse
-pkgver=2.21.5
+pkgver=2.21.6
 pkgrel=1
 pkgdesc="CAD Mouse MK2 Linapse driver service and configurator"
 arch=('any')

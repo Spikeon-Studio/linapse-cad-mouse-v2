@@ -83,3 +83,17 @@ class TestUpdater(unittest.TestCase):
         self.assertEqual(state.latest_software_version, "2.20.0")
         self.assertEqual(state.software_update_status, "available")
         self.assertEqual(state.software_update_url, "https://github.com/spikeon/linapse-cad-mouse-v2/releases/tag/v2.20.0")
+
+    @patch("linapse.state.broadcast_from_thread")
+    @patch("subprocess.Popen")
+    @patch("shutil.which")
+    def test_run_downloaded_installer(self, mock_which, mock_popen, mock_broadcast):
+        state.downloaded_installer_path = "/tmp/fake/setup.sh"
+        mock_which.side_effect = lambda x: x == "gnome-terminal"
+        
+        updater.run_downloaded_installer()
+        
+        mock_popen.assert_called_once()
+        args = mock_popen.call_args[0][0]
+        self.assertIn("gnome-terminal", args)
+        self.assertIn("./setup.sh", args[4])

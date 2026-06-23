@@ -2,7 +2,7 @@ import asyncio
 import threading
 
 # Version information
-service_version = "2.21.5"
+service_version = "2.21.6"
 firmware_version = "unknown"
 
 # Shared state variables
@@ -23,6 +23,7 @@ last_eq_levels = [0] * 8
 latest_software_version = None
 software_update_status = "idle"  # idle, checking, available, downloading, ready, failed
 software_update_url = None
+downloaded_installer_path = None
 
 _ws_locks = {}
 

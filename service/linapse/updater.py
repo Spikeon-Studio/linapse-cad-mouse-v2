@@ -170,12 +170,78 @@ def download_and_install_update():
                 subprocess.Popen(["open", temp_file_path])
                 sys.exit(0)
             else:
-                print(f"[updater] Package downloaded to {temp_file_path}. Please install manually.")
-                state.software_update_status = "failed"
-                state.broadcast_from_thread("SOFTWARE_UPDATE:failed:Manual install required on Linux")
+                import shutil
+                import tarfile
+                
+                # Copy to ~/Downloads
+                downloads_dir = Path.home() / "Downloads"
+                downloads_dir.mkdir(exist_ok=True)
+                dest_path = downloads_dir / f"linapse-cad-mouse-v2-{state.latest_software_version}.tar.gz"
+                shutil.copy(temp_file_path, dest_path)
+                print(f"[updater] Package copied to {dest_path}")
+                
+                # Extract to ~/Downloads/linapse-cad-mouse-v2-<version>
+                extract_dir = downloads_dir / f"linapse-cad-mouse-v2-{state.latest_software_version}"
+                if extract_dir.exists():
+                    shutil.rmtree(extract_dir)
+                extract_dir.mkdir(exist_ok=True)
+                
+                print(f"[updater] Extracting package to {extract_dir}...")
+                with tarfile.open(temp_file_path, "r:gz") as tar:
+                    tar.extractall(path=extract_dir)
+                
+                # Find setup.sh
+                setup_sh_path = None
+                for p in extract_dir.rglob("setup.sh"):
+                    setup_sh_path = p
+                    break
+                
+                if setup_sh_path:
+                    setup_sh_path.chmod(setup_sh_path.stat().st_mode | 0o111)
+                    state.downloaded_installer_path = str(setup_sh_path)
+                    print(f"[updater] Found installer setup.sh at {state.downloaded_installer_path}")
+                else:
+                    state.downloaded_installer_path = None
+                    print("[updater] setup.sh not found in extracted files")
+                
+                state.software_update_status = "manual_linux"
+                state.broadcast_from_thread(f"SOFTWARE_UPDATE:manual_linux:{dest_path}")
         except Exception as e:
             state.software_update_status = "failed"
             state.broadcast_from_thread(f"SOFTWARE_UPDATE:failed:{str(e)}")
             print(f"[updater] Download/install failed: {e}")
 
     threading.Thread(target=run_download, daemon=True).start()
+
+def run_downloaded_installer():
+    if not state.downloaded_installer_path:
+        print("[updater] No installer setup.sh found.")
+        return
+    
+    import shutil
+    import subprocess
+    from pathlib import Path
+    
+    setup_sh = Path(state.downloaded_installer_path)
+    cwd = str(setup_sh.parent)
+    
+    # Check common terminal emulators
+    terminals = [
+        ["gnome-terminal", "--", "bash", "-c", "./setup.sh; echo 'Done. Press Enter to close.'; read"],
+        ["konsole", "-e", "bash", "-c", "./setup.sh; echo 'Done. Press Enter to close.'; read"],
+        ["xfce4-terminal", "-e", "bash -c './setup.sh; echo \"Done. Press Enter to close.\"; read'"],
+        ["xterm", "-e", "bash", "-c", "./setup.sh; echo 'Done. Press Enter to close.'; read"]
+    ]
+    
+    launched = False
+    for cmd in terminals:
+        binary = cmd[0]
+        if shutil.which(binary):
+            print(f"[updater] Launching terminal: {binary} with {setup_sh}")
+            subprocess.Popen(cmd, cwd=cwd)
+            launched = True
+            break
+            
+    if not launched:
+        print("[updater] No terminal emulator found. Running setup.sh in background...")
+        subprocess.Popen(["bash", "./setup.sh"], cwd=cwd)
