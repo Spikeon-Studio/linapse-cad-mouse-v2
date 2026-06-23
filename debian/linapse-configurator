@@ -1,0 +1,6 @@
+#!/bin/sh
+if command -v electron >/dev/null; then
+  exec electron /usr/share/linapse/configurator "$@"
+else
+  exec xdg-open http://localhost:7890
+fi

@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Linapse Configurator
+Comment=CAD Mouse MK2 Electron Configurator
+Exec=linapse-configurator
+Icon=/usr/share/linapse/configurator/linapse-square-logo.png
+Terminal=false
+Type=Application
+Categories=Utility;Settings;
+StartupNotify=true

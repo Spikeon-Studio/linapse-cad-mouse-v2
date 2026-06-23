@@ -530,4 +530,143 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  release-aur:
+    needs: [test]
+    runs-on: ubuntu-latest
+    # DISABLED UNTIL ACCOUNT REGISTERED
+    if: false
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Publish to AUR
+        env:
+          AUR_SSH_PRIVATE_KEY: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$AUR_SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -t rsa aur.archlinux.org >> ~/.ssh/known_hosts
+          git clone ssh://aur@aur.archlinux.org/linapse-cad-mouse.git aur-repo
+          cp aur/PKGBUILD aur-repo/
+          cp aur/.SRCINFO aur-repo/
+          cp aur/linapse-configurator aur-repo/
+          cp aur/linapse-configurator.desktop aur-repo/
+          cd aur-repo
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add PKGBUILD .SRCINFO linapse-configurator linapse-configurator.desktop
+          git commit -m "Release version $(cat ../VERSION)"
+          git push
+
+  release-ubuntu-ppa:
+    needs: [test]
+    runs-on: ubuntu-latest
+    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') && github.event_name == 'push' && vars.UBUNTU_PPA_PUBLISH_ENABLED == 'true'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Debian packaging tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y debhelper devscripts dput gnupg
+
+      - name: Prepare Debian source package and upload
+        env:
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          PPA_OWNER: ${{ vars.PPA_OWNER }}
+        run: |
+          if [ -z "$GPG_PRIVATE_KEY" ] || [ -z "$PPA_OWNER" ]; then
+            echo "Launchpad GPG key or PPA owner secret/var not configured. Skipping PPA release."
+            exit 0
+          fi
+          
+          # Import GPG key
+          echo "$GPG_PRIVATE_KEY" | gpg --import --batch --yes
+          
+          VERSION=$(cat VERSION | tr -d '\r\n[:space:]')
+          
+          # Configure dput
+          cat << EOF > ~/.dput.cf
+          [linapse-ppa]
+          fqdn = ppa.launchpad.net
+          method = ftp
+          incoming = ~${PPA_OWNER}/ubuntu/linapse-cad-mouse/
+          login = anonymous
+          allow_unsigned_uploads = 0
+          EOF
+
+          # Build and upload source package for supported Ubuntu releases
+          for dist in noble jammy; do
+            # Clean up previous builds
+            rm -f ../linapse-cad-mouse_*
+            
+            # Update changelog for target distribution
+            sed -i "1s/unstable/${dist}/" debian/changelog
+            
+            # Create orig source tarball
+            tar -czf ../linapse-cad-mouse_${VERSION}.orig.tar.gz --exclude=.git --exclude=debian .
+            
+            # Build source package
+            debuild -S -sa
+            
+            # Upload
+            dput linapse-ppa ../linapse-cad-mouse_${VERSION}*_source.changes
+            
+            # Reset changelog
+            git checkout debian/changelog
+          done
+
+  release-fedora-copr:
+    needs: [test]
+    runs-on: ubuntu-latest
+    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') && github.event_name == 'push' && vars.FEDORA_COPR_PUBLISH_ENABLED == 'true'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install COPR CLI
+        run: pip install copr-cli
+
+      - name: Trigger COPR build
+        env:
+          COPR_USERNAME: ${{ secrets.COPR_USERNAME }}
+          COPR_LOGIN: ${{ secrets.COPR_LOGIN }}
+          COPR_TOKEN: ${{ secrets.COPR_TOKEN }}
+          COPR_PROJECT: ${{ vars.COPR_PROJECT }}
+        run: |
+          if [ -z "$COPR_USERNAME" ] || [ -z "$COPR_LOGIN" ] || [ -z "$COPR_TOKEN" ] || [ -z "$COPR_PROJECT" ]; then
+            echo "COPR API secrets/vars not configured. Skipping COPR release."
+            exit 0
+          fi
+          
+          mkdir -p ~/.config
+          cat << EOF > ~/.config/copr
+          [copr-cli]
+          username = ${COPR_USERNAME}
+          login = ${COPR_LOGIN}
+          token = ${COPR_TOKEN}
+          copr_url = https://copr.fedorainfracloud.org
+          EOF
+          
+          VERSION=$(cat VERSION | tr -d '\r\n[:space:]')
+          
+          # Trigger COPR build from GitHub SCM repository
+          copr-cli build-package ${COPR_PROJECT} \
+            --name linapse-cad-mouse \
+            --scm-url https://github.com/spikeon/linapse-cad-mouse-v2.git \
+            --scm-branch v${VERSION}
+
+
 

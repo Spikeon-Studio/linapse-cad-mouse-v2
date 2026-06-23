@@ -1,0 +1,103 @@
+# Maintainer: spikeon <your-email@example.com>
+pkgname=linapse-cad-mouse
+pkgver=2.21.5
+pkgrel=1
+pkgdesc="CAD Mouse MK2 Linapse driver service and configurator"
+arch=('any')
+url="https://github.com/spikeon/linapse-cad-mouse-v2"
+license=('GPL3')
+depends=(
+  'python'
+  'python-websockets'
+  'python-pyserial'
+  'python-yaml'
+  'python-fastapi'
+  'python-uvicorn'
+  'python-numpy'
+  'python-scipy'
+  'ydotool'
+  'electron'
+)
+source=("${pkgname}-${pkgver}.tar.gz::https://github.com/spikeon/linapse-cad-mouse-v2/archive/refs/tags/v${pkgver}.tar.gz"
+        "linapse-configurator"
+        "linapse-configurator.desktop")
+sha256sums=('SKIP'
+            'SKIP'
+            'SKIP')
+
+package() {
+  cd "${srcdir}/linapse-cad-mouse-v2-${pkgver}"
+
+  # Install Python library modules
+  local python_version=$(python -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
+  install -d "${pkgdir}/usr/lib/python${python_version}/site-packages"
+  cp -r service/linapse "${pkgdir}/usr/lib/python${python_version}/site-packages/"
+  cp -r service/spacenav_ws "${pkgdir}/usr/lib/python${python_version}/site-packages/"
+
+  # Install service script and proxy script
+  install -Dm755 service/linapse-service "${pkgdir}/usr/bin/linapse-service"
+  install -Dm755 service/linapse-ws-proxy "${pkgdir}/usr/bin/linapse-ws-proxy"
+
+  # Install systemd user services
+  install -d "${pkgdir}/usr/lib/systemd/user"
+  sed 's|%h/.local/bin/linapse-service|/usr/bin/linapse-service|g' service/systemd/linapse-service.service \
+    > "${pkgdir}/usr/lib/systemd/user/linapse-service.service"
+  
+  install -m644 service/systemd/ydotoold.service "${pkgdir}/usr/lib/systemd/user/ydotoold.service"
+  
+  sed -e 's|__CONFIGURATOR_DIR__|/usr/share/linapse/configurator|g' \
+      -e 's|__PORT__|7890|g' \
+      service/systemd/linapse-configurator.service \
+      > "${pkgdir}/usr/lib/systemd/user/linapse-configurator.service"
+
+  # Install configurator files
+  install -d "${pkgdir}/usr/share/linapse/configurator"
+  cp -r configurator/* "${pkgdir}/usr/share/linapse/configurator/"
+  rm -rf "${pkgdir}/usr/share/linapse/configurator/node_modules"
+  rm -rf "${pkgdir}/usr/share/linapse/configurator/dist"
+  
+  # Install custom main.js to strip autoUpdater (since pacman handles updates)
+  cat << 'EOF' > "${pkgdir}/usr/share/linapse/configurator/main.js"
+const { app, BrowserWindow } = require('electron');
+const path = require('path');
+
+function createWindow() {
+  const win = new BrowserWindow({
+    width: 1020,
+    height: 820,
+    title: "Linapse Configurator",
+    icon: path.join(__dirname, 'linapse-square-logo.png'),
+    webPreferences: {
+      nodeIntegration: false,
+      contextIsolation: true
+    }
+  });
+
+  win.loadFile(path.join(__dirname, 'index.html'));
+  win.setMenuBarVisibility(false);
+}
+
+app.whenReady().then(() => {
+  createWindow();
+});
+
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') app.quit();
+});
+EOF
+
+  # Install configurator wrapper script
+  install -Dm755 "${srcdir}/linapse-configurator" "${pkgdir}/usr/bin/linapse-configurator"
+
+  # Install desktop entry
+  install -Dm644 "${srcdir}/linapse-configurator.desktop" "${pkgdir}/usr/share/applications/linapse-configurator.desktop"
+
+  # Install system-wide environment.d file for native applications
+  install -d "${pkgdir}/usr/lib/environment.d"
+  cat << 'EOF' > "${pkgdir}/usr/lib/environment.d/99-spnav.conf"
+SPNAV_SOCKET="${XDG_RUNTIME_DIR}/spnav.sock"
+EOF
+
+  # Install udev rules
+  install -Dm644 service/udev/99-spacemouse.rules "${pkgdir}/usr/lib/udev/rules.d/99-spacemouse.rules"
+}

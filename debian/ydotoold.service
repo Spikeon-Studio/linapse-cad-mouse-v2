@@ -1,0 +1,9 @@
+[Unit]
+Description=ydotool daemon (Wayland input injection)
+
+[Service]
+ExecStart=/usr/bin/ydotoold --socket-path=/run/user/%U/.ydotool_socket
+Restart=always
+
+[Install]
+WantedBy=default.target
