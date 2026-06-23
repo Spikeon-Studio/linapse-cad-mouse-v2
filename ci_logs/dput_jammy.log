@@ -1,0 +1,9 @@
+gpg: ../linapse-cad-mouse_2.21.26-1_source.changes: Error checking signature from EDE347571BD7FBFD: SignatureVerifyError: 0
+gpg: ../linapse-cad-mouse_2.21.26-1.dsc: Error checking signature from EDE347571BD7FBFD: SignatureVerifyError: 0
+D: Setting host argument.
+Checking signature on .changes
+Checking signature on .dsc
+Uploading to linapse-ppa (via ftp to ppa.launchpad.net):
+  Uploading linapse-cad-mouse_2.21.26-1.dsc: 550 Requested action not taken: internal server error
+Note: This error might indicate a problem with your passive_ftp setting.
+Please consult dput.cf(5) for details on this configuration option.
