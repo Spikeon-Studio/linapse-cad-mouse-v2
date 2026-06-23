@@ -630,9 +630,13 @@ jobs:
             gpg-connect-agent 'GETINFO version' /bye || true
           } >> ci_logs/gpg_debug.log 2>&1
           
-          # Create GPG wrapper script to inject loopback pinentry and passphrase non-interactively
+          # Write GPG passphrase to a file
+          echo -n "$GPG_PASSPHRASE" > ~/gpg-passphrase.txt
+          chmod 600 ~/gpg-passphrase.txt
+
+          # Create GPG wrapper script to inject loopback pinentry and passphrase file non-interactively
           echo '#!/bin/sh' > ~/gpg-wrapper.sh
-          echo 'exec gpg --batch --no-tty --pinentry-mode loopback --passphrase "${GPG_PASSPHRASE:-}" "$@"' >> ~/gpg-wrapper.sh
+          echo 'exec gpg --batch --no-tty --pinentry-mode loopback --passphrase-file $HOME/gpg-passphrase.txt "$@"' >> ~/gpg-wrapper.sh
           chmod +x ~/gpg-wrapper.sh
           
           VERSION=$(cat VERSION | tr -d '\r\n[:space:]')
@@ -696,7 +700,8 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add ci_logs/ || true
           git commit -m "chore: upload debsign failure logs [skip ci]" || true
-          git push || true
+          git pull --rebase origin main || true
+          git push origin main || true
 
 
   release-fedora-copr:
