@@ -7,7 +7,7 @@ collected 72 items
 service/test_browser_bridge.py ...                                       [  4%]
 service/test_browser_extension.py ....                                   [  9%]
 service/test_cross_platform.py .....                                     [ 16%]
-service/test_installer_adversarial.py ss.F                               [ 22%]
+service/test_installer_adversarial.py ss..                               [ 22%]
 service/test_installer_config.py ..                                      [ 25%]
 service/test_installer_mock.py FF                                        [ 27%]
 service/test_linapse_socket.py ....                                      [ 33%]
@@ -24,21 +24,16 @@ service/test_signal_integration_stress.py ...                            [ 91%]
 service/test_stress.py ......                                            [100%]
 
 =================================== FAILURES ===================================
-__ TestInstallerAdversarial.test_xdg_runtime_dir_not_expanded_at_install_time __
-service/test_installer_adversarial.py:98: in test_xdg_runtime_dir_not_expanded_at_install_time
-    self.assertEqual(result.returncode, 0, f"Installer failed: {result.stderr}")
-E   AssertionError: 1 != 0 : Installer failed: Failed to connect to user scope bus via local transport: No such file or directory
-E   Failed to connect to user scope bus via local transport: No such file or directory
 ____________ TestInstallerMock.test_installer_with_spacenavd_absent ____________
-service/test_installer_mock.py:163: in test_installer_with_spacenavd_absent
+service/test_installer_mock.py:169: in test_installer_with_spacenavd_absent
     self.assertTrue(has_udev_copy, "Should copy 99-spacemouse.rules to /etc/udev")
 E   AssertionError: False is not true : Should copy 99-spacemouse.rules to /etc/udev
 ----------------------------- Captured stdout call -----------------------------
-LOGGED COMMANDS (absent): []
+LOGGED COMMANDS (absent): ['SYSTEMCTL: is-active --quiet spacenavd', 'SYSTEMCTL: is-enabled --quiet spacenavd', 'PACMAN: -Qi spacenavd', 'SUDO: usermod -aG input root', 'USERMOD: -aG input root', 'PIP3: install --break-system-packages -r /workspace/service/requirements.txt', 'SYSTEMCTL: --user disable --now spnav-buttons', 'SYSTEMCTL: --user disable --now spacenav-ws', 'SYSTEMCTL: --user import-environment PATH', 'SYSTEMCTL: --user daemon-reload', 'SYSTEMCTL: --user enable --now ydotoold linapse-service']
 ___________ TestInstallerMock.test_installer_with_spacenavd_present ____________
-service/test_installer_mock.py:181: in test_installer_with_spacenavd_present
-    self.assertTrue(stop_called, "Should stop spacenavd if it is installed")
-E   AssertionError: False is not true : Should stop spacenavd if it is installed
+service/test_installer_mock.py:196: in test_installer_with_spacenavd_present
+    self.assertTrue(has_udev_copy, "Should copy 99-spacemouse.rules to /etc/udev")
+E   AssertionError: False is not true : Should copy 99-spacemouse.rules to /etc/udev
 =============================== warnings summary ===============================
 service/test_m3_adversarial.py::test_m3_websocket_origin_check
   /workspace/service/test_m3_adversarial.py:284: DeprecationWarning: websockets.exceptions.InvalidStatusCode is deprecated
@@ -51,7 +46,6 @@ service/test_m3_adversarial.py::test_m3_websocket_origin_check
 -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
 ----------- generated xml file: /workspace/pytest_ubuntu_results.xml -----------
 =========================== short test summary info ============================
-FAILED service/test_installer_adversarial.py::TestInstallerAdversarial::test_xdg_runtime_dir_not_expanded_at_install_time
 FAILED service/test_installer_mock.py::TestInstallerMock::test_installer_with_spacenavd_absent
 FAILED service/test_installer_mock.py::TestInstallerMock::test_installer_with_spacenavd_present
-============= 3 failed, 65 passed, 4 skipped, 2 warnings in 59.00s =============
+============= 2 failed, 66 passed, 4 skipped, 2 warnings in 53.70s =============
