@@ -635,9 +635,16 @@ jobs:
           echo -n "$GPG_PASSPHRASE" > ~/gpg-passphrase.txt
           chmod 600 ~/gpg-passphrase.txt
 
+          # Diagnostics for passphrase
+          {
+            echo "=== GPG Passphrase Diagnostics ==="
+            echo "GPG_PASSPHRASE length: ${#GPG_PASSPHRASE}"
+            ls -la ~/gpg-passphrase.txt || true
+          } >> ci_logs/gpg_debug.log 2>&1
+
           # Create GPG wrapper script to inject loopback pinentry and passphrase file non-interactively
           echo '#!/bin/sh' > ~/gpg-wrapper.sh
-          echo 'exec gpg --batch --no-tty --pinentry-mode loopback --passphrase-file $HOME/gpg-passphrase.txt "$@"' >> ~/gpg-wrapper.sh
+          echo "exec gpg --batch --no-tty --pinentry-mode loopback --passphrase-file $HOME/gpg-passphrase.txt \"\$@\"" >> ~/gpg-wrapper.sh
           chmod +x ~/gpg-wrapper.sh
           
           VERSION=$(cat VERSION | tr -d '\r\n[:space:]')
