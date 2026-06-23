@@ -17,7 +17,7 @@ jobs:
       matrix:
         include:
           - distro: ubuntu
-            image: jrei/systemd-ubuntu:latest
+            image: jrei/systemd-ubuntu:24.04
           - distro: debian
             image: jrei/systemd-debian:12
           - distro: fedora

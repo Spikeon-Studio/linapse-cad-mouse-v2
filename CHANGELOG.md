@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - **Spherical Mode**: Added a toggle switch in the configurator and implemented 3D vector-based deadzone and sensitivity processing in the firmware for smooth diagonal movement.
 
+### Fixed
+- **CI Playwright on Ubuntu 26.04**: Pinned the Ubuntu CI container to LTS release 24.04 because Playwright 1.60 does not support Ubuntu 26.04 (which became the default "latest" image).
+
 ## [2.20.2] - 2026-06-23
 
 ### Changed
