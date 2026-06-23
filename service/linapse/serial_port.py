@@ -266,14 +266,9 @@ def serial_thread(actions_ref):
                             rx = rx * sens.get("rx_pos" if rx <= 0 else "rx_neg", 1.0)
                             ry = ry * sens.get("ry_pos" if ry >= 0 else "ry_neg", 1.0)
                             rz = rz * sens.get("rz_pos" if rz <= 0 else "rz_neg", 1.0)
-                            lock_trans = actions_ref[0].get("lock_translation_rotate", True) if actions_ref[0] else True
-                            if "PYTEST_CURRENT_TEST" in os.environ and not (actions_ref[0] and actions_ref[0].get("lock_translation_rotate") is True):
-                                lock_trans = False
-                            lock_thresh = actions_ref[0].get("lock_translation_rotate_threshold", 5.0) if actions_ref[0] else 5.0
-
-                            dominant_mode = actions_ref[0].get("dominant_mode", False) if actions_ref[0] else False
+                            dominant_mode = actions_ref[0].get("dominant_mode", True) if actions_ref[0] else True
                             if dominant_mode:
-                                bias = actions_ref[0].get("dominant_mode_bias", 2.0) if actions_ref[0] else 2.0
+                                bias = actions_ref[0].get("dominant_mode_bias", 4.8) if actions_ref[0] else 4.8
                                 trans_mag = math.sqrt(x*x + y*y + z*z)
                                 rot_mag = math.sqrt(rx*rx + ry*ry + rz*rz) * bias
                                 if trans_mag >= rot_mag:
@@ -284,10 +279,6 @@ def serial_thread(actions_ref):
                                     x = 0.0
                                     y = 0.0
                                     z = 0.0
-                            elif lock_trans and (abs(rx) > lock_thresh or abs(ry) > lock_thresh or abs(rz) > lock_thresh):
-                                x = 0.0
-                                y = 0.0
-                                z = 0.0
 
 
                             if current_mode not in ("Browser", "Media"):

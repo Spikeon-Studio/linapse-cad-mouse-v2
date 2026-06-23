@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [2.18.5] - 2026-06-22
+
+### Changed
+- **Dominant Mode by Default**: Dominant Mode is now enabled by default.
+
+### Removed
+- **Legacy Translation Lock**: Completely removed the legacy "Lock Translation during Rotation" (`lock_translation_rotate`) feature and all associated configurator UI components.
+
 ## [2.18.4] - 2026-06-22
 
 ### Changed

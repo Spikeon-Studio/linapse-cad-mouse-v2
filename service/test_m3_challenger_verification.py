@@ -35,91 +35,96 @@ def test_challenger_6dof_suppression(running_service):
     import websockets
     linapse_service = tsi.linapse_service
     
-    # 1. Test Browser Mode Suppression
-    linapse_service.switch_mode("Browser")
-    assert linapse_service._actions_ref[0]["current_mode"] == "Browser"
-    
-    async def run_browser_suppression_test():
-        uri = f"ws://localhost:{ws_port}"
-        async with websockets.connect(uri) as ws:
-            reader, writer = await asyncio.open_unix_connection(str(socket_path))
-            await asyncio.sleep(0.05)
-            try:
-                # Clear ws queue if any
-                # Send motion telemetry in Browser mode (should be suppressed)
-                mock_serial.input_queue.put(b">MOTION:1.0,2.0,3.0,4.0,5.0,6.0\n")
-                
-                # Send TAP event to act as a marker
-                mock_serial.input_queue.put(b"TAP:NegZ:1\n")
-                
-                # WS should receive TAP, but NOT the preceding MOTION
-                first_msg = await asyncio.wait_for(ws.recv(), timeout=1.0)
-                assert "TAP" in first_msg
-                assert "MOTION" not in first_msg
-                
-                # Unix socket should receive nothing (Timeout)
-                with pytest.raises(asyncio.TimeoutError):
-                    await asyncio.wait_for(reader.readexactly(32), timeout=0.1)
-            finally:
-                writer.close()
-                await writer.wait_closed()
-                
-    loop.run_until_complete(run_browser_suppression_test())
+    original_dominant = linapse_service._actions_ref[0].get("dominant_mode", True)
+    linapse_service._actions_ref[0]["dominant_mode"] = False
+    try:
+        # 1. Test Browser Mode Suppression
+        linapse_service.switch_mode("Browser")
+        assert linapse_service._actions_ref[0]["current_mode"] == "Browser"
+        
+        async def run_browser_suppression_test():
+            uri = f"ws://localhost:{ws_port}"
+            async with websockets.connect(uri) as ws:
+                reader, writer = await asyncio.open_unix_connection(str(socket_path))
+                await asyncio.sleep(0.05)
+                try:
+                    # Clear ws queue if any
+                    # Send motion telemetry in Browser mode (should be suppressed)
+                    mock_serial.input_queue.put(b">MOTION:1.0,2.0,3.0,4.0,5.0,6.0\n")
+                    
+                    # Send TAP event to act as a marker
+                    mock_serial.input_queue.put(b"TAP:NegZ:1\n")
+                    
+                    # WS should receive TAP, but NOT the preceding MOTION
+                    first_msg = await asyncio.wait_for(ws.recv(), timeout=1.0)
+                    assert "TAP" in first_msg
+                    assert "MOTION" not in first_msg
+                    
+                    # Unix socket should receive nothing (Timeout)
+                    with pytest.raises(asyncio.TimeoutError):
+                        await asyncio.wait_for(reader.readexactly(32), timeout=0.1)
+                finally:
+                    writer.close()
+                    await writer.wait_closed()
+                    
+        loop.run_until_complete(run_browser_suppression_test())
 
-    # 2. Test Media Mode Suppression
-    linapse_service.switch_mode("Media")
-    assert linapse_service._actions_ref[0]["current_mode"] == "Media"
-    
-    async def run_media_suppression_test():
-        uri = f"ws://localhost:{ws_port}"
-        async with websockets.connect(uri) as ws:
-            reader, writer = await asyncio.open_unix_connection(str(socket_path))
-            await asyncio.sleep(0.05)
-            try:
-                # Send motion telemetry in Media mode (should be suppressed)
-                mock_serial.input_queue.put(b">MOTION:10.0,-20.0,30.0,-40.0,50.0,-60.0\n")
-                
-                # Send TAP event to act as a marker
-                mock_serial.input_queue.put(b"TAP:NegZ:1\n")
-                
-                # WS should receive TAP, but NOT the preceding MOTION
-                first_msg = await asyncio.wait_for(ws.recv(), timeout=1.0)
-                assert "TAP" in first_msg
-                assert "MOTION" not in first_msg
-                
-                # Unix socket should receive nothing (Timeout)
-                with pytest.raises(asyncio.TimeoutError):
-                    await asyncio.wait_for(reader.readexactly(32), timeout=0.1)
-            finally:
-                writer.close()
-                await writer.wait_closed()
-                
-    loop.run_until_complete(run_media_suppression_test())
+        # 2. Test Media Mode Suppression
+        linapse_service.switch_mode("Media")
+        assert linapse_service._actions_ref[0]["current_mode"] == "Media"
+        
+        async def run_media_suppression_test():
+            uri = f"ws://localhost:{ws_port}"
+            async with websockets.connect(uri) as ws:
+                reader, writer = await asyncio.open_unix_connection(str(socket_path))
+                await asyncio.sleep(0.05)
+                try:
+                    # Send motion telemetry in Media mode (should be suppressed)
+                    mock_serial.input_queue.put(b">MOTION:10.0,-20.0,30.0,-40.0,50.0,-60.0\n")
+                    
+                    # Send TAP event to act as a marker
+                    mock_serial.input_queue.put(b"TAP:NegZ:1\n")
+                    
+                    # WS should receive TAP, but NOT the preceding MOTION
+                    first_msg = await asyncio.wait_for(ws.recv(), timeout=1.0)
+                    assert "TAP" in first_msg
+                    assert "MOTION" not in first_msg
+                    
+                    # Unix socket should receive nothing (Timeout)
+                    with pytest.raises(asyncio.TimeoutError):
+                        await asyncio.wait_for(reader.readexactly(32), timeout=0.1)
+                finally:
+                    writer.close()
+                    await writer.wait_closed()
+                    
+        loop.run_until_complete(run_media_suppression_test())
 
-    # 3. Test Default Mode (should NOT be suppressed)
-    linapse_service.switch_mode("Default")
-    assert linapse_service._actions_ref[0]["current_mode"] == "Default"
-    
-    async def run_default_motion_test():
-        uri = f"ws://localhost:{ws_port}"
-        async with websockets.connect(uri) as ws:
-            reader, writer = await asyncio.open_unix_connection(str(socket_path))
-            await asyncio.sleep(0.05)
-            try:
-                mock_serial.input_queue.put(b">MOTION:1.0,2.0,3.0,4.0,5.0,6.0\n")
-                
-                # WS should receive MOTION
-                ws_msg = await asyncio.wait_for(ws.recv(), timeout=1.0)
-                assert ws_msg == "MOTION:1.0,2.0,3.0,4.0,5.0,6.0"
-                
-                # Unix socket should receive 32 bytes
-                socket_data = await asyncio.wait_for(reader.readexactly(32), timeout=1.0)
-                assert len(socket_data) == 32
-            finally:
-                writer.close()
-                await writer.wait_closed()
-                
-    loop.run_until_complete(run_default_motion_test())
+        # 3. Test Default Mode (should NOT be suppressed)
+        linapse_service.switch_mode("Default")
+        assert linapse_service._actions_ref[0]["current_mode"] == "Default"
+        
+        async def run_default_motion_test():
+            uri = f"ws://localhost:{ws_port}"
+            async with websockets.connect(uri) as ws:
+                reader, writer = await asyncio.open_unix_connection(str(socket_path))
+                await asyncio.sleep(0.05)
+                try:
+                    mock_serial.input_queue.put(b">MOTION:1.0,2.0,3.0,4.0,5.0,6.0\n")
+                    
+                    # WS should receive MOTION
+                    ws_msg = await asyncio.wait_for(ws.recv(), timeout=1.0)
+                    assert ws_msg == "MOTION:1.0,2.0,3.0,4.0,5.0,6.0"
+                    
+                    # Unix socket should receive 32 bytes
+                    socket_data = await asyncio.wait_for(reader.readexactly(32), timeout=1.0)
+                    assert len(socket_data) == 32
+                finally:
+                    writer.close()
+                    await writer.wait_closed()
+                    
+        loop.run_until_complete(run_default_motion_test())
+    finally:
+        linapse_service._actions_ref[0]["dominant_mode"] = original_dominant
 
 
 def test_challenger_accumulator_boundary_stress(running_service):

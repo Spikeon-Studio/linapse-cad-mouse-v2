@@ -1289,27 +1289,11 @@ input[type=range]::-webkit-slider-thumb {
           <div class="field-label" style="color:var(--green);letter-spacing:2px;font-size:10px;font-family:'Barlow Condensed',sans-serif">ROTATION LOCK</div>
           <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;">
             <div class="toggle-row" style="padding: 4px 0; border: none; margin-bottom: 0;">
-              <span class="toggle-label">Lock Translation during Rotation</span>
-              <div class="toggle on" id="lockTransRot" onclick="toggleLockTransRot()"></div>
-            </div>
-            
-            <div id="lockThresholdContainer" style="display: flex; flex-direction: column; gap: 4px; margin-top: 4px;">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
-                <span class="field-label" style="margin: 0;">Lock Threshold</span>
-                <input type="number" id="lockThreshVal" min="0.1" max="350.0" step="1.0" value="5.0"
-                       style="width: 48px; background: var(--border2); border: 1px solid var(--border); color: var(--text); font-size: 10px; text-align: right; padding: 1px 3px; border-radius: 3px; font-family: inherit;"
-                       oninput="onLockThreshTextChange()"
-                       onchange="onLockThreshTextBlur()">
-              </div>
-              <input type="range" id="lockThreshSlider" min="0.1" max="350.0" step="1.0" value="5.0" oninput="onLockThreshSliderChange()">
-            </div>
-
-            <div class="toggle-row" style="padding: 4px 0; border: none; margin-bottom: 0;">
               <span class="toggle-label">Dominant Mode (Lock Non-Dominant Axes)</span>
-              <div class="toggle" id="dominantModeToggle" onclick="toggleDominantMode()"></div>
+              <div class="toggle on" id="dominantModeToggle" onclick="toggleDominantMode()"></div>
             </div>
 
-            <div id="dominantBiasContainer" style="display: none; flex-direction: column; gap: 4px; margin-top: 4px;">
+            <div id="dominantBiasContainer" style="display: flex; flex-direction: column; gap: 4px; margin-top: 4px;">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
                 <span class="field-label" style="margin: 0;">Rotation Bias (Sensitivity Weight)</span>
                 <input type="number" id="dominantBiasVal" min="0.1" max="10.0" step="0.1" value="4.8"
@@ -1664,8 +1648,8 @@ const ACTION_TYPES = [
 
 const DEFAULT_ACTIONS = {
   button_override: false,
-  lock_translation_rotate: true,
-  lock_translation_rotate_threshold: 5.0,
+  dominant_mode: true,
+  dominant_mode_bias: 4.8,
   sensitivity: {
     "x_pos": 1.0, "x_neg": 1.0, "y_pos": 1.0, "y_neg": 1.0, "z_pos": 1.0, "z_neg": 1.0,
     "rx_pos": 1.0, "rx_neg": 1.0, "ry_pos": 1.0, "ry_neg": 1.0, "rz_pos": 1.0, "rz_neg": 1.0
@@ -3204,12 +3188,6 @@ function applyMotion(v, ignoreInversion = false) {
   const dry = (inv.rz ? -v[5] : v[5]) * R;
   const drz = (inv.ry ? -v[4] : v[4]) * R;
 
-  // Suppress translation while rotating if lock_translation_rotate is enabled
-  const lockEnabled = (actions && actions.lock_translation_rotate !== false);
-  if (lockEnabled && (Math.abs(drx) > 1e-5 || Math.abs(dry) > 1e-5 || Math.abs(drz) > 1e-5)) {
-    dx = 0;
-    dy = 0;
-  }
 
   benchy.position.x = Math.max(-xBound, Math.min(xBound, benchy.position.x + dx));
   benchy.position.y = Math.max(-yBound, Math.min(yBound, benchy.position.y - dy));
@@ -3323,18 +3301,7 @@ function toggleInversion(axis) {
   sendCmd('actions ' + JSON.stringify(actions));
 }
 
-function toggleLockTransRot() {
-  const el = document.getElementById('lockTransRot');
-  el.classList.toggle('on');
-  actions.lock_translation_rotate = el.classList.contains('on');
-  
-  const container = document.getElementById('lockThresholdContainer');
-  if (container) {
-    container.style.display = actions.lock_translation_rotate ? 'flex' : 'none';
-  }
-  
-  sendCmd('actions ' + JSON.stringify(actions));
-}
+
 
 function toggleDominantMode() {
   const el = document.getElementById('dominantModeToggle');
@@ -3384,40 +3351,6 @@ function onDominantBiasTextBlur() {
   sendCmd('actions ' + JSON.stringify(actions));
 }
 
-function onLockThreshSliderChange() {
-  const v = parseFloat(document.getElementById('lockThreshSlider').value);
-  document.getElementById('lockThreshVal').value = v.toFixed(1);
-  actions.lock_translation_rotate_threshold = v;
-  sendCmd('actions ' + JSON.stringify(actions));
-}
-
-function onLockThreshTextChange() {
-  const valEl = document.getElementById('lockThreshVal');
-  const slider = document.getElementById('lockThreshSlider');
-  let v = parseFloat(valEl.value);
-  if (isNaN(v)) return;
-  const min = parseFloat(slider.min);
-  const max = parseFloat(slider.max);
-  if (v >= min && v <= max) {
-    slider.value = v;
-    actions.lock_translation_rotate_threshold = v;
-    sendCmd('actions ' + JSON.stringify(actions));
-  }
-}
-
-function onLockThreshTextBlur() {
-  const valEl = document.getElementById('lockThreshVal');
-  const slider = document.getElementById('lockThreshSlider');
-  let v = parseFloat(valEl.value);
-  const min = parseFloat(slider.min);
-  const max = parseFloat(slider.max);
-  if (isNaN(v) || v < min) v = min;
-  if (v > max) v = max;
-  valEl.value = v.toFixed(1);
-  slider.value = v;
-  actions.lock_translation_rotate_threshold = v;
-  sendCmd('actions ' + JSON.stringify(actions));
-}
 
 function syncActionsUI() {
   if (!actions) return;
@@ -3444,27 +3377,8 @@ function syncActionsUI() {
     overrideToggle.classList.toggle('on', !!actions.button_override);
   }
 
-  // Update Lock Translation during Rotation
-  if (actions.lock_translation_rotate === undefined) actions.lock_translation_rotate = true;
-  const lockToggle = document.getElementById('lockTransRot');
-  if (lockToggle) {
-    lockToggle.classList.toggle('on', !!actions.lock_translation_rotate);
-  }
-
-  const container = document.getElementById('lockThresholdContainer');
-  if (container) {
-    container.style.display = actions.lock_translation_rotate ? 'flex' : 'none';
-  }
-
-  if (actions.lock_translation_rotate_threshold === undefined) actions.lock_translation_rotate_threshold = 5.0;
-  const threshVal = parseFloat(actions.lock_translation_rotate_threshold);
-  const lockValEl = document.getElementById('lockThreshVal');
-  const lockSlider = document.getElementById('lockThreshSlider');
-  if (lockValEl) lockValEl.value = threshVal.toFixed(1);
-  if (lockSlider) lockSlider.value = threshVal;
-
   // Update Dominant Mode
-  if (actions.dominant_mode === undefined) actions.dominant_mode = false;
+  if (actions.dominant_mode === undefined) actions.dominant_mode = true;
   const dominantToggle = document.getElementById('dominantModeToggle');
   if (dominantToggle) {
     dominantToggle.classList.toggle('on', !!actions.dominant_mode);

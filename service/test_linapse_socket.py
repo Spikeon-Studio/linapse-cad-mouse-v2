@@ -116,6 +116,7 @@ class TestLinapseSocket(unittest.TestCase):
 
     def test_directional_sensitivity_and_inversion(self):
         actions_ref = [{
+            "dominant_mode": False,
             "sensitivity": {
                 "x_pos": 2.0,
                 "y_neg": 0.5,

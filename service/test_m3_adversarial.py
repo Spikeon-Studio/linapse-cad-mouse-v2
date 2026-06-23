@@ -28,93 +28,98 @@ def test_m3_browser_media_suppression(running_service):
     
     # --- BROWSER MODE ---
     linapse_service = tsi.linapse_service
-    linapse_service.switch_mode("Browser")
-    assert linapse_service._actions_ref[0]["current_mode"] == "Browser"
-    
-    async def run_browser_test():
-        # Establish WS and UNIX Socket connections
-        uri = f"ws://localhost:{ws_port}"
-        async with websockets.connect(uri) as ws:
-            reader, writer = await asyncio.open_unix_connection(str(socket_path))
-            await asyncio.sleep(0.05)
-            try:
-                # Send motion telemetry
-                mock_serial.input_queue.put(b">MOTION:10.0,20.0,30.0,40.0,50.0,60.0\n")
-                
-                # Send a tap gesture to act as a marker (non-suppressed event)
-                mock_serial.input_queue.put(b"TAP:NegZ:1\n")
-                
-                # Read first WebSocket message
-                # It must be TAP, indicating the preceding MOTION was suppressed
-                first_msg = await asyncio.wait_for(ws.recv(), timeout=1.0)
-                assert first_msg == "TAP:top:1"
-                
-                # UNIX socket should receive nothing (suppressed)
-                with pytest.raises(asyncio.TimeoutError):
-                    await asyncio.wait_for(reader.readexactly(32), timeout=0.1)
+    original_dominant = linapse_service._actions_ref[0].get("dominant_mode", True)
+    linapse_service._actions_ref[0]["dominant_mode"] = False
+    try:
+        linapse_service.switch_mode("Browser")
+        assert linapse_service._actions_ref[0]["current_mode"] == "Browser"
+        
+        async def run_browser_test():
+            # Establish WS and UNIX Socket connections
+            uri = f"ws://localhost:{ws_port}"
+            async with websockets.connect(uri) as ws:
+                reader, writer = await asyncio.open_unix_connection(str(socket_path))
+                await asyncio.sleep(0.05)
+                try:
+                    # Send motion telemetry
+                    mock_serial.input_queue.put(b">MOTION:10.0,20.0,30.0,40.0,50.0,60.0\n")
                     
-            finally:
-                writer.close()
-                await writer.wait_closed()
-
-    loop.run_until_complete(run_browser_test())
-
-    # --- MEDIA MODE ---
-    linapse_service.switch_mode("Media")
-    assert linapse_service._actions_ref[0]["current_mode"] == "Media"
-    
-    async def run_media_test():
-        uri = f"ws://localhost:{ws_port}"
-        async with websockets.connect(uri) as ws:
-            reader, writer = await asyncio.open_unix_connection(str(socket_path))
-            await asyncio.sleep(0.05)
-            try:
-                # Send motion telemetry
-                mock_serial.input_queue.put(b">MOTION:5.0,-15.0,25.0,35.0,-45.0,55.0\n")
-                
-                # Send a tap gesture to act as a marker
-                mock_serial.input_queue.put(b"TAP:PosX:1\n")
-                
-                # Read first WebSocket message - must be TAP
-                first_msg = await asyncio.wait_for(ws.recv(), timeout=1.0)
-                assert first_msg == "TAP:right:1"
-                
-                # UNIX socket should receive nothing (suppressed)
-                with pytest.raises(asyncio.TimeoutError):
-                    await asyncio.wait_for(reader.readexactly(32), timeout=0.1)
+                    # Send a tap gesture to act as a marker (non-suppressed event)
+                    mock_serial.input_queue.put(b"TAP:NegZ:1\n")
                     
-            finally:
-                writer.close()
-                await writer.wait_closed()
+                    # Read first WebSocket message
+                    # It must be TAP, indicating the preceding MOTION was suppressed
+                    first_msg = await asyncio.wait_for(ws.recv(), timeout=1.0)
+                    assert first_msg == "TAP:top:1"
+                    
+                    # UNIX socket should receive nothing (suppressed)
+                    with pytest.raises(asyncio.TimeoutError):
+                        await asyncio.wait_for(reader.readexactly(32), timeout=0.1)
+                        
+                finally:
+                    writer.close()
+                    await writer.wait_closed()
 
-    loop.run_until_complete(run_media_test())
+        loop.run_until_complete(run_browser_test())
 
-    # --- DEFAULT MODE (SHOULD NOT BE SUPPRESSED) ---
-    linapse_service.switch_mode("Default")
-    assert linapse_service._actions_ref[0]["current_mode"] == "Default"
-    
-    async def run_default_test():
-        uri = f"ws://localhost:{ws_port}"
-        async with websockets.connect(uri) as ws:
-            reader, writer = await asyncio.open_unix_connection(str(socket_path))
-            await asyncio.sleep(0.05)
-            try:
-                # Send motion telemetry
-                mock_serial.input_queue.put(b">MOTION:1.0,2.0,3.0,4.0,5.0,6.0\n")
-                
-                # WS should receive MOTION broadcast
-                first_msg = await asyncio.wait_for(ws.recv(), timeout=1.0)
-                assert first_msg == "MOTION:1.0,2.0,3.0,4.0,5.0,6.0"
-                
-                # UNIX socket should receive 32-byte packet
-                packet = await asyncio.wait_for(reader.readexactly(32), timeout=1.0)
-                assert len(packet) == 32
-                
-            finally:
-                writer.close()
-                await writer.wait_closed()
+        # --- MEDIA MODE ---
+        linapse_service.switch_mode("Media")
+        assert linapse_service._actions_ref[0]["current_mode"] == "Media"
+        
+        async def run_media_test():
+            uri = f"ws://localhost:{ws_port}"
+            async with websockets.connect(uri) as ws:
+                reader, writer = await asyncio.open_unix_connection(str(socket_path))
+                await asyncio.sleep(0.05)
+                try:
+                    # Send motion telemetry
+                    mock_serial.input_queue.put(b">MOTION:5.0,-15.0,25.0,35.0,-45.0,55.0\n")
+                    
+                    # Send a tap gesture to act as a marker
+                    mock_serial.input_queue.put(b"TAP:PosX:1\n")
+                    
+                    # Read first WebSocket message - must be TAP
+                    first_msg = await asyncio.wait_for(ws.recv(), timeout=1.0)
+                    assert first_msg == "TAP:right:1"
+                    
+                    # UNIX socket should receive nothing (suppressed)
+                    with pytest.raises(asyncio.TimeoutError):
+                        await asyncio.wait_for(reader.readexactly(32), timeout=0.1)
+                        
+                finally:
+                    writer.close()
+                    await writer.wait_closed()
 
-    loop.run_until_complete(run_default_test())
+        loop.run_until_complete(run_media_test())
+
+        # --- DEFAULT MODE (SHOULD NOT BE SUPPRESSED) ---
+        linapse_service.switch_mode("Default")
+        assert linapse_service._actions_ref[0]["current_mode"] == "Default"
+        
+        async def run_default_test():
+            uri = f"ws://localhost:{ws_port}"
+            async with websockets.connect(uri) as ws:
+                reader, writer = await asyncio.open_unix_connection(str(socket_path))
+                await asyncio.sleep(0.05)
+                try:
+                    # Send motion telemetry
+                    mock_serial.input_queue.put(b">MOTION:1.0,2.0,3.0,4.0,5.0,6.0\n")
+                    
+                    # WS should receive MOTION broadcast
+                    first_msg = await asyncio.wait_for(ws.recv(), timeout=1.0)
+                    assert first_msg == "MOTION:1.0,2.0,3.0,4.0,5.0,6.0"
+                    
+                    # UNIX socket should receive 32-byte packet
+                    packet = await asyncio.wait_for(reader.readexactly(32), timeout=1.0)
+                    assert len(packet) == 32
+                    
+                finally:
+                    writer.close()
+                    await writer.wait_closed()
+
+        loop.run_until_complete(run_default_test())
+    finally:
+        linapse_service._actions_ref[0]["dominant_mode"] = original_dominant
 
 def test_m3_button_mapping(running_service):
     """

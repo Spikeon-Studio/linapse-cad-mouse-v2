@@ -90,9 +90,7 @@ def load_actions():
         if actions is None or not isinstance(actions, dict):
             actions = {
                 "button_override": False,
-                "lock_translation_rotate": True,
-                "lock_translation_rotate_threshold": 5.0,
-                "dominant_mode": False,
+                "dominant_mode": True,
                 "dominant_mode_bias": 4.8,
                 "sensitivity": {
                     "x_pos": 1.0, "x_neg": 1.0, "y_pos": 1.0, "y_neg": 1.0, "z_pos": 1.0, "z_neg": 1.0,

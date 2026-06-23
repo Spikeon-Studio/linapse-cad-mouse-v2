@@ -124,7 +124,7 @@ Configure filter settings and dead zones:
 - **Dead Zones**: Ignore tiny unintended motion. Translation range `0 – 50` (default `16`), Rotation range `0 – 50` (default `20`).
 - **Kalman Filter**: Trade responsiveness against smoothness. Responsiveness (Q) range `0.05 – 2` (default `0.5`, higher = snappier), Smoothness (R) range `0.5 – 15` (default `4`, higher = smoother).
 - **Curve (Exponent)**: Input-to-output response shaping from `1 – 5` (default `3`). Low values give linear 1:1 response, high values make small movements gentle and large movements aggressive.
-- **Lock Translation during Rotation**: When enabled (default), translation is suppressed while the user is actively rotating the puck. Toggle off to allow simultaneous translation and rotation.
+- **Dominant Mode**: When enabled (default), only the strongest active movement type (either translation or rotation) is processed, locking the other axes. A **Rotation Bias** slider scales the rotation magnitude during the comparison, balancing rotation inputs against physically stronger translation deflections.
 
 ### Axes (Directional Sensitivity & Calibration Wizard)
 
