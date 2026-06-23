@@ -924,6 +924,7 @@ def test_dominant_mode(running_service):
     # Enable dominant mode explicitly
     running_service_actions = linapse_service.state.actions_ref[0]
     running_service_actions["dominant_mode"] = True
+    running_service_actions["dominant_mode_bias"] = 1.0
     
     loop = running_service["loop"]
     ws_port = running_service["ws_port"]
@@ -939,19 +940,28 @@ def test_dominant_mode(running_service):
             msg1 = await asyncio.wait_for(ws.recv(), timeout=1.0)
             assert msg1 == "MOTION:10.0,0.0,0.0,0.0,0.0,0.0"
             
-            # 2. Combined: translation (10.0) is dominant over rotation (5.0).
+            # 2. Combined: translation (10.0) is dominant over rotation (5.0) under bias 1.0.
             # Translation should pass, rotation should be zeroed.
             mock_serial.input_queue.put(b">MOTION:10.0,0,0,5.0,0,0\n")
             msg2 = await asyncio.wait_for(ws.recv(), timeout=1.0)
             assert msg2 == "MOTION:10.0,0.0,0.0,0.0,0.0,0.0"
 
-            # 3. Combined: rotation (15.0) is dominant over translation (10.0).
+            # 3. Combined: rotation (15.0) is dominant over translation (10.0) under bias 1.0.
             # Rotation should pass, translation should be zeroed.
             mock_serial.input_queue.put(b">MOTION:10.0,0,0,15.0,0,0\n")
             msg3 = await asyncio.wait_for(ws.recv(), timeout=1.0)
             assert msg3 == "MOTION:0.0,0.0,0.0,15.0,0.0,0.0"
+
+            # 4. Set bias to 2.0.
+            # Combined: translation (10.0) vs rotation (6.0).
+            # Rot magnitude with bias is 6.0 * 2.0 = 12.0, which dominates 10.0.
+            # Rotation should pass, translation should be zeroed.
+            running_service_actions["dominant_mode_bias"] = 2.0
+            mock_serial.input_queue.put(b">MOTION:10.0,0,0,6.0,0,0\n")
+            msg_bias = await asyncio.wait_for(ws.recv(), timeout=1.0)
+            assert msg_bias == "MOTION:0.0,0.0,0.0,6.0,0.0,0.0"
             
-            # 4. Disable dominant mode and verify both are allowed
+            # 5. Disable dominant mode and verify both are allowed
             running_service_actions["dominant_mode"] = False
             mock_serial.input_queue.put(b">MOTION:10.0,0,0,15.0,0,0\n")
             msg4 = await asyncio.wait_for(ws.recv(), timeout=1.0)
@@ -961,4 +971,5 @@ def test_dominant_mode(running_service):
         loop.run_until_complete(run_dominant_test())
     finally:
         running_service_actions["dominant_mode"] = False
+        running_service_actions["dominant_mode_bias"] = 2.0
 

@@ -1308,6 +1308,17 @@ input[type=range]::-webkit-slider-thumb {
               <span class="toggle-label">Dominant Mode (Lock Non-Dominant Axes)</span>
               <div class="toggle" id="dominantModeToggle" onclick="toggleDominantMode()"></div>
             </div>
+
+            <div id="dominantBiasContainer" style="display: none; flex-direction: column; gap: 4px; margin-top: 4px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                <span class="field-label" style="margin: 0;">Rotation Bias (Sensitivity Weight)</span>
+                <input type="number" id="dominantBiasVal" min="0.1" max="10.0" step="0.1" value="2.0"
+                       style="width: 48px; background: var(--border2); border: 1px solid var(--border); color: var(--text); font-size: 10px; text-align: right; padding: 1px 3px; border-radius: 3px; font-family: inherit;"
+                       oninput="onDominantBiasTextChange()"
+                       onchange="onDominantBiasTextBlur()">
+              </div>
+              <input type="range" id="dominantBiasSlider" min="0.1" max="10.0" step="0.1" value="2.0" oninput="onDominantBiasSliderChange()">
+            </div>
           </div>
         </div>
 
@@ -3329,6 +3340,47 @@ function toggleDominantMode() {
   const el = document.getElementById('dominantModeToggle');
   el.classList.toggle('on');
   actions.dominant_mode = el.classList.contains('on');
+  
+  const container = document.getElementById('dominantBiasContainer');
+  if (container) {
+    container.style.display = actions.dominant_mode ? 'flex' : 'none';
+  }
+  
+  sendCmd('actions ' + JSON.stringify(actions));
+}
+
+function onDominantBiasSliderChange() {
+  const v = parseFloat(document.getElementById('dominantBiasSlider').value);
+  document.getElementById('dominantBiasVal').value = v.toFixed(1);
+  actions.dominant_mode_bias = v;
+  sendCmd('actions ' + JSON.stringify(actions));
+}
+
+function onDominantBiasTextChange() {
+  const valEl = document.getElementById('dominantBiasVal');
+  const slider = document.getElementById('dominantBiasSlider');
+  let v = parseFloat(valEl.value);
+  if (isNaN(v)) return;
+  const min = parseFloat(slider.min);
+  const max = parseFloat(slider.max);
+  if (v >= min && v <= max) {
+    slider.value = v;
+    actions.dominant_mode_bias = v;
+    sendCmd('actions ' + JSON.stringify(actions));
+  }
+}
+
+function onDominantBiasTextBlur() {
+  const valEl = document.getElementById('dominantBiasVal');
+  const slider = document.getElementById('dominantBiasSlider');
+  let v = parseFloat(valEl.value);
+  const min = parseFloat(slider.min);
+  const max = parseFloat(slider.max);
+  if (isNaN(v) || v < min) v = min;
+  if (v > max) v = max;
+  valEl.value = v.toFixed(1);
+  slider.value = v;
+  actions.dominant_mode_bias = v;
   sendCmd('actions ' + JSON.stringify(actions));
 }
 
@@ -3417,6 +3469,18 @@ function syncActionsUI() {
   if (dominantToggle) {
     dominantToggle.classList.toggle('on', !!actions.dominant_mode);
   }
+
+  const dominantBiasContainer = document.getElementById('dominantBiasContainer');
+  if (dominantBiasContainer) {
+    dominantBiasContainer.style.display = actions.dominant_mode ? 'flex' : 'none';
+  }
+
+  if (actions.dominant_mode_bias === undefined) actions.dominant_mode_bias = 2.0;
+  const biasVal = parseFloat(actions.dominant_mode_bias);
+  const biasValEl = document.getElementById('dominantBiasVal');
+  const biasSlider = document.getElementById('dominantBiasSlider');
+  if (biasValEl) biasValEl.value = biasVal.toFixed(1);
+  if (biasSlider) biasSlider.value = biasVal;
 
   // Ensure default structure
   if (!actions.sensitivity) actions.sensitivity = {};

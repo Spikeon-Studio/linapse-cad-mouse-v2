@@ -273,8 +273,9 @@ def serial_thread(actions_ref):
 
                             dominant_mode = actions_ref[0].get("dominant_mode", False) if actions_ref[0] else False
                             if dominant_mode:
+                                bias = actions_ref[0].get("dominant_mode_bias", 2.0) if actions_ref[0] else 2.0
                                 trans_mag = math.sqrt(x*x + y*y + z*z)
-                                rot_mag = math.sqrt(rx*rx + ry*ry + rz*rz)
+                                rot_mag = math.sqrt(rx*rx + ry*ry + rz*rz) * bias
                                 if trans_mag >= rot_mag:
                                     rx = 0.0
                                     ry = 0.0
