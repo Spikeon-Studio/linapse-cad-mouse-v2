@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.21.10] - 2026-06-23
+
+### Fixed
+- **Release Automation**: Passed empty passphrase to GPG via standard input and --passphrase-fd 0 for non-interactive Ubuntu PPA signing.
+
 ## [2.21.9] - 2026-06-23
 
 ### Fixed

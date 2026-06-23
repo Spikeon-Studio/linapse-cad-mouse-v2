@@ -627,8 +627,8 @@ jobs:
             # Build source package unsigned (debuild + debsign)
             debuild -S -sa -d -i -I -us -uc
             
-            # Sign manually using debsign with loopback GPG options
-            debsign -k"$KEY_ID" -p"gpg --batch --no-tty --pinentry-mode loopback" ../linapse-cad-mouse_${VERSION}*_source.changes
+            # Sign manually using debsign with loopback GPG options and empty passphrase from stdin
+            echo "" | debsign -k"$KEY_ID" -p"gpg --batch --no-tty --pinentry-mode loopback --passphrase-fd 0" ../linapse-cad-mouse_${VERSION}*_source.changes
             
             # Upload
             dput linapse-ppa ../linapse-cad-mouse_${VERSION}*_source.changes
