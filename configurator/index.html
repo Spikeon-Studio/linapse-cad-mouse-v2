@@ -1312,12 +1312,12 @@ input[type=range]::-webkit-slider-thumb {
             <div id="dominantBiasContainer" style="display: none; flex-direction: column; gap: 4px; margin-top: 4px;">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
                 <span class="field-label" style="margin: 0;">Rotation Bias (Sensitivity Weight)</span>
-                <input type="number" id="dominantBiasVal" min="0.1" max="10.0" step="0.1" value="2.0"
+                <input type="number" id="dominantBiasVal" min="0.1" max="10.0" step="0.1" value="4.8"
                        style="width: 48px; background: var(--border2); border: 1px solid var(--border); color: var(--text); font-size: 10px; text-align: right; padding: 1px 3px; border-radius: 3px; font-family: inherit;"
                        oninput="onDominantBiasTextChange()"
                        onchange="onDominantBiasTextBlur()">
               </div>
-              <input type="range" id="dominantBiasSlider" min="0.1" max="10.0" step="0.1" value="2.0" oninput="onDominantBiasSliderChange()">
+              <input type="range" id="dominantBiasSlider" min="0.1" max="10.0" step="0.1" value="4.8" oninput="onDominantBiasSliderChange()">
             </div>
           </div>
         </div>
@@ -3475,7 +3475,7 @@ function syncActionsUI() {
     dominantBiasContainer.style.display = actions.dominant_mode ? 'flex' : 'none';
   }
 
-  if (actions.dominant_mode_bias === undefined) actions.dominant_mode_bias = 2.0;
+  if (actions.dominant_mode_bias === undefined) actions.dominant_mode_bias = 4.8;
   const biasVal = parseFloat(actions.dominant_mode_bias);
   const biasValEl = document.getElementById('dominantBiasVal');
   const biasSlider = document.getElementById('dominantBiasSlider');

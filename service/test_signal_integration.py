@@ -971,5 +971,5 @@ def test_dominant_mode(running_service):
         loop.run_until_complete(run_dominant_test())
     finally:
         running_service_actions["dominant_mode"] = False
-        running_service_actions["dominant_mode_bias"] = 2.0
+        running_service_actions["dominant_mode_bias"] = 4.8
 
