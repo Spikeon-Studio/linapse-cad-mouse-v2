@@ -734,13 +734,23 @@ jobs:
               exit 1
             }
             
-            # Upload
-            dput -u linapse-ppa ../linapse-cad-mouse_${VERSION}*_source.changes > dput.log 2>&1 || {
+            # Upload — Launchpad anonymous FTP intermittently returns
+            # "550 ... internal server error"; retry before giving up.
+            uploaded=0
+            for attempt in 1 2 3 4 5; do
+              if dput -u linapse-ppa ../linapse-cad-mouse_${VERSION}*_source.changes > dput.log 2>&1; then
+                uploaded=1
+                break
+              fi
+              echo "=== dput attempt ${attempt} failed ==="
               cat dput.log
+              sleep 20
+            done
+            if [ "$uploaded" -ne 1 ]; then
               mkdir -p ci_logs
               cp dput.log ci_logs/dput_${dist}.log
               exit 1
-            }
+            fi
             
             # Reset changelog
             git checkout debian/changelog
