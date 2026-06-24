@@ -25,7 +25,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Start systemd container
         run: |
@@ -94,7 +94,7 @@ jobs:
             systemd-container sh -c "cd /workspace && systemctl --user stop linapse-service linapse-configurator ydotoold 2>/dev/null || true; pytest service/ --junitxml=pytest_${{ matrix.distro }}_results.xml --tb=short > pytest_${{ matrix.distro }}_output.log 2>&1; status=\$?; cat pytest_${{ matrix.distro }}_output.log; chmod 666 pytest_${{ matrix.distro }}_results.xml pytest_${{ matrix.distro }}_output.log || true; exit \$status"
 
       - name: Publish Test Report
-        uses: dorny/test-reporter@v1
+        uses: dorny/test-reporter@v3
         if: always() && steps.run_tests.outcome != 'skipped'
         with:
           name: Pytest Results (${{ matrix.distro }})
@@ -103,7 +103,7 @@ jobs:
 
       - name: Upload Linux test logs on failure
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: pytest-${{ matrix.distro }}-log
           path: pytest_${{ matrix.distro }}_output.log
@@ -116,7 +116,7 @@ jobs:
 
       - name: Upload status artifact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: status-${{ matrix.distro }}
           path: results/${{ matrix.distro }}
@@ -129,17 +129,17 @@ jobs:
       contents: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Download all statuses
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: results
           pattern: status-*
           merge-multiple: true
 
       - name: Download all test logs on failure
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         continue-on-error: true
         with:
           pattern: pytest-*-log
@@ -185,10 +185,10 @@ jobs:
       contents: read
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Python 3.11
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11'
 
@@ -214,7 +214,7 @@ jobs:
         run: |
           pytest service/ --junitxml=pytest_windows_results.xml --tb=short 2>&1 | tee pytest_windows_output.log
       - name: Publish Test Report
-        uses: dorny/test-reporter@v1
+        uses: dorny/test-reporter@v3
         if: always() && steps.run_tests.outcome != 'skipped'
         with:
           name: Pytest Results (Windows)
@@ -223,7 +223,7 @@ jobs:
 
       - name: Upload Windows test logs on failure
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: pytest-windows-log
           path: pytest_windows_output.log
@@ -234,7 +234,7 @@ jobs:
           pyinstaller --onefile --noconsole --name linapse-service --hidden-import=pynput --hidden-import=hid --hidden-import=websockets --hidden-import=pycaw service/linapse-service
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 20
 
@@ -268,7 +268,7 @@ jobs:
           echo "dummy" > LinapseServiceSetup.exe
 
       - name: Upload installer artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: LinapseServiceSetup
           path: LinapseServiceSetup.exe
@@ -282,7 +282,7 @@ jobs:
 
       - name: Upload status artifact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: status-windows
           path: results/windows
@@ -294,10 +294,10 @@ jobs:
       contents: read
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Python 3.11
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11'
 
@@ -323,7 +323,7 @@ jobs:
           pytest service/ --junitxml=pytest_macos_results.xml
 
       - name: Publish Test Report
-        uses: dorny/test-reporter@v1
+        uses: dorny/test-reporter@v3
         if: always() && steps.run_tests.outcome != 'skipped'
         with:
           name: Pytest Results (macOS)
@@ -336,7 +336,7 @@ jobs:
           pyinstaller --onefile --name linapse-service --hidden-import=pynput --hidden-import=hid --hidden-import=websockets service/linapse-service
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 20
 
@@ -391,7 +391,7 @@ jobs:
           echo "dummy" > linapse-service.pkg
 
       - name: Upload macOS Package
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: linapse-service-pkg
           path: linapse-service.pkg
@@ -405,7 +405,7 @@ jobs:
 
       - name: Upload status artifact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: status-macos
           path: results/macos
@@ -416,10 +416,10 @@ jobs:
       contents: read
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 20
 
@@ -441,7 +441,7 @@ jobs:
           echo "dummy" > extension/dist/chrome/dummy
 
       - name: Upload browser extension artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: linapse-browser-extension
           path: |
@@ -456,7 +456,7 @@ jobs:
 
       - name: Upload status artifact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: status-browser-extension
           path: results/browser-extension
@@ -472,15 +472,15 @@ jobs:
       contents: read
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 20
 
       - name: Download browser extension artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: linapse-browser-extension
           path: extension/dist
@@ -513,7 +513,7 @@ jobs:
 
       - name: Upload publish status artifact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: status-browser-extension-publish
           path: results/browser-extension-publish
@@ -526,7 +526,7 @@ jobs:
       contents: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Read version
         id: get_version
@@ -536,25 +536,25 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Download Windows Installer
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: LinapseServiceSetup
           path: .
 
       - name: Download macOS Package
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: linapse-service-pkg
           path: .
 
       - name: Download browser extension packages
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: linapse-browser-extension
           path: extension-release
 
       - name: Create or Update Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: v${{ steps.get_version.outputs.version }}
           name: Release v${{ steps.get_version.outputs.version }}
@@ -574,7 +574,7 @@ jobs:
     if: false
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Publish to AUR
         env:
@@ -606,10 +606,10 @@ jobs:
       GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11'
 
@@ -621,7 +621,7 @@ jobs:
       - name: Import GPG key
         id: import-gpg
         if: ${{ env.GPG_PRIVATE_KEY != '' }}
-        uses: crazy-max/ghaction-import-gpg@v6
+        uses: crazy-max/ghaction-import-gpg@v7
         with:
           gpg_private_key: ${{ env.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.GPG_PASSPHRASE }}
@@ -773,10 +773,10 @@ jobs:
     if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') && github.event_name == 'push' && vars.FEDORA_COPR_PUBLISH_ENABLED == 'true'
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11'
 
