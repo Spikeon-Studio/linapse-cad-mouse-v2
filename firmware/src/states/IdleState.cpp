@@ -4,6 +4,7 @@
 
 #include "Config.h"
 #include "Controllers.h"
+#include "SensConfig.h"
 #include "LedConfig.h"
 #include "StateMachine.h"
 
@@ -42,10 +43,13 @@ void IdleState::runMotionPipeline(float dt, unsigned long now) {
   float motion[6] = {};
   motionController.compute(raw, sensorController.baseline(), dt, motion);
 
-  if (tapDetector.isTapping()) {
-    // A tap is a linear impulse on TX/TY/TZ, so filter it out of translation
-    // only. Leave rotation (RX/RY/RZ) flowing so tilt-driven output — e.g. the
-    // Controller-mode left stick — doesn't pause every time a tap registers.
+  if (sensConfig.despikeEnabled) {
+    // Always-on per-axis de-spike: the tap impulse is clamped on every axis, so
+    // taps don't jolt diagonal motion. Tap detection already ran on raw data
+    // above, so taps still register.
+    despikeAxes(motion, prevMotion_, sensConfig.despikeThreshold, sensConfig.despikeStrength);
+  } else if (tapDetector.isTapping()) {
+    // Legacy: zero translation during a tap (rotation passes through).
     motion[0] = 0.0f;  // TX
     motion[1] = 0.0f;  // TY
     motion[2] = 0.0f;  // TZ
