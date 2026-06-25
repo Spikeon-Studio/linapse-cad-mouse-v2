@@ -21,4 +21,6 @@ extern EffectEngine        effectEngine;
 extern bool g_serviceHidMode;
 extern bool g_serviceButtonMode;
 extern unsigned long g_lastServicePacketMs;
+extern long  g_sleepTimeoutMs;
+extern float g_sleepWakeThreshold;
 

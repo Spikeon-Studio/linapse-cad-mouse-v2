@@ -25,6 +25,8 @@ int g_eqLevels[8] = {0};
 bool g_serviceHidMode = false;
 bool g_serviceButtonMode = false;
 unsigned long g_lastServicePacketMs = 0;
+long  g_sleepTimeoutMs = -1;
+float g_sleepWakeThreshold = 15.0f;
 
 
 void setUp(void) {
