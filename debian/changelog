@@ -1,3 +1,11 @@
+linapse-cad-mouse (2.23.0-1) unstable; urgency=low
+
+  * Add Spring Head hardware preset: higher asymmetric gains for variant
+    with magnets mounted further from sensors. Fix asyncio import crash
+    that prevented auto-firmware-flash from recovering the serial thread.
+
+ -- Michael Flynn <spikeon@gmail.com>  Wed, 25 Jun 2026 01:00:00 -0400
+
 linapse-cad-mouse (2.22.0-1) unstable; urgency=low
 
   * Add Controller mode (virtual gamepad), button hold-through, uinput install,
