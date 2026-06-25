@@ -1,3 +1,13 @@
+linapse-cad-mouse (2.26.2-1) unstable; urgency=low
+
+  * Add Tap sub-tab to the Controller panel (Controls / Tap) exposing
+    Velocity Threshold, Invert Tap Z, and De-spike settings in
+    Controller mode.
+  * Extend Tap Velocity Threshold range to 0.001 (was 0.5); firmware
+    now reports tap_sens with 3 decimal places.
+
+ -- Michael Flynn <spikeon@gmail.com>  Wed, 25 Jun 2026 08:00:00 -0400
+
 linapse-cad-mouse (2.26.1-1) unstable; urgency=low
 
   * Fix Calibration Wizard overlay so it covers the full app regardless of

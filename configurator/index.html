@@ -382,8 +382,23 @@ body {
   flex: 1;
   text-align: center;
 }
-.sens-tab:hover { color: var(--text2); }
-.sens-tab.active { color: var(--green); border-bottom-color: var(--green); }
+.sens-tab:hover, .ctrl-sub-tab:hover { color: var(--text2); }
+.sens-tab.active, .ctrl-sub-tab.active { color: var(--green); border-bottom-color: var(--green); }
+.ctrl-sub-tab {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text3);
+  padding: 10px 16px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+  margin-bottom: -1px;
+  flex: 1;
+  text-align: center;
+}
 
 .panel-header {
   padding: 18px 20px 14px;
@@ -1485,14 +1500,14 @@ input[type=range]::-webkit-slider-thumb {
             
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
               <span class="field-label" style="margin: 0;">Velocity Threshold</span>
-              <input type="number" id="sensTapVal" min="0.5" max="15.0" step="0.1" value="3.0"
-                     style="width: 48px; background: var(--border2); border: 1px solid var(--border); color: var(--text); font-size: 10px; text-align: right; padding: 1px 3px; border-radius: 3px; font-family: inherit;"
-                     oninput="onSensTextChange('tap_sens','sensTap','sensTapVal')"
-                     onchange="onSensTextBlur('tap_sens','sensTap','sensTapVal')">
+              <input type="number" id="sensTapVal" min="0.001" max="15.0" step="0.001" value="3.000"
+                     style="width: 52px; background: var(--border2); border: 1px solid var(--border); color: var(--text); font-size: 10px; text-align: right; padding: 1px 3px; border-radius: 3px; font-family: inherit;"
+                     oninput="onTapSens(this.value)"
+                     onchange="onTapSens(this.value)">
             </div>
-            <input type="range" id="sensTap" min="0.5" max="15.0" step="0.1" value="3.0" oninput="onSensChange('tap_sens','sensTap','sensTapVal')">
+            <input type="range" id="sensTap" min="0.001" max="15.0" step="0.001" value="3.0" oninput="onTapSens(this.value)">
             <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-top:2px">
-              <span>More Sensitive (0.5)</span><span>Less Sensitive (15.0)</span>
+              <span>More Sensitive (0.001)</span><span>Less Sensitive (15.0)</span>
             </div>
 
             <div style="margin-top: 16px;">
@@ -1578,7 +1593,11 @@ input[type=range]::-webkit-slider-thumb {
         </div>
         <div class="panel-sub">Changes apply live</div>
       </div>
-      <div class="panel-body" style="flex:1;overflow-y:auto">
+      <div class="sens-tabs">
+        <div class="ctrl-sub-tab active" onclick="switchCtrlTab('controls', this)">Controls</div>
+        <div class="ctrl-sub-tab" onclick="switchCtrlTab('tap', this)">Tap</div>
+      </div>
+      <div id="ctrlSectionControls" class="panel-body" style="flex:1;overflow-y:auto">
 
         <div id="ctrlBody3d">
         <div class="field-group">
@@ -1675,7 +1694,48 @@ input[type=range]::-webkit-slider-thumb {
             Top-down view: tilt the puck to set direction and speed. Only the left-stick (tilt) axes apply here.
           </div>
         </div><!-- /ctrlBody2d -->
-      </div>
+      </div><!-- /ctrlSectionControls -->
+
+      <!-- Tap section in controller panel -->
+      <div id="ctrlSectionTap" class="panel-body" style="flex:1;overflow-y:auto;display:none">
+        <div class="field-group">
+          <div class="field-label" style="color:var(--green);letter-spacing:2px;font-size:10px;font-family:'Barlow Condensed',sans-serif">TAP SENSITIVITY</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">
+            <span class="field-label" style="margin:0">Velocity Threshold</span>
+            <input type="number" id="ctrlTapSensVal" min="0.001" max="15.0" step="0.001" value="3.000" style="width:52px;background:var(--border2);border:1px solid var(--border);color:var(--text);font-size:10px;text-align:right;padding:1px 3px;border-radius:3px;font-family:inherit" oninput="onTapSens(this.value)">
+          </div>
+          <input type="range" id="ctrlTapSens" min="0.001" max="15.0" step="0.001" value="3.0" oninput="onTapSens(this.value)">
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-top:2px">
+            <span>More Sensitive (0.001)</span><span>Less Sensitive (15.0)</span>
+          </div>
+          <div style="margin-top:16px">
+            <div class="toggle-row" style="padding:4px 0;border:none;margin-bottom:0">
+              <span class="toggle-label" style="font-size:10px;color:var(--text3);margin:0;text-transform:uppercase;letter-spacing:1px;font-family:'Barlow Condensed',sans-serif">Invert Tap Z Axis</span>
+              <div class="toggle" id="ctrlSensInvertTapZ" onclick="onCtrlInvertTapZ()"></div>
+            </div>
+          </div>
+        </div>
+        <div class="field-group">
+          <div class="field-label" style="color:var(--green);letter-spacing:2px;font-size:10px;font-family:'Barlow Condensed',sans-serif">TAP DE-SPIKE</div>
+          <div class="toggle-row" style="padding:4px 0;border:none;margin-bottom:0">
+            <span class="toggle-label" style="font-size:10px;color:var(--text3);margin:0;text-transform:uppercase;letter-spacing:1px;font-family:'Barlow Condensed',sans-serif">Use de-spike filter</span>
+            <div class="toggle on" id="ctrlDsEnabled" onclick="onCtrlDespikeEnabled(this)"></div>
+          </div>
+          <div style="font-size:10px;color:var(--text3);margin-top:4px;line-height:1.3">Smooths tap impulses on all axes so taps don't jolt motion. Off = legacy.</div>
+          <div id="ctrlDsFields" style="margin-top:10px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">
+              <span class="field-label" style="margin:0">Spike Threshold</span>
+              <input type="number" id="ctrlDsThresholdVal" min="5" max="200" step="1" value="40" style="width:48px;background:var(--border2);border:1px solid var(--border);color:var(--text);font-size:10px;text-align:right;padding:1px 3px;border-radius:3px;font-family:inherit" oninput="onDespikeThreshold(this.value)">
+            </div>
+            <input type="range" id="ctrlDsThreshold" min="5" max="200" step="1" value="40" oninput="onDespikeThreshold(this.value)">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;margin-top:10px">
+              <span class="field-label" style="margin:0">Strength</span>
+              <input type="number" id="ctrlDsStrengthVal" min="0" max="100" step="1" value="100" style="width:48px;background:var(--border2);border:1px solid var(--border);color:var(--text);font-size:10px;text-align:right;padding:1px 3px;border-radius:3px;font-family:inherit" oninput="onDespikeStrength(this.value)">
+            </div>
+            <input type="range" id="ctrlDsStrength" min="0" max="100" step="1" value="100" oninput="onDespikeStrength(this.value)">
+          </div>
+        </div>
+      </div><!-- /ctrlSectionTap -->
     </div>
   </div><!-- /tab-sensitivity -->
 
@@ -3313,7 +3373,8 @@ function applyDeviceConfig(cfg) {
     ['kalman_q', 'sensKalQ',  'sensKalQVal',  3],
     ['kalman_r', 'sensKalR',  'sensKalRVal',  1],
     ['exp',      'sensExp',   'sensExpVal',   1],
-    ['tap_sens', 'sensTap',   'sensTapVal',   1],
+    ['tap_sens', 'sensTap',   'sensTapVal',   3],
+    ['tap_sens', 'ctrlTapSens', 'ctrlTapSensVal', 3],
   ];
   for (const [key, sliderId, valId, dec] of sensMap) {
     if (cfg[key] !== undefined) {
@@ -3333,10 +3394,8 @@ function applyDeviceConfig(cfg) {
     }
   }
   if (cfg.invert_tap_z !== undefined) {
-    const el = document.getElementById('sensInvertTapZ');
-    if (el) {
-      el.classList.toggle('on', !!cfg.invert_tap_z);
-    }
+    document.getElementById('sensInvertTapZ')?.classList.toggle('on', !!cfg.invert_tap_z);
+    document.getElementById('ctrlSensInvertTapZ')?.classList.toggle('on', !!cfg.invert_tap_z);
   }
   if (cfg.spring_head !== undefined) {
     const el = document.getElementById('sensSpringHead');
@@ -3348,16 +3407,23 @@ function applyDeviceConfig(cfg) {
     document.getElementById('despikeEnabled')?.classList.toggle('on', !!cfg.despike_enabled);
     const f = document.getElementById('despikeFields');
     if (f) { f.style.opacity = cfg.despike_enabled ? '1' : '0.4'; f.style.pointerEvents = cfg.despike_enabled ? '' : 'none'; }
+    document.getElementById('ctrlDsEnabled')?.classList.toggle('on', !!cfg.despike_enabled);
+    const fc = document.getElementById('ctrlDsFields');
+    if (fc) { fc.style.opacity = cfg.despike_enabled ? '1' : '0.4'; fc.style.pointerEvents = cfg.despike_enabled ? '' : 'none'; }
   }
   if (cfg.despike_threshold !== undefined) {
     const t = cfg.despike_threshold;
     const s = document.getElementById('despikeThreshold'), sv = document.getElementById('despikeThresholdVal');
     if (s) s.value = t; if (sv) sv.value = Math.round(t);
+    const sc = document.getElementById('ctrlDsThreshold'), svc = document.getElementById('ctrlDsThresholdVal');
+    if (sc) sc.value = t; if (svc) svc.value = Math.round(t);
   }
   if (cfg.despike_strength !== undefined) {
     const p = Math.round(cfg.despike_strength * 100);
     const s = document.getElementById('despikeStrength'), sv = document.getElementById('despikeStrengthVal');
     if (s) s.value = p; if (sv) sv.value = p;
+    const sc = document.getElementById('ctrlDsStrength'), svc = document.getElementById('ctrlDsStrengthVal');
+    if (sc) sc.value = p; if (svc) svc.value = p;
   }
   animateLedPreview();
 }
@@ -4209,15 +4275,15 @@ window.addEventListener('resize', () => {
 
 function onDespikeThreshold(v) {
   v = parseFloat(v); if (isNaN(v)) return;
-  document.getElementById('despikeThreshold').value = v;
-  document.getElementById('despikeThresholdVal').value = Math.round(v);
+  ['despikeThreshold','ctrlDsThreshold'].forEach(id => { const e = document.getElementById(id); if (e) e.value = v; });
+  ['despikeThresholdVal','ctrlDsThresholdVal'].forEach(id => { const e = document.getElementById(id); if (e) e.value = Math.round(v); });
   sendCmd(`sens set despike_threshold ${v}`);
 }
 
 function onDespikeStrength(v) {
   v = parseFloat(v); if (isNaN(v)) return;
-  document.getElementById('despikeStrength').value = v;
-  document.getElementById('despikeStrengthVal').value = Math.round(v);
+  ['despikeStrength','ctrlDsStrength'].forEach(id => { const e = document.getElementById(id); if (e) e.value = v; });
+  ['despikeStrengthVal','ctrlDsStrengthVal'].forEach(id => { const e = document.getElementById(id); if (e) e.value = Math.round(v); });
   sendCmd(`sens set despike_strength ${(v / 100).toFixed(2)}`);  // UI 0-100 -> 0-1
 }
 
@@ -4226,7 +4292,45 @@ function onDespikeEnabled(el) {
   const on = el.classList.contains('on');
   const f = document.getElementById('despikeFields');
   if (f) { f.style.opacity = on ? '1' : '0.4'; f.style.pointerEvents = on ? '' : 'none'; }
+  // sync ctrl panel toggle
+  document.getElementById('ctrlDsEnabled')?.classList.toggle('on', on);
+  const fc = document.getElementById('ctrlDsFields');
+  if (fc) { fc.style.opacity = on ? '1' : '0.4'; fc.style.pointerEvents = on ? '' : 'none'; }
   sendCmd(`sens set despike_enabled ${on ? 1 : 0}`);
+}
+
+function onTapSens(v) {
+  v = parseFloat(v); if (isNaN(v) || v < 0.001) return;
+  ['sensTap','ctrlTapSens'].forEach(id => { const e = document.getElementById(id); if (e) e.value = v; });
+  ['sensTapVal','ctrlTapSensVal'].forEach(id => { const e = document.getElementById(id); if (e) e.value = v.toFixed(3); });
+  sendCmd(`sens set tap_sens ${v}`);
+}
+
+function onCtrlDespikeEnabled(el) {
+  el.classList.toggle('on');
+  const on = el.classList.contains('on');
+  const fc = document.getElementById('ctrlDsFields');
+  if (fc) { fc.style.opacity = on ? '1' : '0.4'; fc.style.pointerEvents = on ? '' : 'none'; }
+  // sync motion panel toggle
+  document.getElementById('despikeEnabled')?.classList.toggle('on', on);
+  const f = document.getElementById('despikeFields');
+  if (f) { f.style.opacity = on ? '1' : '0.4'; f.style.pointerEvents = on ? '' : 'none'; }
+  sendCmd(`sens set despike_enabled ${on ? 1 : 0}`);
+}
+
+function onCtrlInvertTapZ() {
+  const el = document.getElementById('ctrlSensInvertTapZ');
+  el.classList.toggle('on');
+  const on = el.classList.contains('on');
+  document.getElementById('sensInvertTapZ')?.classList.toggle('on', on);
+  sendCmd(`sens set invert_tap_z ${on ? 1 : 0}`);
+}
+
+function switchCtrlTab(name, el) {
+  document.querySelectorAll('.ctrl-sub-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('ctrlSectionControls').style.display = name === 'controls' ? '' : 'none';
+  document.getElementById('ctrlSectionTap').style.display = name === 'tap' ? '' : 'none';
 }
 
 function onSensChange(param, sliderId, valId) {
@@ -4593,6 +4697,7 @@ function toggleTapZInversion() {
   const isCurrentlyOn = el.classList.contains('on');
   const newVal = isCurrentlyOn ? 0 : 1;
   el.classList.toggle('on');
+  document.getElementById('ctrlSensInvertTapZ')?.classList.toggle('on', !isCurrentlyOn);
   sendCmd(`sens set invert_tap_z ${newVal}`);
 }
 
@@ -4683,8 +4788,10 @@ function cancelCalibrationWizard() {
     onDespikeThreshold(s.despike.threshold);
     onDespikeStrength(s.despike.strength);
     sendCmd('sens set despike_enabled ' + (s.despike.enabled ? 1 : 0));
-    const de = document.getElementById('despikeEnabled');
-    if (de) de.classList.toggle('on', s.despike.enabled);
+    document.getElementById('despikeEnabled')?.classList.toggle('on', s.despike.enabled);
+    document.getElementById('ctrlDsEnabled')?.classList.toggle('on', s.despike.enabled);
+    const df = document.getElementById('despikeFields'); if (df) { df.style.opacity = s.despike.enabled ? '1' : '0.4'; df.style.pointerEvents = s.despike.enabled ? '' : 'none'; }
+    const cdf = document.getElementById('ctrlDsFields'); if (cdf) { cdf.style.opacity = s.despike.enabled ? '1' : '0.4'; cdf.style.pointerEvents = s.despike.enabled ? '' : 'none'; }
     if (typeof syncActionsUI === 'function') syncActionsUI();
   }
   wizardClose();
@@ -4795,8 +4902,9 @@ function saveCalibrationResults() {
   onDespikeThreshold(thr);
   onDespikeStrength(100);
   sendCmd('sens set despike_enabled 1');
-  const de = document.getElementById('despikeEnabled'); if (de) de.classList.add('on');
-  const f = document.getElementById('despikeFields'); if (f) { f.style.opacity = '1'; f.style.pointerEvents = ''; }
+  document.getElementById('despikeEnabled')?.classList.add('on');
+  document.getElementById('ctrlDsEnabled')?.classList.add('on');
+  ['despikeFields','ctrlDsFields'].forEach(id => { const e = document.getElementById(id); if (e) { e.style.opacity = '1'; e.style.pointerEvents = ''; } });
   if (!actions.sensitivity) actions.sensitivity = {};
   wizardStepData.forEach(s => { if (s.type === 'axis') actions.sensitivity[s.key] = parseFloat(wizardSensFor(s).toFixed(1)); });
   if (!actions.inversion) actions.inversion = {};

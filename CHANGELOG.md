@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.26.2] - 2026-06-25
+
+### Added
+- **Tap tab in Controller panel.** Controller mode now has a Controls/Tap sub-tab pair; the Tap tab exposes Velocity Threshold, Invert Tap Z, and the full De-spike settings while in Controller mode.
+
+### Changed
+- **Tap Velocity Threshold range** extended from 0.5–15 down to 0.001–15, allowing much finer tap detection for low-spring setups. Firmware now reports the value with 3 decimal places.
+
 ## [2.26.1] - 2026-06-25
 
 ### Fixed

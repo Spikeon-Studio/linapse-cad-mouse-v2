@@ -121,7 +121,7 @@ void handleConfigCommand(const String& args) {
     snprintf(buf, sizeof(buf),
              "{\"brightness\":%d,\"color\":\"%06lX\",\"effect\":\"%s\","
              "\"dead_t\":%.2f,\"dead_r\":%.2f,\"kalman_q\":%.3f,\"kalman_r\":%.3f,\"exp\":%.2f,"
-             "\"tap_sens\":%.2f,\"invert_tap_z\":%d,\"spherical\":%d,\"spring_head\":%d,"
+             "\"tap_sens\":%.3f,\"invert_tap_z\":%d,\"spherical\":%d,\"spring_head\":%d,"
              "\"despike_enabled\":%d,\"despike_threshold\":%.2f,\"despike_strength\":%.2f}\n",
              ledConfig.brightness, (unsigned long)ledConfig.idleColor,
              effectName(ledConfig.effect),
@@ -152,7 +152,7 @@ void handleSensCommand(const String& args) {
     char buf[280];
     snprintf(buf, sizeof(buf),
              "{\"dead_t\":%.2f,\"dead_r\":%.2f,\"kalman_q\":%.3f,\"kalman_r\":%.3f,\"exp\":%.2f,"
-             "\"tap_sens\":%.2f,\"invert_tap_z\":%d,\"spherical\":%d,\"spring_head\":%d,"
+             "\"tap_sens\":%.3f,\"invert_tap_z\":%d,\"spherical\":%d,\"spring_head\":%d,"
              "\"despike_enabled\":%d,\"despike_threshold\":%.2f,\"despike_strength\":%.2f}\n",
              sensConfig.deadT, sensConfig.deadR,
              sensConfig.kalmanQ, sensConfig.kalmanR,
@@ -246,7 +246,7 @@ void handleSerial() {
       else if (serialBuf.startsWith("sens "))   handleSensCommand(serialBuf.substring(5));
       else if (serialBuf.startsWith("sleep "))  handleSleepCommand(serialBuf.substring(6));
       else if (serialBuf.startsWith("debug "))  handleDebugCommand(serialBuf.substring(6));
-      else if (serialBuf == "version")          { Serial.println("version=2.26.1"); }
+      else if (serialBuf == "version")          { Serial.println("version=2.26.2"); }
       else if (serialBuf.startsWith("volume ")) {
         int val = atoi(serialBuf.c_str() + 7);
         if (val >= 0 && val <= 100) {
