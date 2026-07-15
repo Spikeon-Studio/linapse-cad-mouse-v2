@@ -7,3 +7,4 @@ Terminal=false
 Type=Application
 Categories=Utility;Settings;
 StartupNotify=true
+StartupWMClass=linapse-configurator
