@@ -125,6 +125,63 @@ class TestCrossPlatform(unittest.TestCase):
 
         mock_ser.close.assert_called_once()
 
+    def test_verify_cad_mouse_accepts_valid_protocol_line(self):
+        import linapse.serial_port as sp
+        mock_ser = MagicMock()
+        mock_ser.readline.side_effect = [b"garbage\n", b"version=2.26.5\n"]
+        self.assertTrue(sp._verify_cad_mouse(mock_ser, timeout=1.0))
+
+    def test_verify_cad_mouse_rejects_silent_device(self):
+        import linapse.serial_port as sp
+        mock_ser = MagicMock()
+        mock_ser.readline.return_value = b""
+        self.assertFalse(sp._verify_cad_mouse(mock_ser, timeout=0.05))
+
+    def test_unverified_device_released_and_rescanned(self):
+        # Real-world trigger for GH issue #3: an ESP32 dev board (or any other
+        # idle device matched by a broad auto-discovery fallback) never errors
+        # and never proves it's the CAD Mouse, so without the handshake below
+        # serial_thread would latch onto it forever, permanently locking the
+        # port from every other application (e.g. esptool).
+        actions_ref = [{}]
+
+        find_serial_calls = {"n": 0}
+        def fake_find_serial(_actions_ref):
+            find_serial_calls["n"] += 1
+            if find_serial_calls["n"] == 1:
+                return "COM7"
+            raise Exception("stop thread")
+
+        mock_ser = MagicMock()
+        mock_ser.readline.return_value = b""
+
+        orig_find_serial = linapse_service.find_serial
+        orig_serial_class = linapse_service.serial.Serial
+        orig_ser_holder = linapse_service._ser_holder
+        orig_broadcast_from_thread = linapse_service._broadcast_from_thread
+
+        linapse_service.find_serial = fake_find_serial
+        linapse_service.serial.Serial = MagicMock(return_value=mock_ser)
+        linapse_service._ser_holder = [None]
+        linapse_service._broadcast_from_thread = MagicMock()
+
+        try:
+            with patch("linapse.serial_port._verify_cad_mouse", return_value=False), \
+                 patch("linapse.serial_port.time.sleep"):
+                try:
+                    linapse_service.serial_thread(actions_ref)
+                except Exception as e:
+                    if str(e) != "stop thread":
+                        raise
+        finally:
+            linapse_service.find_serial = orig_find_serial
+            linapse_service.serial.Serial = orig_serial_class
+            linapse_service._ser_holder = orig_ser_holder
+            linapse_service._broadcast_from_thread = orig_broadcast_from_thread
+
+        mock_ser.close.assert_called_once()
+        self.assertEqual(find_serial_calls["n"], 2)
+
     def test_pynput_keyboard_emulation(self):
         # Mock pynput controllers
         mock_kbd = MagicMock()
