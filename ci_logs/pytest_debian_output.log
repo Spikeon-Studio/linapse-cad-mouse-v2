@@ -1,501 +1,262 @@
 ============================= test session starts ==============================
 platform linux -- Python 3.11.2, pytest-9.1.1, pluggy-1.6.0
 rootdir: /workspace
-plugins: anyio-4.14.1
-collected 126 items
+plugins: anyio-4.14.2
+collected 138 items
 
-service/test_browser_bridge.py ...                                       [  2%]
-service/test_browser_extension.py ....                                   [  5%]
-service/test_controller_cycle.py ....                                    [  8%]
-service/test_controller_mode.py ......                                   [ 13%]
-service/test_cross_platform.py .....                                     [ 17%]
-service/test_installer_adversarial.py ss..                               [ 20%]
-service/test_installer_config.py ..                                      [ 22%]
-service/test_installer_mock.py ..                                        [ 23%]
-service/test_linapse_socket.py ....                                      [ 26%]
-service/test_linapse_socket_stress.py .....                              [ 30%]
-service/test_m1_adversarial_bugfix.py ..                                 [ 32%]
-service/test_m3_adversarial.py ....                                      [ 35%]
-service/test_m3_challenger_verification.py ...                           [ 38%]
-service/test_m5_adversarial.py ....                                      [ 41%]
-service/test_multi_click.py ....                                         [ 44%]
-service/test_playwright_benchy.py .F.F.F.F.FF................FFFFFF..... [ 74%]
-.                                                                        [ 75%]
-service/test_serial_buttons.py .......                                   [ 80%]
-service/test_signal_integration.py ..........                            [ 88%]
-service/test_signal_integration_stress.py ...                            [ 91%]
+service/test_browser_bridge.py .....                                     [  3%]
+service/test_browser_extension.py ....                                   [  6%]
+service/test_controller2d.py .                                           [  7%]
+service/test_controller_cycle.py ....                                    [ 10%]
+service/test_controller_mode.py ...........                              [ 18%]
+service/test_cross_platform.py .....                                     [ 21%]
+service/test_hid_stuck_button.py ...                                     [ 23%]
+service/test_installer_adversarial.py ss..                               [ 26%]
+service/test_installer_config.py ..                                      [ 28%]
+service/test_installer_mock.py ..                                        [ 29%]
+service/test_linapse_socket.py ....                                      [ 32%]
+service/test_linapse_socket_stress.py .....                              [ 36%]
+service/test_m1_adversarial_bugfix.py ..                                 [ 37%]
+service/test_m3_adversarial.py ....                                      [ 40%]
+service/test_m3_challenger_verification.py ...                           [ 42%]
+service/test_m5_adversarial.py ....                                      [ 45%]
+service/test_mode_notify.py .                                            [ 46%]
+service/test_multi_click.py ....                                         [ 49%]
+service/test_playwright_benchy.py ...................................... [ 76%]
+.                                                                        [ 77%]
+service/test_serial_buttons.py .......                                   [ 82%]
+service/test_signal_integration.py .F........                            [ 89%]
+service/test_signal_integration_stress.py F.F                            [ 92%]
 service/test_stress.py ......                                            [ 96%]
 service/test_updater.py .....                                            [100%]
 
 =================================== FAILURES ===================================
-_______________________ test_viewport_motion_x_inverted ________________________
-service/test_playwright_benchy.py:451: in test_viewport_motion_x_inverted
-    page.click("#invX")
-/usr/local/lib/python3.11/dist-packages/playwright/sync_api/_generated.py:10783: in click
-    self._sync(
-/usr/local/lib/python3.11/dist-packages/playwright/_impl/_page.py:878: in click
-    return await self._main_frame._click(**locals_to_params(locals()))
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/usr/local/lib/python3.11/dist-packages/playwright/_impl/_frame.py:569: in _click
-    await self._channel.send("click", self._timeout, locals_to_params(locals()))
-/usr/local/lib/python3.11/dist-packages/playwright/_impl/_connection.py:69: in send
-    return await self._connection.wrap_api_call(
-/usr/local/lib/python3.11/dist-packages/playwright/_impl/_connection.py:559: in wrap_api_call
-    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
-E   playwright._impl._errors.TimeoutError: Page.click: Timeout 30000ms exceeded.
-E   Call log:
-E     - waiting for locator("#invX")
-E       - locator resolved to <div id="invX" class="toggle" onclick="toggleInversion('x')"></div>
-E     - attempting click action
-E       2 × waiting for element to be visible, enabled and stable
-E         - element is not visible
-E       - retrying click action
-E       - waiting 20ms
-E       2 × waiting for element to be visible, enabled and stable
-E         - element is not visible
-E       - retrying click action
-E         - waiting 100ms
-E       58 × waiting for element to be visible, enabled and stable
-E          - element is not visible
-E        - retrying click action
-E          - waiting 500ms
+______________________ test_websocket_server_integration _______________________
+/usr/lib/python3.11/asyncio/tasks.py:490: in wait_for
+    return fut.result()
+           ^^^^^^^^^^^^
+/usr/local/lib/python3.11/dist-packages/websockets/asyncio/connection.py:305: in recv
+    return await self.recv_messages.get(decode)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.11/dist-packages/websockets/asyncio/messages.py:158: in get
+    frame = await self.frames.get(not self.closed)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.11/dist-packages/websockets/asyncio/messages.py:51: in get
+    await self.get_waiter
+E   asyncio.exceptions.CancelledError
+
+The above exception was the direct cause of the following exception:
+service/test_signal_integration.py:461: in test_websocket_server_integration
+    loop.run_until_complete(run())
+/usr/lib/python3.11/asyncio/base_events.py:653: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+service/test_signal_integration.py:452: in run
+    response = await asyncio.wait_for(ws.recv(), timeout=1.0)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.11/asyncio/tasks.py:492: in wait_for
+    raise exceptions.TimeoutError() from exc
+E   TimeoutError
+---------------------------- Captured stdout setup -----------------------------
+[actions] migrated and saved to <test_signal_integration.MockPathObj object at 0x7f8d2c88a6d0>
+[config] reloaded <test_signal_integration.MockPathObj object at 0x7f8d2c88a6d0>
+[sock] server starting on /tmp/pytest-of-root/pytest-0/test_websocket_server_integrat0/spnav.sock
+[ws] server starting on ws://localhost:51071
+[serial] connected to /dev/ttyACM0
 ----------------------------- Captured stdout call -----------------------------
-[actions] migrated and saved to /tmp/pytest-of-root/pytest-0/playwright_benchy0/actions.json
-[config] reloaded /tmp/pytest-of-root/pytest-0/playwright_benchy0/actions.json
-[ws] client disconnected (0 total)
-[config] reloaded /tmp/pytest-of-root/pytest-0/playwright_benchy0/actions.json
 [ws] client connected (1 total)
-[updater] Service is up to date.
-_______________________ test_viewport_motion_z_inverted ________________________
-service/test_playwright_benchy.py:501: in test_viewport_motion_z_inverted
-    page.click("#invZ")
-/usr/local/lib/python3.11/dist-packages/playwright/sync_api/_generated.py:10783: in click
-    self._sync(
-/usr/local/lib/python3.11/dist-packages/playwright/_impl/_page.py:878: in click
-    return await self._main_frame._click(**locals_to_params(locals()))
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/usr/local/lib/python3.11/dist-packages/playwright/_impl/_frame.py:569: in _click
-    await self._channel.send("click", self._timeout, locals_to_params(locals()))
-/usr/local/lib/python3.11/dist-packages/playwright/_impl/_connection.py:69: in send
-    return await self._connection.wrap_api_call(
-/usr/local/lib/python3.11/dist-packages/playwright/_impl/_connection.py:559: in wrap_api_call
-    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
-E   playwright._impl._errors.TimeoutError: Page.click: Timeout 30000ms exceeded.
-E   Call log:
-E     - waiting for locator("#invZ")
-E       - locator resolved to <div id="invZ" class="toggle" onclick="toggleInversion('z')"></div>
-E     - attempting click action
-E       2 × waiting for element to be visible, enabled and stable
-E         - element is not visible
-E       - retrying click action
-E       - waiting 20ms
-E       2 × waiting for element to be visible, enabled and stable
-E         - element is not visible
-E       - retrying click action
-E         - waiting 100ms
-E       58 × waiting for element to be visible, enabled and stable
-E          - element is not visible
-E        - retrying click action
-E          - waiting 500ms
+[config] saved <test_signal_integration.MockPathObj object at 0x7f8d2c88a6d0>
+[actions] migrated and saved to <test_signal_integration.MockPathObj object at 0x7f8d2c88a6d0>
+[config] reloaded <test_signal_integration.MockPathObj object at 0x7f8d2c88a6d0>
+[config] reloaded <test_signal_integration.MockPathObj object at 0x7f8d2c88a6d0>
+[ws] client disconnected (0 total)
+--------------------------- Captured stdout teardown ---------------------------
+[sock] server shutting down
+_________________________ test_fixture_rapid_restarts __________________________
+service/test_signal_integration_stress.py:229: in test_fixture_rapid_restarts
+    assert fd_diff <= 2, f"FD/Socket leak detected! Leaked {fd_diff} FDs"
+E   AssertionError: FD/Socket leak detected! Leaked 21 FDs
+E   assert 21 <= 2
 ----------------------------- Captured stdout call -----------------------------
-[actions] migrated and saved to /tmp/pytest-of-root/pytest-0/playwright_benchy0/actions.json
-[config] reloaded /tmp/pytest-of-root/pytest-0/playwright_benchy0/actions.json
-[ws] client disconnected (0 total)
-[config] reloaded /tmp/pytest-of-root/pytest-0/playwright_benchy0/actions.json
-[ws] client connected (1 total)
-[updater] Service is up to date.
-_______________________ test_viewport_motion_rx_inverted _______________________
-service/test_playwright_benchy.py:551: in test_viewport_motion_rx_inverted
-    page.click("#invRx")
-/usr/local/lib/python3.11/dist-packages/playwright/sync_api/_generated.py:10783: in click
-    self._sync(
-/usr/local/lib/python3.11/dist-packages/playwright/_impl/_page.py:878: in click
-    return await self._main_frame._click(**locals_to_params(locals()))
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/usr/local/lib/python3.11/dist-packages/playwright/_impl/_frame.py:569: in _click
-    await self._channel.send("click", self._timeout, locals_to_params(locals()))
-/usr/local/lib/python3.11/dist-packages/playwright/_impl/_connection.py:69: in send
-    return await self._connection.wrap_api_call(
-/usr/local/lib/python3.11/dist-packages/playwright/_impl/_connection.py:559: in wrap_api_call
-    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
-E   playwright._impl._errors.TimeoutError: Page.click: Timeout 30000ms exceeded.
-E   Call log:
-E     - waiting for locator("#invRx")
-E       - locator resolved to <div id="invRx" class="toggle" onclick="toggleInversion('rx')"></div>
-E     - attempting click action
-E       2 × waiting for element to be visible, enabled and stable
-E         - element is not visible
-E       - retrying click action
-E       - waiting 20ms
-E       2 × waiting for element to be visible, enabled and stable
-E         - element is not visible
-E       - retrying click action
-E         - waiting 100ms
-E       58 × waiting for element to be visible, enabled and stable
-E          - element is not visible
-E        - retrying click action
-E          - waiting 500ms
+
+--- Starting rapid fixture restart stress test ---
+[actions] migrated and saved to <test_signal_integration.MockPathObj object at 0x7f8d2de7f8d0>
+[config] reloaded <test_signal_integration.MockPathObj object at 0x7f8d2de7f8d0>
+[sock] server starting on /tmp/pytest-of-root/pytest-0/test_fixture_rapid_restarts0/spnav.sock
+[ws] server starting on ws://localhost:37349
+[serial] connected to /dev/ttyACM0
+[sock] client connected (1 total)
+[sock] client disconnected (0 total)
+[sock] server shutting down
+[actions] migrated and saved to <test_signal_integration.MockPathObj object at 0x7f8d2ff43450>
+[config] reloaded <test_signal_integration.MockPathObj object at 0x7f8d2ff43450>
+[sock] server starting on /tmp/pytest-of-root/pytest-0/test_fixture_rapid_restarts0/spnav.sock
+[ws] server starting on ws://localhost:52063
+[serial] connected to /dev/ttyACM0
+[sock] client connected (1 total)
+[sock] client disconnected (0 total)
+[sock] server shutting down
+[actions] migrated and saved to <test_signal_integration.MockPathObj object at 0x7f8d4d5a8590>
+[sock] server starting on /tmp/pytest-of-root/pytest-0/test_fixture_rapid_restarts0/spnav.sock
+[config] reloaded <test_signal_integration.MockPathObj object at 0x7f8d4d5a8590>
+[ws] server starting on ws://localhost:60075
+[serial] connected to /dev/ttyACM0
+[sock] client connected (1 total)
+[sock] client disconnected (0 total)
+[sock] server shutting down
+[actions] migrated and saved to <test_signal_integration.MockPathObj object at 0x7f8d4dc03c90>
+[config] reloaded <test_signal_integration.MockPathObj object at 0x7f8d4dc03c90>
+[sock] server starting on /tmp/pytest-of-root/pytest-0/test_fixture_rapid_restarts0/spnav.sock
+[ws] server starting on ws://localhost:39921
+[serial] connected to /dev/ttyACM0
+[sock] client connected (1 total)
+[sock] client disconnected (0 total)
+[sock] server shutting down
+[actions] migrated and saved to <test_signal_integration.MockPathObj object at 0x7f8d2de7c050>
+[config] reloaded <test_signal_integration.MockPathObj object at 0x7f8d2de7c050>
+[sock] server starting on /tmp/pytest-of-root/pytest-0/test_fixture_rapid_restarts0/spnav.sock
+[ws] server starting on ws://localhost:49707
+[serial] connected to /dev/ttyACM0
+[sock] client connected (1 total)
+[sock] client disconnected (0 total)
+[sock] server shutting down
+[actions] migrated and saved to <test_signal_integration.MockPathObj object at 0x7f8d2ff8d610>
+[config] reloaded <test_signal_integration.MockPathObj object at 0x7f8d2ff8d610>
+[sock] server starting on /tmp/pytest-of-root/pytest-0/test_fixture_rapid_restarts0/spnav.sock
+[ws] server starting on ws://localhost:46633
+[serial] connected to /dev/ttyACM0
+[sock] client connected (1 total)
+[sock] client disconnected (0 total)
+[sock] server shutting down
+[actions] migrated and saved to <test_signal_integration.MockPathObj object at 0x7f8d306fd590>
+[sock] server starting on /tmp/pytest-of-root/pytest-0/test_fixture_rapid_restarts0/spnav.sock
+[config] reloaded <test_signal_integration.MockPathObj object at 0x7f8d306fd590>
+[ws] server starting on ws://localhost:32791
+[serial] connected to /dev/ttyACM0
+[sock] client connected (1 total)
+[sock] client disconnected (0 total)
+[sock] server shutting down
+[actions] migrated and saved to <test_signal_integration.MockPathObj object at 0x7f8d2c93ee50>
+[config] reloaded <test_signal_integration.MockPathObj object at 0x7f8d2c93ee50>
+[sock] server starting on /tmp/pytest-of-root/pytest-0/test_fixture_rapid_restarts0/spnav.sock
+[ws] server starting on ws://localhost:55061
+[serial] connected to /dev/ttyACM0
+[sock] client connected (1 total)
+[sock] client disconnected (0 total)
+[sock] server shutting down
+[actions] migrated and saved to <test_signal_integration.MockPathObj object at 0x7f8d2dd26e90>
+[config] reloaded <test_signal_integration.MockPathObj object at 0x7f8d2dd26e90>
+[sock] server starting on /tmp/pytest-of-root/pytest-0/test_fixture_rapid_restarts0/spnav.sock
+[ws] server starting on ws://localhost:42969
+[serial] connected to /dev/ttyACM0
+[sock] client connected (1 total)
+[sock] client disconnected (0 total)
+[sock] server shutting down
+[actions] migrated and saved to <test_signal_integration.MockPathObj object at 0x7f8d2dccd8d0>
+[config] reloaded <test_signal_integration.MockPathObj object at 0x7f8d2dccd8d0>
+[sock] server starting on /tmp/pytest-of-root/pytest-0/test_fixture_rapid_restarts0/spnav.sock
+[ws] server starting on ws://localhost:45197
+[serial] connected to /dev/ttyACM0
+[sock] client connected (1 total)
+[sock] client disconnected (0 total)
+[sock] server shutting down
+[actions] migrated and saved to <test_signal_integration.MockPathObj object at 0x7f8d4dd365d0>
+[config] reloaded <test_signal_integration.MockPathObj object at 0x7f8d4dd365d0>
+[sock] server starting on /tmp/pytest-of-root/pytest-0/test_fixture_rapid_restarts0/spnav.sock
+[ws] server starting on ws://localhost:38005
+[serial] connected to /dev/ttyACM0
+[sock] client connected (1 total)
+[sock] client disconnected (0 total)
+[sock] server shutting down
+[actions] migrated and saved to <test_signal_integration.MockPathObj object at 0x7f8d3ea455d0>
+[sock] server starting on /tmp/pytest-of-root/pytest-0/test_fixture_rapid_restarts0/spnav.sock
+[config] reloaded <test_signal_integration.MockPathObj object at 0x7f8d3ea455d0>
+[ws] server starting on ws://localhost:52889
+[serial] connected to /dev/ttyACM0
+[sock] client connected (1 total)
+[sock] client disconnected (0 total)
+[sock] server shutting down
+[actions] migrated and saved to <test_signal_integration.MockPathObj object at 0x7f8d2c8e3210>
+[config] reloaded <test_signal_integration.MockPathObj object at 0x7f8d2c8e3210>
+[sock] server starting on /tmp/pytest-of-root/pytest-0/test_fixture_rapid_restarts0/spnav.sock
+[ws] server starting on ws://localhost:41421
+[serial] connected to /dev/ttyACM0
+[sock] client connected (1 total)
+[sock] client disconnected (0 total)
+[sock] server shutting down
+[actions] migrated and saved to <test_signal_integration.MockPathObj object at 0x7f8d2c84a290>
+[sock] server starting on /tmp/pytest-of-root/pytest-0/test_fixture_rapid_restarts0/spnav.sock
+[ws] server starting on ws://localhost:38639
+[config] reloaded <test_signal_integration.MockPathObj object at 0x7f8d2c84a290>
+[serial] connected to /dev/ttyACM0
+[sock] client connected (1 total)
+[sock] client disconnected (0 total)
+[sock] server shutting down
+[actions] migrated and saved to <test_signal_integration.MockPathObj object at 0x7f8d2ddd4c10>
+[config] reloaded <test_signal_integration.MockPathObj object at 0x7f8d2ddd4c10>[sock] server starting on /tmp/pytest-of-root/pytest-0/test_fixture_rapid_restarts0/spnav.sock
+
+[ws] server starting on ws://localhost:44919
+[serial] connected to /dev/ttyACM0
+[sock] client connected (1 total)
+[sock] client disconnected (0 total)
+[sock] server shutting down
+[actions] migrated and saved to <test_signal_integration.MockPathObj object at 0x7f8d2de45e50>
+[config] reloaded <test_signal_integration.MockPathObj object at 0x7f8d2de45e50>
+[sock] server starting on /tmp/pytest-of-root/pytest-0/test_fixture_rapid_restarts0/spnav.sock
+[ws] server starting on ws://localhost:46597
+[serial] connected to /dev/ttyACM0
+[sock] client connected (1 total)
+[sock] client disconnected (0 total)
+[sock] server shutting down
+[actions] migrated and saved to <test_signal_integration.MockPathObj object at 0x7f8d2dde9790>
+[config] reloaded <test_signal_integration.MockPathObj object at 0x7f8d2dde9790>
+[sock] server starting on /tmp/pytest-of-root/pytest-0/test_fixture_rapid_restarts0/spnav.sock
+[ws] server starting on ws://localhost:34937
+[serial] connected to /dev/ttyACM0
+[sock] client connected (1 total)
+[sock] client disconnected (0 total)
+[sock] server shutting down
+[actions] migrated and saved to <test_signal_integration.MockPathObj object at 0x7f8d3ddfefd0>
+[config] reloaded <test_signal_integration.MockPathObj object at 0x7f8d3ddfefd0>
+[sock] server starting on /tmp/pytest-of-root/pytest-0/test_fixture_rapid_restarts0/spnav.sock
+[ws] server starting on ws://localhost:44405
+[serial] connected to /dev/ttyACM0
+[sock] client connected (1 total)
+[sock] client disconnected (0 total)
+[sock] server shutting down
+[actions] migrated and saved to <test_signal_integration.MockPathObj object at 0x7f8d2ddea190>
+[config] reloaded <test_signal_integration.MockPathObj object at 0x7f8d2ddea190>
+[sock] server starting on /tmp/pytest-of-root/pytest-0/test_fixture_rapid_restarts0/spnav.sock
+[ws] server starting on ws://localhost:53759
+[serial] connected to /dev/ttyACM0
+[sock] client connected (1 total)
+[sock] client disconnected (0 total)
+[sock] server shutting down
+[actions] migrated and saved to <test_signal_integration.MockPathObj object at 0x7f8d2c865310>
+[config] reloaded <test_signal_integration.MockPathObj object at 0x7f8d2c865310>
+[sock] server starting on /tmp/pytest-of-root/pytest-0/test_fixture_rapid_restarts0/spnav.sock
+[ws] server starting on ws://localhost:53733
+[serial] connected to /dev/ttyACM0
+[sock] client connected (1 total)
+[sock] client disconnected (0 total)
+[sock] server shutting down
+Initial threads: 2, Final threads: 2
+Initial FDs: 33, Final FDs: 54
+_______________________ test_timer_race_leak_on_teardown _______________________
+service/test_signal_integration_stress.py:331: in test_timer_race_leak_on_teardown
+    assert active_scroll_threads == 0, "Scroll thread leaked on teardown!"
+E   AssertionError: Scroll thread leaked on teardown!
+E   assert 1 == 0
 ----------------------------- Captured stdout call -----------------------------
-[actions] migrated and saved to /tmp/pytest-of-root/pytest-0/playwright_benchy0/actions.json
-[config] reloaded /tmp/pytest-of-root/pytest-0/playwright_benchy0/actions.json
-[ws] client disconnected (0 total)
-[config] reloaded /tmp/pytest-of-root/pytest-0/playwright_benchy0/actions.json
-[ws] client connected (1 total)
-[updater] Service is up to date.
-_______________________ test_viewport_motion_ry_inverted _______________________
-service/test_playwright_benchy.py:601: in test_viewport_motion_ry_inverted
-    page.click("#invRy")
-/usr/local/lib/python3.11/dist-packages/playwright/sync_api/_generated.py:10783: in click
-    self._sync(
-/usr/local/lib/python3.11/dist-packages/playwright/_impl/_page.py:878: in click
-    return await self._main_frame._click(**locals_to_params(locals()))
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/usr/local/lib/python3.11/dist-packages/playwright/_impl/_frame.py:569: in _click
-    await self._channel.send("click", self._timeout, locals_to_params(locals()))
-/usr/local/lib/python3.11/dist-packages/playwright/_impl/_connection.py:69: in send
-    return await self._connection.wrap_api_call(
-/usr/local/lib/python3.11/dist-packages/playwright/_impl/_connection.py:559: in wrap_api_call
-    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
-E   playwright._impl._errors.TimeoutError: Page.click: Timeout 30000ms exceeded.
-E   Call log:
-E     - waiting for locator("#invRy")
-E       - locator resolved to <div id="invRy" class="toggle" onclick="toggleInversion('ry')"></div>
-E     - attempting click action
-E       2 × waiting for element to be visible, enabled and stable
-E         - element is not visible
-E       - retrying click action
-E       - waiting 20ms
-E       2 × waiting for element to be visible, enabled and stable
-E         - element is not visible
-E       - retrying click action
-E         - waiting 100ms
-E       58 × waiting for element to be visible, enabled and stable
-E          - element is not visible
-E        - retrying click action
-E          - waiting 500ms
------------------------------ Captured stdout call -----------------------------
-[actions] migrated and saved to /tmp/pytest-of-root/pytest-0/playwright_benchy0/actions.json
-[config] reloaded /tmp/pytest-of-root/pytest-0/playwright_benchy0/actions.json
-[ws] client disconnected (0 total)
-[config] reloaded /tmp/pytest-of-root/pytest-0/playwright_benchy0/actions.json
-[ws] client connected (1 total)
-[updater] Service is up to date.
-_______________________ test_viewport_motion_rz_inverted _______________________
-service/test_playwright_benchy.py:651: in test_viewport_motion_rz_inverted
-    page.click("#invRz")
-/usr/local/lib/python3.11/dist-packages/playwright/sync_api/_generated.py:10783: in click
-    self._sync(
-/usr/local/lib/python3.11/dist-packages/playwright/_impl/_page.py:878: in click
-    return await self._main_frame._click(**locals_to_params(locals()))
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/usr/local/lib/python3.11/dist-packages/playwright/_impl/_frame.py:569: in _click
-    await self._channel.send("click", self._timeout, locals_to_params(locals()))
-/usr/local/lib/python3.11/dist-packages/playwright/_impl/_connection.py:69: in send
-    return await self._connection.wrap_api_call(
-/usr/local/lib/python3.11/dist-packages/playwright/_impl/_connection.py:559: in wrap_api_call
-    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
-E   playwright._impl._errors.TimeoutError: Page.click: Timeout 30000ms exceeded.
-E   Call log:
-E     - waiting for locator("#invRz")
-E       - locator resolved to <div id="invRz" class="toggle" onclick="toggleInversion('rz')"></div>
-E     - attempting click action
-E       2 × waiting for element to be visible, enabled and stable
-E         - element is not visible
-E       - retrying click action
-E       - waiting 20ms
-E       2 × waiting for element to be visible, enabled and stable
-E         - element is not visible
-E       - retrying click action
-E         - waiting 100ms
-E       58 × waiting for element to be visible, enabled and stable
-E          - element is not visible
-E        - retrying click action
-E          - waiting 500ms
------------------------------ Captured stdout call -----------------------------
-[actions] migrated and saved to /tmp/pytest-of-root/pytest-0/playwright_benchy0/actions.json
-[config] reloaded /tmp/pytest-of-root/pytest-0/playwright_benchy0/actions.json
-[ws] client disconnected (0 total)
-[config] reloaded /tmp/pytest-of-root/pytest-0/playwright_benchy0/actions.json
-[ws] client connected (1 total)
-[updater] Service is up to date.
-_______________________ test_viewport_motion_y_inversion _______________________
-service/test_playwright_benchy.py:678: in test_viewport_motion_y_inversion
-    page.click("#invY")
-/usr/local/lib/python3.11/dist-packages/playwright/sync_api/_generated.py:10783: in click
-    self._sync(
-/usr/local/lib/python3.11/dist-packages/playwright/_impl/_page.py:878: in click
-    return await self._main_frame._click(**locals_to_params(locals()))
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/usr/local/lib/python3.11/dist-packages/playwright/_impl/_frame.py:569: in _click
-    await self._channel.send("click", self._timeout, locals_to_params(locals()))
-/usr/local/lib/python3.11/dist-packages/playwright/_impl/_connection.py:69: in send
-    return await self._connection.wrap_api_call(
-/usr/local/lib/python3.11/dist-packages/playwright/_impl/_connection.py:559: in wrap_api_call
-    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
-E   playwright._impl._errors.TimeoutError: Page.click: Timeout 30000ms exceeded.
-E   Call log:
-E     - waiting for locator("#invY")
-E       - locator resolved to <div id="invY" class="toggle" onclick="toggleInversion('y')"></div>
-E     - attempting click action
-E       2 × waiting for element to be visible, enabled and stable
-E         - element is not visible
-E       - retrying click action
-E       - waiting 20ms
-E       2 × waiting for element to be visible, enabled and stable
-E         - element is not visible
-E       - retrying click action
-E         - waiting 100ms
-E       58 × waiting for element to be visible, enabled and stable
-E          - element is not visible
-E        - retrying click action
-E          - waiting 500ms
------------------------------ Captured stdout call -----------------------------
-[actions] migrated and saved to /tmp/pytest-of-root/pytest-0/playwright_benchy0/actions.json
-[config] reloaded /tmp/pytest-of-root/pytest-0/playwright_benchy0/actions.json
-[ws] client disconnected (0 total)
-[config] reloaded /tmp/pytest-of-root/pytest-0/playwright_benchy0/actions.json
-[ws] client connected (1 total)
-[updater] Service is up to date.
-_______________________________ test_inversion_x _______________________________
-service/test_playwright_benchy.py:893: in test_inversion_x
-    verify_inversion_scaling(benchy_env, "x", "#invX", ">MOTION:-20.0,0,0,0,0,0\n", 0, -20.0)
-service/test_playwright_benchy.py:875: in verify_inversion_scaling
-    page.click(selector)
-/usr/local/lib/python3.11/dist-packages/playwright/sync_api/_generated.py:10783: in click
-    self._sync(
-/usr/local/lib/python3.11/dist-packages/playwright/_impl/_page.py:878: in click
-    return await self._main_frame._click(**locals_to_params(locals()))
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/usr/local/lib/python3.11/dist-packages/playwright/_impl/_frame.py:569: in _click
-    await self._channel.send("click", self._timeout, locals_to_params(locals()))
-/usr/local/lib/python3.11/dist-packages/playwright/_impl/_connection.py:69: in send
-    return await self._connection.wrap_api_call(
-/usr/local/lib/python3.11/dist-packages/playwright/_impl/_connection.py:559: in wrap_api_call
-    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
-E   playwright._impl._errors.TimeoutError: Page.click: Timeout 30000ms exceeded.
-E   Call log:
-E     - waiting for locator("#invX")
-E       - locator resolved to <div id="invX" class="toggle" onclick="toggleInversion('x')"></div>
-E     - attempting click action
-E       2 × waiting for element to be visible, enabled and stable
-E         - element is not visible
-E       - retrying click action
-E       - waiting 20ms
-E       2 × waiting for element to be visible, enabled and stable
-E         - element is not visible
-E       - retrying click action
-E         - waiting 100ms
-E       58 × waiting for element to be visible, enabled and stable
-E          - element is not visible
-E        - retrying click action
-E          - waiting 500ms
------------------------------ Captured stdout call -----------------------------
-[actions] migrated and saved to /tmp/pytest-of-root/pytest-0/playwright_benchy0/actions.json
-[config] reloaded /tmp/pytest-of-root/pytest-0/playwright_benchy0/actions.json
-[config] reloaded /tmp/pytest-of-root/pytest-0/playwright_benchy0/actions.json
-[ws] client disconnected (0 total)
-[ws] client connected (1 total)
-[updater] Service is up to date.
-_______________________________ test_inversion_y _______________________________
-service/test_playwright_benchy.py:897: in test_inversion_y
-    verify_inversion_scaling(benchy_env, "y", "#invY", ">MOTION:0,20.0,0,0,0,0\n", 1, 20.0)
-service/test_playwright_benchy.py:875: in verify_inversion_scaling
-    page.click(selector)
-/usr/local/lib/python3.11/dist-packages/playwright/sync_api/_generated.py:10783: in click
-    self._sync(
-/usr/local/lib/python3.11/dist-packages/playwright/_impl/_page.py:878: in click
-    return await self._main_frame._click(**locals_to_params(locals()))
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/usr/local/lib/python3.11/dist-packages/playwright/_impl/_frame.py:569: in _click
-    await self._channel.send("click", self._timeout, locals_to_params(locals()))
-/usr/local/lib/python3.11/dist-packages/playwright/_impl/_connection.py:69: in send
-    return await self._connection.wrap_api_call(
-/usr/local/lib/python3.11/dist-packages/playwright/_impl/_connection.py:559: in wrap_api_call
-    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
-E   playwright._impl._errors.TimeoutError: Page.click: Timeout 30000ms exceeded.
-E   Call log:
-E     - waiting for locator("#invY")
-E       - locator resolved to <div id="invY" class="toggle" onclick="toggleInversion('y')"></div>
-E     - attempting click action
-E       2 × waiting for element to be visible, enabled and stable
-E         - element is not visible
-E       - retrying click action
-E       - waiting 20ms
-E       2 × waiting for element to be visible, enabled and stable
-E         - element is not visible
-E       - retrying click action
-E         - waiting 100ms
-E       58 × waiting for element to be visible, enabled and stable
-E          - element is not visible
-E        - retrying click action
-E          - waiting 500ms
------------------------------ Captured stdout call -----------------------------
-[actions] migrated and saved to /tmp/pytest-of-root/pytest-0/playwright_benchy0/actions.json
-[config] reloaded /tmp/pytest-of-root/pytest-0/playwright_benchy0/actions.json
-[ws] client disconnected (0 total)
-[config] reloaded /tmp/pytest-of-root/pytest-0/playwright_benchy0/actions.json
-[ws] client connected (1 total)
-[updater] Service is up to date.
-_______________________________ test_inversion_z _______________________________
-service/test_playwright_benchy.py:901: in test_inversion_z
-    verify_inversion_scaling(benchy_env, "z", "#invZ", ">MOTION:0,0,-20.0,0,0,0\n", 2, -20.0)
-service/test_playwright_benchy.py:875: in verify_inversion_scaling
-    page.click(selector)
-/usr/local/lib/python3.11/dist-packages/playwright/sync_api/_generated.py:10783: in click
-    self._sync(
-/usr/local/lib/python3.11/dist-packages/playwright/_impl/_page.py:878: in click
-    return await self._main_frame._click(**locals_to_params(locals()))
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/usr/local/lib/python3.11/dist-packages/playwright/_impl/_frame.py:569: in _click
-    await self._channel.send("click", self._timeout, locals_to_params(locals()))
-/usr/local/lib/python3.11/dist-packages/playwright/_impl/_connection.py:69: in send
-    return await self._connection.wrap_api_call(
-/usr/local/lib/python3.11/dist-packages/playwright/_impl/_connection.py:559: in wrap_api_call
-    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
-E   playwright._impl._errors.TimeoutError: Page.click: Timeout 30000ms exceeded.
-E   Call log:
-E     - waiting for locator("#invZ")
-E       - locator resolved to <div id="invZ" class="toggle" onclick="toggleInversion('z')"></div>
-E     - attempting click action
-E       2 × waiting for element to be visible, enabled and stable
-E         - element is not visible
-E       - retrying click action
-E       - waiting 20ms
-E       2 × waiting for element to be visible, enabled and stable
-E         - element is not visible
-E       - retrying click action
-E         - waiting 100ms
-E       58 × waiting for element to be visible, enabled and stable
-E          - element is not visible
-E        - retrying click action
-E          - waiting 500ms
------------------------------ Captured stdout call -----------------------------
-[actions] migrated and saved to /tmp/pytest-of-root/pytest-0/playwright_benchy0/actions.json
-[config] reloaded /tmp/pytest-of-root/pytest-0/playwright_benchy0/actions.json
-[ws] client disconnected (0 total)
-[config] reloaded /tmp/pytest-of-root/pytest-0/playwright_benchy0/actions.json
-[ws] client connected (1 total)
-[updater] Service is up to date.
-______________________________ test_inversion_rx _______________________________
-service/test_playwright_benchy.py:905: in test_inversion_rx
-    verify_inversion_scaling(benchy_env, "rx", "#invRx", ">MOTION:0,0,0,20.0,0,0\n", 3, 20.0)
-service/test_playwright_benchy.py:875: in verify_inversion_scaling
-    page.click(selector)
-/usr/local/lib/python3.11/dist-packages/playwright/sync_api/_generated.py:10783: in click
-    self._sync(
-/usr/local/lib/python3.11/dist-packages/playwright/_impl/_page.py:878: in click
-    return await self._main_frame._click(**locals_to_params(locals()))
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/usr/local/lib/python3.11/dist-packages/playwright/_impl/_frame.py:569: in _click
-    await self._channel.send("click", self._timeout, locals_to_params(locals()))
-/usr/local/lib/python3.11/dist-packages/playwright/_impl/_connection.py:69: in send
-    return await self._connection.wrap_api_call(
-/usr/local/lib/python3.11/dist-packages/playwright/_impl/_connection.py:559: in wrap_api_call
-    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
-E   playwright._impl._errors.TimeoutError: Page.click: Timeout 30000ms exceeded.
-E   Call log:
-E     - waiting for locator("#invRx")
-E       - locator resolved to <div id="invRx" class="toggle" onclick="toggleInversion('rx')"></div>
-E     - attempting click action
-E       2 × waiting for element to be visible, enabled and stable
-E         - element is not visible
-E       - retrying click action
-E       - waiting 20ms
-E       2 × waiting for element to be visible, enabled and stable
-E         - element is not visible
-E       - retrying click action
-E         - waiting 100ms
-E       58 × waiting for element to be visible, enabled and stable
-E          - element is not visible
-E        - retrying click action
-E          - waiting 500ms
------------------------------ Captured stdout call -----------------------------
-[actions] migrated and saved to /tmp/pytest-of-root/pytest-0/playwright_benchy0/actions.json
-[config] reloaded /tmp/pytest-of-root/pytest-0/playwright_benchy0/actions.json
-[ws] client disconnected (0 total)
-[config] reloaded /tmp/pytest-of-root/pytest-0/playwright_benchy0/actions.json
-[ws] client connected (1 total)
-[updater] Service is up to date.
-______________________________ test_inversion_ry _______________________________
-service/test_playwright_benchy.py:909: in test_inversion_ry
-    verify_inversion_scaling(benchy_env, "ry", "#invRy", ">MOTION:0,0,0,0,20.0,0\n", 4, 20.0)
-service/test_playwright_benchy.py:875: in verify_inversion_scaling
-    page.click(selector)
-/usr/local/lib/python3.11/dist-packages/playwright/sync_api/_generated.py:10783: in click
-    self._sync(
-/usr/local/lib/python3.11/dist-packages/playwright/_impl/_page.py:878: in click
-    return await self._main_frame._click(**locals_to_params(locals()))
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/usr/local/lib/python3.11/dist-packages/playwright/_impl/_frame.py:569: in _click
-    await self._channel.send("click", self._timeout, locals_to_params(locals()))
-/usr/local/lib/python3.11/dist-packages/playwright/_impl/_connection.py:69: in send
-    return await self._connection.wrap_api_call(
-/usr/local/lib/python3.11/dist-packages/playwright/_impl/_connection.py:559: in wrap_api_call
-    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
-E   playwright._impl._errors.TimeoutError: Page.click: Timeout 30000ms exceeded.
-E   Call log:
-E     - waiting for locator("#invRy")
-E       - locator resolved to <div id="invRy" class="toggle" onclick="toggleInversion('ry')"></div>
-E     - attempting click action
-E       2 × waiting for element to be visible, enabled and stable
-E         - element is not visible
-E       - retrying click action
-E       - waiting 20ms
-E       2 × waiting for element to be visible, enabled and stable
-E         - element is not visible
-E       - retrying click action
-E         - waiting 100ms
-E       58 × waiting for element to be visible, enabled and stable
-E          - element is not visible
-E        - retrying click action
-E          - waiting 500ms
------------------------------ Captured stdout call -----------------------------
-[actions] migrated and saved to /tmp/pytest-of-root/pytest-0/playwright_benchy0/actions.json
-[config] reloaded /tmp/pytest-of-root/pytest-0/playwright_benchy0/actions.json
-[ws] client disconnected (0 total)
-[config] reloaded /tmp/pytest-of-root/pytest-0/playwright_benchy0/actions.json
-[ws] client connected (1 total)
-[updater] Service is up to date.
-______________________________ test_inversion_rz _______________________________
-service/test_playwright_benchy.py:913: in test_inversion_rz
-    verify_inversion_scaling(benchy_env, "rz", "#invRz", ">MOTION:0,0,0,0,0,20.0\n", 5, 20.0)
-service/test_playwright_benchy.py:875: in verify_inversion_scaling
-    page.click(selector)
-/usr/local/lib/python3.11/dist-packages/playwright/sync_api/_generated.py:10783: in click
-    self._sync(
-/usr/local/lib/python3.11/dist-packages/playwright/_impl/_page.py:878: in click
-    return await self._main_frame._click(**locals_to_params(locals()))
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/usr/local/lib/python3.11/dist-packages/playwright/_impl/_frame.py:569: in _click
-    await self._channel.send("click", self._timeout, locals_to_params(locals()))
-/usr/local/lib/python3.11/dist-packages/playwright/_impl/_connection.py:69: in send
-    return await self._connection.wrap_api_call(
-/usr/local/lib/python3.11/dist-packages/playwright/_impl/_connection.py:559: in wrap_api_call
-    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
-E   playwright._impl._errors.TimeoutError: Page.click: Timeout 30000ms exceeded.
-E   Call log:
-E     - waiting for locator("#invRz")
-E       - locator resolved to <div id="invRz" class="toggle" onclick="toggleInversion('rz')"></div>
-E     - attempting click action
-E       2 × waiting for element to be visible, enabled and stable
-E         - element is not visible
-E       - retrying click action
-E       - waiting 20ms
-E       2 × waiting for element to be visible, enabled and stable
-E         - element is not visible
-E       - retrying click action
-E         - waiting 100ms
-E       58 × waiting for element to be visible, enabled and stable
-E          - element is not visible
-E        - retrying click action
-E          - waiting 500ms
------------------------------ Captured stdout call -----------------------------
-[actions] migrated and saved to /tmp/pytest-of-root/pytest-0/playwright_benchy0/actions.json
-[config] reloaded /tmp/pytest-of-root/pytest-0/playwright_benchy0/actions.json
-[ws] client disconnected (0 total)
-[config] reloaded /tmp/pytest-of-root/pytest-0/playwright_benchy0/actions.json
-[ws] client connected (1 total)
-[updater] Service is up to date.
+[actions] migrated and saved to <test_signal_integration.MockPathObj object at 0x7f8d2dd65c50>
+[config] reloaded <test_signal_integration.MockPathObj object at 0x7f8d2dd65c50>
+[sock] server starting on /tmp/pytest-of-root/pytest-0/test_timer_race_leak_on_teardo0/spnav.sock
+[ws] server starting on ws://localhost:49737
+[serial] connected to /dev/ttyACM0
+[dispatch] action: scroll_down obj: {'action': 'scroll_down'}
+[sock] server shutting down
+[broadcast] exception: 
+After teardown: active scroll threads = 1, active timers = 1
 =============================== warnings summary ===============================
 service/test_m3_adversarial.py::test_m3_websocket_origin_check
   /workspace/service/test_m3_adversarial.py:289: DeprecationWarning: websockets.exceptions.InvalidStatusCode is deprecated
@@ -508,16 +269,7 @@ service/test_m3_adversarial.py::test_m3_websocket_origin_check
 -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
 ----------- generated xml file: /workspace/pytest_debian_results.xml -----------
 =========================== short test summary info ============================
-FAILED service/test_playwright_benchy.py::test_viewport_motion_x_inverted - p...
-FAILED service/test_playwright_benchy.py::test_viewport_motion_z_inverted - p...
-FAILED service/test_playwright_benchy.py::test_viewport_motion_rx_inverted - ...
-FAILED service/test_playwright_benchy.py::test_viewport_motion_ry_inverted - ...
-FAILED service/test_playwright_benchy.py::test_viewport_motion_rz_inverted - ...
-FAILED service/test_playwright_benchy.py::test_viewport_motion_y_inversion - ...
-FAILED service/test_playwright_benchy.py::test_inversion_x - playwright._impl...
-FAILED service/test_playwright_benchy.py::test_inversion_y - playwright._impl...
-FAILED service/test_playwright_benchy.py::test_inversion_z - playwright._impl...
-FAILED service/test_playwright_benchy.py::test_inversion_rx - playwright._imp...
-FAILED service/test_playwright_benchy.py::test_inversion_ry - playwright._imp...
-FAILED service/test_playwright_benchy.py::test_inversion_rz - playwright._imp...
-====== 12 failed, 112 passed, 2 skipped, 2 warnings in 686.91s (0:11:26) =======
+FAILED service/test_signal_integration.py::test_websocket_server_integration
+FAILED service/test_signal_integration_stress.py::test_fixture_rapid_restarts
+FAILED service/test_signal_integration_stress.py::test_timer_race_leak_on_teardown
+======= 3 failed, 133 passed, 2 skipped, 2 warnings in 352.87s (0:05:52) =======
