@@ -192,12 +192,12 @@ fi
 section "Enabling local dev-sync git hook"
 
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-if [ -d "$REPO_ROOT/.git" ] && [ -d "$REPO_ROOT/.githooks" ]; then
-    git -C "$REPO_ROOT" config core.hooksPath .githooks
+if [ -d "$REPO_ROOT/.git" ] && [ -d "$REPO_ROOT/.githooks" ] \
+   && git -C "$REPO_ROOT" config core.hooksPath .githooks 2>/dev/null; then
     info "core.hooksPath set to .githooks — 'git pull' will now keep ~/.local/bin in sync."
     info "See 'Local dev hooks' in service/README.md, or run scripts/dev-resync.sh manually anytime."
 else
-    info "Not a git checkout (or .githooks missing); skipping. Re-run scripts/dev-resync.sh manually after updates."
+    info "Not a usable git checkout (missing .git/.githooks, or git refused access); skipping. Re-run scripts/dev-resync.sh manually after updates."
 fi
 
 
