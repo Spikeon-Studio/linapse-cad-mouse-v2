@@ -52,6 +52,17 @@ The installer:
 - Installs udev rules so services restart automatically on plug/unplug
 - On Ubuntu 24.04+ installs an AppArmor profile (`/etc/apparmor.d/linapse-electron`) so the Electron configurator's Chromium sandbox can create user namespaces (skipped on distros without the restriction)
 - Vendors the OnShape/SketchUp WebSocket protocol stack in `service/spacenav_ws/` (no external `spacenav-ws` PyPI package)
+- Enables the local dev-sync git hook (see below) so future `git pull`s keep this deployment current
+
+### Local dev hooks
+
+`install.sh` copies `service/` into `~/.local/bin/` and bakes this checkout's absolute path into the installed systemd unit and desktop launcher. None of that re-runs on `git pull` — only `install.sh` does it — so a dev checkout can silently drift from what's actually installed and running. This has caused real bugs on dev machines: a home-directory rename left stale absolute paths in the installed systemd unit and desktop launcher (configurator served 404s, launcher icon didn't resolve), and separately `~/.local/bin/linapse-service` sat months behind the repo, still running code with an already-fixed phantom-gamepad bug (the CAD Mouse kept registering/deregistering as a game controller, e.g. in Steam, outside Controller mode) because nobody had re-run `install.sh` since.
+
+`install.sh` now runs `git config core.hooksPath .githooks`, which points git at the hooks in [`.githooks/`](../.githooks) (`post-merge`, `post-checkout`). Those call [`scripts/dev-resync.sh`](../scripts/dev-resync.sh), which:
+- Re-copies `service/linapse-service`, `service/linapse/`, `service/spacenav_ws/`, `service/linapse-ws-proxy` into `~/.local/bin/` if they differ, and restarts `linapse-service` if anything changed
+- Re-renders the configurator's systemd unit and desktop launcher from their templates (picks up a changed repo path or template edits) and restarts/reloads as needed
+
+It's idempotent and only touches what's actually out of date, so it's safe to run any time: `scripts/dev-resync.sh`. If you didn't run `install.sh` on this checkout (or cloned it elsewhere), enable the hook manually with `git config core.hooksPath .githooks`, or just re-run `scripts/dev-resync.sh` after pulling.
 
 After the installer finishes, install the Linapse Browser Connector browser extension:
 

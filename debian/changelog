@@ -1,3 +1,15 @@
+linapse-cad-mouse (2.27.1-1) unstable; urgency=low
+
+  * Untag the puck's 6DoF multi-axis input as a joystick via udev
+    (ID_INPUT_JOYSTICK=""), so SDL/Steam no longer enumerate it as a
+    gamepad and games stop flipping to controller input (keyboard
+    lag/ignored keys, e.g. Cyberpunk 2077).
+  * Create the Controller-mode virtual gamepad on entering a
+    gamepad-using mode and destroy it on leaving, instead of leaving a
+    phantom controller registered until service restart.
+
+ -- Michael Flynn <spikeon@gmail.com>  Thu, 16 Jul 2026 21:17:00 -0400
+
 linapse-cad-mouse (2.26.5-1) unstable; urgency=low
 
   * Release all held keys/scroll on service shutdown and sweep configured

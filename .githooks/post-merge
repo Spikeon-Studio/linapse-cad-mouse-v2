@@ -1,0 +1,5 @@
+#!/bin/bash
+# Keeps ~/.local/bin and installed systemd/desktop files in sync with the repo
+# after `git pull`/`git merge`. See scripts/dev-resync.sh and "Local dev hooks"
+# in service/README.md. Enabled per-clone via: git config core.hooksPath .githooks
+exec "$(git rev-parse --show-toplevel)/scripts/dev-resync.sh"

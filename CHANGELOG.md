@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.27.1] - 2026-07-16
+
+### Fixed
+- **Games saw the puck as a gamepad and broke keyboard input.** The device's 6DoF multi-axis HID interface registers a kernel joystick node, so SDL/Steam enumerated it as a controller and games (e.g. Cyberpunk 2077) flipped to controller input, making the keyboard laggy/ignored. A new udev rule untags the interface as a joystick (`ID_INPUT_JOYSTICK=""`) — the same treatment systemd's hwdb gives real 3Dconnexion SpaceMice. spacenavd/event consumers are unaffected.
+- **Controller-mode virtual gamepad lingered after leaving the mode.** The uinput pad ("Linapse CAD Mouse Controller") was created lazily but never removed, so games kept seeing a phantom controller. It is now created on entering a gamepad-using mode (built-in Controller, or any mode with a `gamepad_button` binding) and destroyed on leaving it. Button-release paths (including the startup hold-release sweep) no longer instantiate a pad just to release on it, which previously re-registered a phantom controller at service start.
+
 ## [2.27.0] - 2026-07-15
 
 ### Added

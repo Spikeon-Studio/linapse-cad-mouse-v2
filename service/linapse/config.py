@@ -50,6 +50,11 @@ def switch_mode(target_mode):
         except Exception as e:
             print(f"[mode] error saving configuration: {e}")
 
+    # Register the virtual gamepad only while a gamepad-using mode is active;
+    # a lingering pad makes games flip to controller input.
+    from . import gamepad
+    gamepad.sync_mode(actions, target_mode)
+
     led_config = actions["modes"][target_mode].get("led", {})
     effect = led_config.get("effect", "solid")
     color = led_config.get("color", "FFFFFF")

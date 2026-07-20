@@ -248,6 +248,10 @@ async def main():
     state.actions_ref[0] = config.load_actions()
     actions_ref = state.actions_ref
 
+    # Present the virtual gamepad only if the startup mode uses it.
+    from linapse import gamepad
+    gamepad.sync_mode(actions_ref[0], (actions_ref[0] or {}).get("current_mode"))
+
     threading.Thread(target=serial_port.serial_thread,  args=(actions_ref,), daemon=True).start()
     threading.Thread(target=hid.hid_thread,     args=(actions_ref,), daemon=True).start()
     threading.Thread(target=config.config_watcher, args=(actions_ref,), daemon=True).start()

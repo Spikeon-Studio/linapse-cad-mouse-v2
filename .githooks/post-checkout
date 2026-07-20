@@ -1,0 +1,6 @@
+#!/bin/bash
+# Keeps ~/.local/bin and installed systemd/desktop files in sync with the repo
+# after `git checkout`/`git switch` (branch changes can change service/ code
+# just like a merge can). See scripts/dev-resync.sh and "Local dev hooks" in
+# service/README.md. Enabled per-clone via: git config core.hooksPath .githooks
+exec "$(git rev-parse --show-toplevel)/scripts/dev-resync.sh"

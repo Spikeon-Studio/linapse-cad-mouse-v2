@@ -1,2 +1,9 @@
 # CAD Mouse MK2 — Grant 'input' group read access to the hidraw interface
 SUBSYSTEM=="hidraw", ATTRS{product}=="CAD Mouse MK2", MODE="0660", GROUP="input"
+# CAD Mouse MK2 — the 6DoF multi-axis HID interface is a SpaceMouse-style
+# device, not a game controller. The kernel exposes its abs axes as a joystick
+# node, so SDL/Steam would otherwise enumerate it as a gamepad and games flip
+# to controller input. Untag it — the same treatment systemd's hwdb gives real
+# 3Dconnexion SpaceMice. Controller mode is unaffected: it presents a separate
+# uinput virtual gamepad ("Linapse CAD Mouse Controller") only while active.
+SUBSYSTEM=="input", ATTRS{product}=="CAD Mouse MK2", ENV{ID_INPUT_JOYSTICK}=""

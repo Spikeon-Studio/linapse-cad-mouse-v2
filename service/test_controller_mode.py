@@ -43,6 +43,44 @@ def test_backend_is_safe_without_device():
     gamepad.reset()
 
 
+def _actions(mode, mode_cfg=None):
+    return {"current_mode": mode, "modes": {mode: mode_cfg or {}, "Default": {}}}
+
+
+def test_mode_uses_gamepad_builtin_controller():
+    assert gamepad.mode_uses_gamepad(_actions("Controller"), "Controller")
+
+
+def test_mode_uses_gamepad_custom_binding():
+    cfg = {"buttons": {"0": {"action": "gamepad_button", "button": 0}}}
+    assert gamepad.mode_uses_gamepad(_actions("Racing", cfg), "Racing")
+    cfg = {"taps": {"PosZ:1": {"action": "gamepad_button", "button": 1}}}
+    assert gamepad.mode_uses_gamepad(_actions("Racing", cfg), "Racing")
+
+
+def test_mode_without_gamepad_bindings_does_not_use_pad():
+    cfg = {"buttons": {"0": {"action": "key", "value": "space"}}}
+    assert not gamepad.mode_uses_gamepad(_actions("Default", cfg), "Default")
+    assert not gamepad.mode_uses_gamepad(None, None)
+
+
+def test_sync_mode_destroys_pad_outside_gamepad_modes():
+    # Entering Controller mode instantiates a pad (NullPad in CI); leaving it
+    # must drop the pad so no joystick device lingers for games to latch onto.
+    # sync_mode is async (pad creation is slow); join the worker before asserting.
+    gamepad.sync_mode(_actions("Controller"), "Controller").join(5)
+    assert gamepad._pad is not None
+    gamepad.sync_mode(_actions("Default"), "Default").join(5)
+    assert gamepad._pad is None
+
+
+def test_destroy_is_idempotent_and_safe():
+    gamepad.destroy()
+    gamepad.destroy()
+    # Lazy creation still works after a destroy.
+    gamepad.set_left_stick(0.0, 0.0)
+
+
 if __name__ == "__main__":
     for name, fn in sorted(globals().items()):
         if name.startswith("test_") and callable(fn):

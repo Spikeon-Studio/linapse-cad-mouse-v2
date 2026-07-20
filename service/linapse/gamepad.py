@@ -27,6 +27,7 @@ class _NullPad:
     def press(self, idx): pass
     def release(self, idx): pass
     def reset(self): pass
+    def close(self): pass
 
 
 class _LinuxPad:
@@ -59,6 +60,9 @@ class _LinuxPad:
     def reset(self):
         self.set_left_stick(0.0, 0.0)
 
+    def close(self):
+        self._ui.close()
+
 
 class _WindowsPad:
     def __init__(self):
@@ -82,6 +86,15 @@ class _WindowsPad:
     def reset(self):
         self._pad.reset()
         self._pad.update()
+
+    def close(self):
+        # Dropping the ref lets vgamepad remove the ViGEm target on GC.
+        try:
+            self.reset()
+        except Exception:
+            pass
+        self._pad = None
+        self.available = False
 
 
 _pad = None
@@ -111,8 +124,75 @@ def get_pad():
     return _pad
 
 
+def destroy():
+    """Tear down the OS-level virtual gamepad. Called when leaving gamepad-using
+    modes so no joystick device lingers — games otherwise keep seeing a phantom
+    controller and flip their input scheme (keyboard prompts/latency)."""
+    global _pad
+    with _lock:
+        pad, _pad = _pad, None
+    if pad is None:
+        return
+    try:
+        pad.reset()
+    except Exception:
+        pass
+    try:
+        pad.close()
+    except Exception as e:
+        print(f"[gamepad] close error: {e}")
+
+
+def mode_uses_gamepad(actions, mode_name):
+    """True if a mode drives the virtual pad: the built-in Controller mode
+    (tilt -> stick) or any button/tap bound to a gamepad_button action."""
+    if mode_name == "Controller":
+        return True
+    mode = ((actions or {}).get("modes") or {}).get(mode_name) or {}
+    for category in ("buttons", "taps"):
+        for act in (mode.get(category) or {}).values():
+            if isinstance(act, dict) and act.get("action") == "gamepad_button":
+                return True
+    return False
+
+
+_desired_pad = None  # latest requested state: True = pad wanted, False = not
+_sync_lock = threading.Lock()
+
+
+def _apply_desired_pad():
+    # Serialized so rapid mode flips converge on the latest request instead of
+    # interleaving create/destroy.
+    with _sync_lock:
+        want = _desired_pad
+        if want is None:
+            return
+        if want:
+            get_pad()
+        else:
+            destroy()
+
+
+def sync_mode(actions, mode_name):
+    """Create the virtual pad on entering a mode that uses it (so games see the
+    controller immediately, not on first motion) and destroy it on leaving, so
+    the joystick device only exists while a gamepad mode is active.
+
+    Runs asynchronously: uinput device creation takes ~100ms and callers sit on
+    latency-sensitive paths (mode-switch chord timer). Returns the worker
+    thread so tests can join it."""
+    global _desired_pad
+    _desired_pad = mode_uses_gamepad(actions, mode_name)
+    t = threading.Thread(target=_apply_desired_pad, daemon=True)
+    t.start()
+    return t
+
+
 def set_left_stick(x, y):
-    get_pad().set_left_stick(x, y)
+    try:
+        get_pad().set_left_stick(x, y)
+    except Exception as e:
+        print(f"[gamepad] stick error: {e}")
 
 
 def press_button(idx):
@@ -123,8 +203,16 @@ def press_button(idx):
 
 
 def release_button(idx):
+    # Never instantiate a pad just to release a button on it — releasing on a
+    # nonexistent pad is a no-op. The startup hold-release sweep in hid.py
+    # dispatches releases for every configured gamepad_button; creating a pad
+    # here would register a phantom controller (and repeatedly churn uinput
+    # device creation after every destroy()).
+    pad = _pad
+    if pad is None:
+        return
     try:
-        get_pad().release(idx)
+        pad.release(idx)
     except Exception as e:
         print(f"[gamepad] button {idx} release error: {e}")
 
