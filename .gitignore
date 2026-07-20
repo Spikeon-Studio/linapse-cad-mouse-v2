@@ -7,6 +7,7 @@ AGENTS.md
 *.uf2
 __pycache__/
 *.pyc
+linapse-service.spec
 .agents/
 build/
 node_modules/
