@@ -47,6 +47,19 @@ If you prefer to run the daemon manually from source:
 
 ---
 
+## Firmware Update
+
+Each GitHub release has a prebuilt firmware file, `linapse-firmware-<version>.uf2`. Use it to update the mouse without PlatformIO.
+
+1. Download `linapse-firmware-<version>.uf2` from the [latest release](https://github.com/Spikeon-Studio/linapse-cad-mouse-v2/releases/latest).
+2. Open Task Manager and close all `linapse-service.exe` processes. The service holds the COM port.
+3. Put the device into BOOTSEL mode. Hold both buttons of the mouse while you connect the USB cable. Alternatively, on the XIAO RP2040 board, hold **B** and push **R**.
+4. Make sure that a drive with the name `RPI-RP2` appears in File Explorer.
+5. Copy the `.uf2` file to the `RPI-RP2` drive. The device restarts with the new firmware.
+6. Start **Linapse CAD Mouse Service** from the Start Menu.
+
+---
+
 ## Browser CAD Connector Setup (OnShape & SketchUp Web)
 
 Browser-based CAD tools sandbox network connections. Install the official **Linapse Browser Connector** extension:

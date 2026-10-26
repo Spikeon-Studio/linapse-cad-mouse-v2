@@ -25,6 +25,17 @@ To flash the device:
 3. Drag and drop the compiled `.uf2` file, or flash directly using the Electron Configurator build utility.
 4. Alternatively, sending a reset command or opening a serial connection at 1200 baud resets the RP2040 to bootloader mode.
 
+### Flash a prebuilt firmware
+
+Each GitHub release has a prebuilt firmware file, `linapse-firmware-<version>.uf2`. You do not need PlatformIO to use it.
+
+1. Download `linapse-firmware-<version>.uf2` from the [latest release](https://github.com/Spikeon-Studio/linapse-cad-mouse-v2/releases/latest).
+2. Stop `linapse-service`. On Windows, close all `linapse-service.exe` processes in Task Manager.
+3. Put the device into BOOTSEL mode. Hold both buttons of the mouse while you connect the USB cable. Alternatively, on the XIAO RP2040 board, hold **B** and push **R**.
+4. Make sure that a USB drive with the name `RPI-RP2` appears.
+5. Copy the `.uf2` file to the `RPI-RP2` drive. The device restarts with the new firmware.
+6. Start `linapse-service` again.
+
 ---
 
 ## Sensor Geometry & Motion Processing

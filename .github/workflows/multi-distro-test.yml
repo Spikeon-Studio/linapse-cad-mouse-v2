@@ -518,8 +518,44 @@ jobs:
           name: status-browser-extension-publish
           path: results/browser-extension-publish
 
+  build-firmware:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Cache PlatformIO
+        uses: actions/cache@v4
+        with:
+          path: ~/.platformio
+          key: platformio-${{ runner.os }}-${{ hashFiles('platformio.ini') }}
+
+      - name: Sync version strings from VERSION file
+        run: python3 scripts/sync_version.py
+
+      - name: Build firmware
+        run: |
+          pip install platformio
+          pio run -e seeed_xiao_rp2040
+          VERSION=$(cat VERSION | tr -d '\r\n[:space:]')
+          mkdir -p firmware-release
+          cp .pio/build/seeed_xiao_rp2040/firmware.uf2 "firmware-release/linapse-firmware-${VERSION}.uf2"
+
+      - name: Upload firmware artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: linapse-firmware
+          path: firmware-release/*.uf2
+
   release:
-    needs: [test, build-windows, build-macos, build-browser-extension]
+    needs: [test, build-windows, build-macos, build-browser-extension, build-firmware]
     runs-on: ubuntu-latest
     if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') && github.event_name == 'push'
     permissions:
@@ -553,6 +589,12 @@ jobs:
           name: linapse-browser-extension
           path: extension-release
 
+      - name: Download firmware
+        uses: actions/download-artifact@v8
+        with:
+          name: linapse-firmware
+          path: firmware-release
+
       - name: Create or Update Release
         uses: softprops/action-gh-release@v3
         with:
@@ -564,6 +606,7 @@ jobs:
             LinapseServiceSetup.exe
             linapse-service.pkg
             extension-release/*.zip
+            firmware-release/*.uf2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
