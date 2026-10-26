@@ -62,4 +62,21 @@ patch(
     rf'\g<1>{VERSION}\g<2>',
 )
 
+# fedora/linapse-cad-mouse.spec: Version:        X.Y.Z
+patch(
+    ROOT / "fedora/linapse-cad-mouse.spec",
+    r'(?m)^(Version:\s*).*',
+    rf'\g<1>{VERSION}',
+)
+
+# debian/changelog needs a written entry, so do not make one here. The PPA
+# release builds the version from the first entry, and it fails if that
+# version is not the same as VERSION.
+deb_first = ROOT.joinpath("debian/changelog").read_text().splitlines()[0]
+deb_match = re.match(r'\S+ \(([^)-]+)', deb_first)
+if not deb_match or deb_match.group(1) != VERSION:
+    found = deb_match.group(1) if deb_match else "none"
+    print(f"  WARNING: debian/changelog starts with {found}, not {VERSION}. "
+          "Add a debian/changelog entry for this version.", file=sys.stderr)
+
 print("done")

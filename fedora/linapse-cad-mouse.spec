@@ -3,7 +3,7 @@
 %{!?_udevrulesdir: %global _udevrulesdir %{_prefix}/lib/udev/rules.d}
 
 Name:           linapse-cad-mouse
-Version:        2.22.0
+Version:        2.27.2
 Release:        1%{?dist}
 Summary:        CAD Mouse MK2 Linapse driver service and configurator
 
@@ -141,6 +141,9 @@ install -Dm644 service/udev/99-spacemouse.rules %{buildroot}%{_udevrulesdir}/99-
 %{_udevrulesdir}/99-spacemouse.rules
 
 %changelog
+* Sun Oct 25 2026 spikeon <spikeon@gmail.com> - 2.27.2-1
+- Build the firmware on a newer Arduino-Pico core to fix TLx493D read errors, and link float printf support
+
 * Wed Jun 24 2026 spikeon <spikeon@example.com> - 2.22.0-1
 - Add Controller mode (virtual gamepad), button hold-through, uinput install rule, and a decoupled 3D/2D Controller preview with per-axis sensitivity/dead zone/inversion
 

@@ -1,3 +1,14 @@
+linapse-cad-mouse (2.27.2-1) unstable; urgency=low
+
+  * Build the firmware on the maxgerhardt platform-raspberrypi platform
+    (newer Arduino-Pico core). The old core of the Seeed platform gave
+    TLx493D read errors on some boards, and calibration did not finish.
+  * Link the float support for printf in the firmware build, so that the
+    telemetry has values on the new core.
+  * Docs: add the step to accept the browser bridge certificate.
+
+ -- Michael Flynn <spikeon@gmail.com>  Sun, 25 Oct 2026 23:20:53 -0400
+
 linapse-cad-mouse (2.27.1-1) unstable; urgency=low
 
   * Untag the puck's 6DoF multi-axis input as a joystick via udev
