@@ -80,9 +80,15 @@ Web applications run in sandboxed browsers and cannot read the UNIX socket. They
 1. Make sure `linapse-service` is running: `systemctl --user status linapse-service`.
 2. Install the **Linapse Browser Connector** extension from your browser's store. See **[docs/BROWSER_EXTENSION.md](BROWSER_EXTENSION.md)** for links and enterprise install options.
    - The extension spoofs `navigator.platform` to `'Win32'` on `cad.onshape.com` and `*.sketchup.com`.
+3. Accept the certificate of the browser bridge. Do this one time in each browser profile.
+   1. Open `https://127.51.68.120:8181/` in the browser.
+   2. The browser shows a certificate warning, because the bridge uses a self-signed certificate. Click **Advanced**, then click **Proceed** (Chrome or Edge) or **Accept the Risk and Continue** (Firefox).
+   3. Reload the tab of the web application.
+   - If you do not do this step, the browser blocks the connection to the bridge and shows no error. The puck then does not move the model.
+4. If the browser asks to let the site get access to devices on your local network, click **Allow**.
 
 #### OnShape
-- Open any document on `https://cad.onshape.com`. Motion should work instantly.
+- Open any document on `https://cad.onshape.com`. Push the puck to move the model.
 
 #### SketchUp Web
 - Open a design on `https://sketchup.com` or `https://app.sketchup.com`. Spoofing activates connection to WebSocket proxy.
