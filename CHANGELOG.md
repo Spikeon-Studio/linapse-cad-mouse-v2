@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.27.2] - 2026-10-25
+
+### Fixed
+- **Calibration did not finish on some boards.** With firmware built on the Seeed platform, some XIAO RP2040 boards flooded the serial log with `Cannot read consistent data from device 'TLx493D_A2B6'`, and the LEDs stayed on the blue calibration spinner. The Seeed platform pins an Arduino-Pico core from January 2025. The firmware now builds on the maxgerhardt `platform-raspberrypi` platform, pinned to one commit, which uses a newer core. The USB manufacturer and product names do not change, so the service finds the device as before. The first firmware build after this update downloads the new platform, so it takes more time.
+
 ## [2.27.1] - 2026-07-16
 
 ### Fixed
