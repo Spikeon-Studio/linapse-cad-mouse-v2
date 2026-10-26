@@ -5,14 +5,14 @@ USER=runner
 HOME=/home/runner
 === Files in GPG_DIR ===
 total 32
-drwx------  3 runner runner 4096 Jul 15 08:02 .
-drwxr-x--- 12 runner runner 4096 Jul 15 08:02 ..
--rw-r--r--  1 runner runner   95 Jul 15 08:02 gpg-agent.conf
--rw-r--r--  1 runner runner   23 Jul 15 08:02 gpg.conf
-drwx------  2 runner runner 4096 Jul 15 08:02 private-keys-v1.d
--rw-r--r--  1 runner runner  648 Jul 15 08:02 pubring.kbx
--rw-------  1 runner runner   32 Jul 15 08:02 pubring.kbx~
--rw-------  1 runner runner 1200 Jul 15 08:02 trustdb.gpg
+drwx------  3 runner runner 4096 Oct 26 03:17 .
+drwxr-x--- 12 runner runner 4096 Oct 26 03:17 ..
+-rw-r--r--  1 runner runner   95 Oct 26 03:17 gpg-agent.conf
+-rw-r--r--  1 runner runner   23 Oct 26 03:17 gpg.conf
+drwx------  2 runner runner 4096 Oct 26 03:17 private-keys-v1.d
+-rw-r--r--  1 runner runner  648 Oct 26 03:17 pubring.kbx
+-rw-------  1 runner runner   32 Oct 26 03:17 pubring.kbx~
+-rw-------  1 runner runner 1200 Oct 26 03:17 trustdb.gpg
 === gpg-agent.conf ===
 default-cache-ttl 21600
 max-cache-ttl 31536000
@@ -25,4 +25,4 @@ D 2.4.4
 OK
 === GPG Passphrase Diagnostics ===
 GPG_PASSPHRASE length: 9
--rw------- 1 runner runner 9 Jul 15 08:02 /home/runner/gpg-passphrase.txt
+-rw------- 1 runner runner 9 Oct 26 03:17 /home/runner/gpg-passphrase.txt

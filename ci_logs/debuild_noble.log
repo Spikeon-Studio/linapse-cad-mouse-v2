@@ -1,5 +1,5 @@
 This package has a Debian revision number but there does not seem to be
 an appropriate original tar file or .orig directory in the parent directory;
-(expected one of linapse-cad-mouse_2.26.5.orig.tar.gz, linapse-cad-mouse_2.26.5.orig.tar.bz2,
-linapse-cad-mouse_2.26.5.orig.tar.lzma,  linapse-cad-mouse_2.26.5.orig.tar.xz or linapse-cad-mouse-v2.orig)
+(expected one of linapse-cad-mouse_2.27.1.orig.tar.gz, linapse-cad-mouse_2.27.1.orig.tar.bz2,
+linapse-cad-mouse_2.27.1.orig.tar.lzma,  linapse-cad-mouse_2.27.1.orig.tar.xz or linapse-cad-mouse-v2.orig)
 continue anyway? (y/n) Use of uninitialized value $ans in pattern match (m//) at /usr/bin/debuild line 1011.
