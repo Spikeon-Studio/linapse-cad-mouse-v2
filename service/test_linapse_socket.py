@@ -134,6 +134,7 @@ class TestLinapseSocket(unittest.TestCase):
         
         mock_ser = MagicMock()
         mock_ser.readline.side_effect = [
+            b"version=2.26.5\n",  # consumed by the CAD-mouse handshake verification
             b">MOTION:10.0,-20.0,30.0,5.0,-2.0,0.0\n",
             Exception("stop thread")
         ]

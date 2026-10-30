@@ -14,6 +14,14 @@ from .hid import _on_press, _on_release
 
 SERIAL_BAUD = 115200
 
+# How long to wait for a newly-opened candidate port to prove it's actually
+# the CAD Mouse before committing to it. Auto-discovery fallbacks match on
+# common USB-serial chip VIDs shared with unrelated hardware (e.g. ESP32 dev
+# boards), so without this a wrong match that never errors out (just sits
+# idle) would latch the thread onto it forever, permanently locking that COM
+# port from every other application.
+VERIFY_TIMEOUT = 3.0
+
 # Firmware clamps every motion axis to this magnitude (Config.h AXIS_LIMIT).
 # Used to normalize tilt into a -1..1 analog stick in Controller mode.
 AXIS_LIMIT = 350.0
@@ -119,6 +127,22 @@ def find_serial(actions_ref=None):
          glob.glob("/dev/ttyACM*"))
     return m[0] if m else None
 
+def _is_manual_port(actions_ref):
+    if actions_ref and actions_ref[0] and isinstance(actions_ref[0], dict):
+        return bool(actions_ref[0].get("serial_port") or actions_ref[0].get("port"))
+    return False
+
+def _verify_cad_mouse(ser, timeout=VERIFY_TIMEOUT):
+    """Confirm the device on the other end actually speaks the CAD Mouse
+    protocol before the caller commits to holding this port long-term."""
+    ser.write(b"version\n")
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        line = ser.readline().decode(errors="replace").strip()
+        if line.startswith(("version=", "TAP:", "BUTTON:", ">MOTION:")):
+            return True
+    return False
+
 def set_firmware_version(val):
     if state.firmware_version != val:
         state.firmware_version = val
@@ -141,13 +165,21 @@ def serial_thread(actions_ref):
                     break
                 time.sleep(1)
             continue
+        ser = None
         try:
             ser = serial.Serial(port, SERIAL_BAUD, timeout=1.0)
             state.ser_holder[0] = ser
             _hid_button_bits = 0  # clear any stale native button state on (re)connect
             print(f"[serial] connected to {port}")
             time.sleep(0.1)
-            
+
+            if not _is_manual_port(actions_ref) and not _verify_cad_mouse(ser):
+                print(f"[serial] {port} did not respond like a CAD Mouse — releasing and rescanning")
+                ser.close()
+                state.ser_holder[0] = None
+                time.sleep(5)
+                continue
+
             # Send initial active mode's LED settings to the device so they are in sync on startup.
             actions = actions_ref[0]
             last_write_time = time.time()
@@ -527,4 +559,9 @@ def serial_thread(actions_ref):
             state.ser_holder[0] = None
             set_firmware_version("unknown")
             print(f"[serial] {e} — retrying in 3s")
+            if ser:
+                try:
+                    ser.close()
+                except Exception:
+                    pass
             time.sleep(3)
